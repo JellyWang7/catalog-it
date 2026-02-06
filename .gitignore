@@ -1,0 +1,93 @@
+# See https://help.github.com/articles/ignoring-files for more about ignoring files.
+
+# Dependencies
+node_modules/
+vendor/bundle/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Ignore bundler config.
+/.bundle
+
+# Ignore all logfiles and tempfiles.
+/backend/log/*
+/backend/tmp/*
+!/backend/log/.keep
+!/backend/tmp/.keep
+!/backend/tmp/pids/.keep
+
+# Ignore pidfiles, but keep the directory.
+/backend/tmp/pids/*
+!/backend/tmp/pids/.keep
+
+# Ignore storage files
+/backend/storage/*
+!/backend/storage/.keep
+/backend/tmp/storage/*
+!/backend/tmp/storage/.keep
+
+# Ignore master key for decrypting credentials and more.
+/backend/config/master.key
+backend/config/master.key
+
+# Ignore database configuration (contains passwords)
+/backend/config/database.yml
+backend/config/database.yml
+
+# Ignore database backups
+/backend/config/database.yml.backup
+backend/config/database.yml.backup
+
+# Ignore uploaded files
+/backend/public/uploads/
+
+# Rails cache
+/backend/public/assets
+/backend/public/packs
+/backend/public/packs-test
+
+# Frontend (when you add it)
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.*.local
+
+# Build outputs
+*.log
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Coverage
+/backend/coverage/
+
+# Testing
+/backend/test/tmp/
+/backend/test/version_tmp/
+
+# Yarn
+yarn-error.log
+
+# Database
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-*
