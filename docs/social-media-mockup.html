@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Mockup - CatalogIt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; }
+        .deep-blue { background-color: #0d47a1; }
+        .teal-accent { background-color: #00897b; }
+        .text-deep-blue { color: #0d47a1; }
+        .grid-post { aspect-ratio: 1/1; object-fit: cover; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navbar (Consistent) -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="text-2xl font-extrabold text-deep-blue">CatalogIt 📦</a>
+                <div class="flex items-center space-x-6">
+                    <a href="app-dashboard.html" class="px-4 py-2 deep-blue text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-md">App Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Instagram Profile Mockup Section -->
+    <section class="py-16">
+        <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100">
+            <h2 class="text-3xl font-extrabold text-center text-gray-800 pt-6 pb-4 border-b border-gray-100">@catalog.it</h2>
+
+            <!-- Profile Header -->
+            <div class="p-6">
+                <div class="flex items-center mb-6">
+                    <!-- Profile Picture (Logo) -->
+                    <div class="w-20 h-20 rounded-full border-2 border-teal-400 flex items-center justify-center p-0.5 mr-6 flex-shrink-0">
+                        <div class="w-full h-full deep-blue rounded-full flex items-center justify-center text-white text-3xl font-extrabold">
+                            📦
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="flex-1 flex justify-around text-center">
+                        <div><div class="font-bold text-xl">142</div><div class="text-sm text-gray-500">Posts</div></div>
+                        <div><div class="font-bold text-xl">4.1K</div><div class="text-sm text-gray-500">Followers</div></div>
+                        <div><div class="font-bold text-xl">35</div><div class="text-sm text-gray-500">Following</div></div>
+                    </div>
+                </div>
+
+                <!-- Bio & CTA -->
+                <div class="text-sm">
+                    <p class="font-bold text-gray-900">CatalogIt Official</p>
+                    <p class="text-gray-700">Organize your life, one list at a time. 📦 The clean, productivity-focused way to manage collectibles, inventory, and more.</p>
+                    <p class="text-blue-600 font-semibold mt-2">catalogit.com/start</p>
+                </div>
+            </div>
+
+            <!-- Highlights/Stories (Teal Branding) -->
+            <div class="flex px-6 pb-6 overflow-x-auto space-x-4 border-b border-gray-200">
+                <div class="flex-shrink-0 text-center">
+                    <div class="w-14 h-14 bg-teal-accent rounded-full flex items-center justify-center text-white ring-2 ring-teal-400 text-xl font-bold">📚</div>
+                    <p class="text-xs mt-1 text-gray-600">Lists</p>
+                </div>
+                <div class="flex-shrink-0 text-center">
+                    <div class="w-14 h-14 bg-deep-blue rounded-full flex items-center justify-center text-white ring-2 ring-teal-400 text-xl font-bold">✨</div>
+                    <p class="text-xs mt-1 text-gray-600">Features</p>
+                </div>
+                <div class="flex-shrink-0 text-center">
+                    <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 ring-2 ring-teal-400 text-xl font-bold">💡</div>
+                    <p class="text-xs mt-1 text-gray-600">Tips</p>
+                </div>
+            </div>
+
+            <!-- Post Grid -->
+            <div class="grid grid-cols-3 gap-0.5 bg-gray-200">
+                <!-- App Screenshot (Blue/List Focus) -->
+                <img class="grid-post" src="https://placehold.co/300x300/e0f7fa/0d47a1?text=APP+SCREEN+1" alt="App Screenshot Post 1">
+                <!-- Organized Home Lifestyle -->
+                <img class="grid-post" src="https://placehold.co/300x300/80cbc4/ffffff?text=ORG+HOME" alt="Organized Home Post">
+                <!-- Item Rating/Green Accent -->
+                <img class="grid-post" src="https://placehold.co/300x300/e8f5e9/4caf50?text=RATING+FEATURE" alt="Rating Feature Post">
+                <!-- Clean Desk Productivity -->
+                <img class="grid-post" src="https://placehold.co/300x300/bbdefb/0d47a1?text=PRODUCTIVITY" alt="Clean Desk Post">
+                <!-- App Feature Highlight -->
+                <img class="grid-post" src="https://placehold.co/300x300/1565c0/ffffff?text=BLUE+THEME" alt="Blue Theme Post">
+                <!-- Teal Knowledge Base Hint -->
+                <img class="grid-post" src="https://placehold.co/300x300/00897b/ffffff?text=HELP+CENTER" alt="Help Center Hint">
+            </div>
+        </div>
+    </section>
+</body>
+</html>

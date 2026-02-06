@@ -1,0 +1,52 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies (will be installed in container)
+node_modules/
+vendor/bundle/
+
+# Build outputs
+dist/
+build/
+tmp/
+public/packs/
+
+# Test files
+coverage/
+.nyc_output/
+spec/
+
+# Database
+*.sqlite3
+*.sqlite3-journal
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore

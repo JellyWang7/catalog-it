@@ -15,8 +15,13 @@ A production-ready web application for creating and sharing personal lists (movi
 
 ```
 catalog-it/
-├── backend/              # Rails API
-└── frontend/             # React Vite app (coming soon)
+├── backend/              # Rails API (PostgreSQL)
+├── frontend/             # React Vite app (coming soon)
+├── docs/                 # Design prototypes (HTML mockups)
+├── frontend_files/       # React component templates
+├── docker-compose.yml    # Docker orchestration
+├── FRONTEND_SETUP.md     # Frontend setup guide
+└── README.md             # This file
 ```
 
 ## Setup Instructions

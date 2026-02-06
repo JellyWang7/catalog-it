@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: catalogit_db
+    environment:
+      POSTGRES_USER: catalogit
+      POSTGRES_PASSWORD: catalogit_password
+      POSTGRES_DB: catalogit_development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U catalogit"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - catalogit_network
+
+  # Rails Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: catalogit_backend
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgresql://catalogit:catalogit_password@db:5432/catalogit_development
+      RAILS_MAX_THREADS: 5
+      WEB_CONCURRENCY: 2
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - bundle_cache:/usr/local/bundle
+    command: >
+      sh -c "
+        bundle install &&
+        rails db:create db:migrate &&
+        rails server -b 0.0.0.0
+      "
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/v1/lists"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - catalogit_network
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: catalogit_frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000/api/v1
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - catalogit_network
+
+volumes:
+  postgres_data:
+    driver: local
+  bundle_cache:
+    driver: local
+
+networks:
+  catalogit_network:
+    driver: bridge
