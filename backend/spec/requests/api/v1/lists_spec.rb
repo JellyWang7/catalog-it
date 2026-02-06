@@ -2,6 +2,8 @@ require 'rails_helper'
 
 RSpec.describe "Api::V1::Lists", type: :request do
   let(:user) { create(:user) }
+  let(:token) { JsonWebToken.encode(user_id: user.id) }
+  let(:auth_headers) { { 'Authorization' => "Bearer #{token}" } }
   let!(:public_lists) { create_list(:list, 3, :public, :with_items, user: user) }
   let!(:private_list) { create(:list, visibility: 'private', user: user) }
 
@@ -98,17 +100,17 @@ RSpec.describe "Api::V1::Lists", type: :request do
     context "with valid parameters" do
       it "creates a new List" do
         expect {
-          post '/api/v1/lists', params: valid_attributes, as: :json
+          post '/api/v1/lists', params: valid_attributes, headers: auth_headers, as: :json
         }.to change(List, :count).by(1)
       end
 
       it "returns HTTP created status" do
-        post '/api/v1/lists', params: valid_attributes, as: :json
+        post '/api/v1/lists', params: valid_attributes, headers: auth_headers, as: :json
         expect(response).to have_http_status(:created)
       end
 
       it "returns the created list" do
-        post '/api/v1/lists', params: valid_attributes, as: :json
+        post '/api/v1/lists', params: valid_attributes, headers: auth_headers, as: :json
         json_response = JSON.parse(response.body)
         expect(json_response['title']).to eq('New Test List')
       end
@@ -117,19 +119,19 @@ RSpec.describe "Api::V1::Lists", type: :request do
     context "with invalid parameters" do
       it "does not create a new List" do
         expect {
-          post '/api/v1/lists', params: invalid_attributes, as: :json
+          post '/api/v1/lists', params: invalid_attributes, headers: auth_headers, as: :json
         }.not_to change(List, :count)
       end
 
       it "returns unprocessable entity status" do
-        post '/api/v1/lists', params: invalid_attributes, as: :json
+        post '/api/v1/lists', params: invalid_attributes, headers: auth_headers, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
       end
 
       it "returns error messages" do
-        post '/api/v1/lists', params: invalid_attributes, as: :json
+        post '/api/v1/lists', params: invalid_attributes, headers: auth_headers, as: :json
         json_response = JSON.parse(response.body)
-        expect(json_response).to have_key('title')
+        expect(json_response).to have_key('errors')
       end
     end
   end
@@ -146,7 +148,7 @@ RSpec.describe "Api::V1::Lists", type: :request do
     end
 
     context "with valid parameters" do
-      before { patch "/api/v1/lists/#{list.id}", params: new_attributes, as: :json }
+      before { patch "/api/v1/lists/#{list.id}", params: new_attributes, headers: auth_headers, as: :json }
 
       it "returns HTTP success" do
         expect(response).to have_http_status(:success)
@@ -162,7 +164,7 @@ RSpec.describe "Api::V1::Lists", type: :request do
     context "with invalid parameters" do
       let(:invalid_attributes) { { list: { title: '', visibility: 'invalid' } } }
 
-      before { patch "/api/v1/lists/#{list.id}", params: invalid_attributes, as: :json }
+      before { patch "/api/v1/lists/#{list.id}", params: invalid_attributes, headers: auth_headers, as: :json }
 
       it "returns unprocessable entity status" do
         expect(response).to have_http_status(:unprocessable_entity)
@@ -180,19 +182,19 @@ RSpec.describe "Api::V1::Lists", type: :request do
 
     it "destroys the requested list" do
       expect {
-        delete "/api/v1/lists/#{list.id}"
+        delete "/api/v1/lists/#{list.id}", headers: auth_headers
       }.to change(List, :count).by(-1)
     end
 
     it "returns no content status" do
-      delete "/api/v1/lists/#{list.id}"
+      delete "/api/v1/lists/#{list.id}", headers: auth_headers
       expect(response).to have_http_status(:no_content)
     end
 
     it "also destroys associated items" do
       list_with_items = create(:list, :with_items, user: user)
       expect {
-        delete "/api/v1/lists/#{list_with_items.id}"
+        delete "/api/v1/lists/#{list_with_items.id}", headers: auth_headers
       }.to change(Item, :count).by(-3)
     end
   end

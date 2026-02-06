@@ -1,2 +1,42 @@
 class ApplicationController < ActionController::API
+  before_action :authenticate_request
+  attr_reader :current_user
+
+  private
+
+  def authenticate_request
+    header = request.headers['Authorization']
+    header = header.split(' ').last if header
+    
+    return unless header
+    
+    begin
+      @decoded = JsonWebToken.decode(header)
+      
+      if @decoded && @decoded[:user_id]
+        @current_user = User.find(@decoded[:user_id])
+      end
+    rescue ActiveRecord::RecordNotFound
+      @current_user = nil
+    rescue => e
+      @current_user = nil
+    end
+  end
+
+  def require_authentication
+    render json: { error: 'Not Authorized' }, status: :unauthorized unless @current_user
+  end
+
+  # Always try to authenticate but don't require it (for public endpoints)
+  def authenticate_request_optional
+    authenticate_request
+  end
+
+  # Require authentication (for protected endpoints)
+  def authenticate_request_required
+    authenticate_request
+    unless @current_user
+      render json: { error: 'Unauthorized' }, status: :unauthorized
+    end
+  end
 end
