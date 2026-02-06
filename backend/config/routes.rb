@@ -7,6 +7,12 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      # Authentication routes
+      post 'auth/signup', to: 'authentication#signup'
+      post 'auth/login', to: 'authentication#login'
+      get 'auth/me', to: 'authentication#me'
+
+      # Resource routes
       resources :lists, only: [:index, :show, :create, :update, :destroy] do
         resources :items, only: [:index, :create]
       end
