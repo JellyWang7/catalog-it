@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/opt/homebrew/opt/ruby/bin/ruby
 require "fileutils"
 
 APP_ROOT = File.expand_path("..", __dir__)
