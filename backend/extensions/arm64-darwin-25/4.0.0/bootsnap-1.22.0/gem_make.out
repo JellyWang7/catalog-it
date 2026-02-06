@@ -1,0 +1,24 @@
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/bootsnap-1.22.0/ext/bootsnap
+/opt/homebrew/opt/ruby/bin/ruby extconf.rb
+checking for fdatasync() in unistd.h... yes
+checking for fstatat() in sys/stat.h... yes
+checking for whether -D_GNU_SOURCE is accepted as CPPFLAGS... yes
+checking for whether -O3 is accepted as CFLAGS... yes
+checking for whether -std=c99 is accepted as CFLAGS... yes
+creating Makefile
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/bootsnap-1.22.0/ext/bootsnap
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-ipxwuy sitelibdir\=./.gem.20260206-48959-ipxwuy clean
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/bootsnap-1.22.0/ext/bootsnap
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-ipxwuy sitelibdir\=./.gem.20260206-48959-ipxwuy
+compiling bootsnap.c
+linking shared-object bootsnap/bootsnap.bundle
+ld: warning: search path '/opt/homebrew/Cellar/openssl@3/3.6.0/lib' not found
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/bootsnap-1.22.0/ext/bootsnap
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-ipxwuy sitelibdir\=./.gem.20260206-48959-ipxwuy install
+/usr/bin/install -c -m 0755 bootsnap.bundle ./.gem.20260206-48959-ipxwuy/bootsnap
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/bootsnap-1.22.0/ext/bootsnap
+make DESTDIR\= sitearchdir\=./.gem.20260206-48959-ipxwuy sitelibdir\=./.gem.20260206-48959-ipxwuy clean

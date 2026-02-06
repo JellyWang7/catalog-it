@@ -1,0 +1,19 @@
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/racc-1.8.1/ext/racc/cparse
+/opt/homebrew/opt/ruby/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/racc-1.8.1/ext/racc/cparse
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-b76mnh sitelibdir\=./.gem.20260206-48959-b76mnh clean
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/racc-1.8.1/ext/racc/cparse
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-b76mnh sitelibdir\=./.gem.20260206-48959-b76mnh
+compiling cparse.c
+linking shared-object racc/cparse.bundle
+ld: warning: search path '/opt/homebrew/Cellar/openssl@3/3.6.0/lib' not found
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/racc-1.8.1/ext/racc/cparse
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-b76mnh sitelibdir\=./.gem.20260206-48959-b76mnh install
+/usr/bin/install -c -m 0755 cparse.bundle ./.gem.20260206-48959-b76mnh/racc
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20260206-48959-b76mnh sitelibdir\=./.gem.20260206-48959-b76mnh clean

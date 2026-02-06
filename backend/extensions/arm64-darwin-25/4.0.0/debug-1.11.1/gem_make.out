@@ -1,0 +1,20 @@
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/debug-1.11.1/ext/debug
+/opt/homebrew/opt/ruby/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/debug-1.11.1/ext/debug
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-g5zyct sitelibdir\=./.gem.20260206-48959-g5zyct clean
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/debug-1.11.1/ext/debug
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-g5zyct sitelibdir\=./.gem.20260206-48959-g5zyct
+compiling debug.c
+compiling iseq_collector.c
+linking shared-object debug/debug.bundle
+ld: warning: search path '/opt/homebrew/Cellar/openssl@3/3.6.0/lib' not found
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/debug-1.11.1/ext/debug
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-g5zyct sitelibdir\=./.gem.20260206-48959-g5zyct install
+/usr/bin/install -c -m 0755 debug.bundle ./.gem.20260206-48959-g5zyct/debug
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20260206-48959-g5zyct sitelibdir\=./.gem.20260206-48959-g5zyct clean

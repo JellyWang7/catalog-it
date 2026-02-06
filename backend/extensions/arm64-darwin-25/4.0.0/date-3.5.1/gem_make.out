@@ -1,0 +1,25 @@
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/date-3.5.1/ext/date
+/opt/homebrew/opt/ruby/bin/ruby extconf.rb
+checking for rb_category_warn()... yes
+checking for timezone in time.h with -Werror... yes
+checking for altzone in time.h with -Werror... no
+creating Makefile
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/date-3.5.1/ext/date
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-f0vgnz sitelibdir\=./.gem.20260206-48959-f0vgnz clean
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/date-3.5.1/ext/date
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-f0vgnz sitelibdir\=./.gem.20260206-48959-f0vgnz
+compiling date_core.c
+compiling date_parse.c
+compiling date_strftime.c
+compiling date_strptime.c
+linking shared-object date_core.bundle
+ld: warning: search path '/opt/homebrew/Cellar/openssl@3/3.6.0/lib' not found
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/date-3.5.1/ext/date
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-f0vgnz sitelibdir\=./.gem.20260206-48959-f0vgnz install
+/usr/bin/install -c -m 0755 date_core.bundle ./.gem.20260206-48959-f0vgnz
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/date-3.5.1/ext/date
+make DESTDIR\= sitearchdir\=./.gem.20260206-48959-f0vgnz sitelibdir\=./.gem.20260206-48959-f0vgnz clean

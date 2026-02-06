@@ -1,0 +1,19 @@
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/websocket-driver-0.8.0/ext/websocket-driver
+/opt/homebrew/opt/ruby/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/websocket-driver-0.8.0/ext/websocket-driver
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-5dprhu sitelibdir\=./.gem.20260206-48959-5dprhu clean
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/websocket-driver-0.8.0/ext/websocket-driver
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-5dprhu sitelibdir\=./.gem.20260206-48959-5dprhu
+compiling websocket_mask.c
+linking shared-object websocket_mask.bundle
+ld: warning: search path '/opt/homebrew/Cellar/openssl@3/3.6.0/lib' not found
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/websocket-driver-0.8.0/ext/websocket-driver
+make -j9 DESTDIR\= sitearchdir\=./.gem.20260206-48959-5dprhu sitelibdir\=./.gem.20260206-48959-5dprhu install
+/usr/bin/install -c -m 0755 websocket_mask.bundle ./.gem.20260206-48959-5dprhu
+
+current directory: /Users/Jelly1/Documents/my-app/catalogIt/catalog-it/backend/gems/websocket-driver-0.8.0/ext/websocket-driver
+make DESTDIR\= sitearchdir\=./.gem.20260206-48959-5dprhu sitelibdir\=./.gem.20260206-48959-5dprhu clean
