@@ -14,7 +14,9 @@ class ApplicationController < ActionController::API
       @decoded = JsonWebToken.decode(header)
       
       if @decoded && @decoded[:user_id]
-        @current_user = User.find(@decoded[:user_id])
+        user = User.find(@decoded[:user_id])
+        # Only set current_user if account is active
+        @current_user = user if user&.active?
       end
     rescue ActiveRecord::RecordNotFound
       @current_user = nil
