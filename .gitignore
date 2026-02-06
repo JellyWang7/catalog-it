@@ -11,6 +11,11 @@ vendor/bundle/
 
 # Ignore bundler config.
 /.bundle
+/backend/gems/
+/backend/specifications/
+/backend/cache/
+/backend/extensions/
+/backend/plugins/
 
 # Ignore all logfiles and tempfiles.
 /backend/log/*
@@ -76,6 +81,7 @@ Thumbs.db
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.code-workspace
 
 # Coverage
 /backend/coverage/
