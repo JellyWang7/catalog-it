@@ -1,7 +1,9 @@
 module Api
   module V1
     class ListsController < ApplicationController
-      skip_before_action :authenticate_request, only: [:index, :show]
+      skip_before_action :authenticate_request
+      before_action :authenticate_request_optional, only: [:index, :show]
+      before_action :authenticate_request_required, only: [:create, :update, :destroy]
       before_action :set_list, only: [:show, :update, :destroy]
       before_action :authorize_list_owner, only: [:update, :destroy]
       
@@ -75,6 +77,11 @@ module Api
       end
       
       def authorize_list_owner
+        unless current_user
+          render json: { error: 'Unauthorized' }, status: :unauthorized
+          return
+        end
+        
         unless @list.user_id == current_user.id
           render json: { error: 'Not authorized to modify this list' }, status: :forbidden
         end

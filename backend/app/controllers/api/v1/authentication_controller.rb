@@ -47,6 +47,11 @@ module Api
 
       # GET /api/v1/auth/me
       def me
+        unless current_user
+          render json: { error: 'Unauthorized' }, status: :unauthorized
+          return
+        end
+        
         render json: {
           user: {
             id: current_user.id,

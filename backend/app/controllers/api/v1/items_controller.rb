@@ -1,7 +1,9 @@
 module Api
   module V1
     class ItemsController < ApplicationController
-      skip_before_action :authenticate_request, only: [:index, :show]
+      skip_before_action :authenticate_request
+      before_action :authenticate_request_optional, only: [:index, :show]
+      before_action :authenticate_request_required, only: [:create, :update, :destroy]
       before_action :set_list, only: [:index, :create]
       before_action :set_item, only: [:show, :update, :destroy]
       before_action :authorize_list_access, only: [:index, :show]
