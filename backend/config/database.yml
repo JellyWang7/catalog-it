@@ -1,0 +1,28 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: catalogit_development
+  username: Jelly1
+  password:
+  host: localhost
+  port: 5432
+
+test:
+  <<: *default
+  database: catalogit_test
+  username: Jelly1
+  password:
+  host: localhost
+  port: 5432
+
+production:
+  <<: *default
+  database: catalogit_production
+  username: Jelly1
+  password: <%= ENV['DATABASE_PASSWORD'] %>
+  host: localhost
+  port: 5432
