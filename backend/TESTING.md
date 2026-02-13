@@ -2,13 +2,15 @@
 
 ## Test Coverage Summary
 
-### ✅ All Core Tests Passing: 143/143 (100%)
+### ✅ All Core Tests Passing: 175/175 (100%)
 
 - **Authentication Tests**: 20 tests - covering signup, login, JWT tokens, and /me endpoint
 - **Authorization Tests**: 47 tests - covering lists/items access control and ownership verification
 - **JWT Service Tests**: 17 tests - covering token encoding, decoding, expiration, and edge cases
-- **Model Tests**: 27 tests - covering User, List, and Item models
+- **Model Tests**: 28 tests - covering User, List, and Item models
 - **Request Tests**: 32 tests - covering CRUD operations with authentication
+- **Security Tests**: 23 tests - covering XSS prevention, user status, input validation
+- **User Status Tests**: 11 tests - covering login blocking, token invalidation
 
 ### Test Breakdown by Category
 
@@ -176,7 +178,7 @@ To update integration tests:
 ## Continuous Integration
 
 ### Pre-commit Checklist
-- [ ] All core tests passing (143/143)
+- [ ] All core tests passing (175/175)
 - [ ] No new linter errors introduced
 - [ ] Authentication headers included in protected endpoint tests
 - [ ] Factories updated if models changed

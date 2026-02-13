@@ -1,6 +1,6 @@
 # CatalogIt
 
-> A production-ready web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
+> A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS701  
 **Status**: Backend Complete | Frontend Core Complete  
@@ -12,11 +12,12 @@
 
 | Document | Purpose |
 |----------|---------|
-| **[FRONTEND_SETUP.md](FRONTEND_SETUP.md)** | Frontend setup & component guide |
-| **[WEEKLY_PLAN.md](WEEKLY_PLAN.md)** | Week-by-week roadmap |
-| **[PROJECT_STATUS.md](PROJECT_STATUS.md)** | Detailed status & compliance |
-| **[backend/AUTHENTICATION.md](backend/AUTHENTICATION.md)** | JWT auth guide |
-| **[backend/TESTING.md](backend/TESTING.md)** | Testing guide (175 tests) |
+| [FRONTEND_SETUP.md](FRONTEND_SETUP.md) | Frontend setup & component guide |
+| [WEEKLY_PLAN.md](WEEKLY_PLAN.md) | Week-by-week roadmap |
+| [PROJECT_STATUS.md](PROJECT_STATUS.md) | Detailed status & compliance |
+| [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (Render + Netlify) |
+| [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
+| [backend/TESTING.md](backend/TESTING.md) | Testing guide (175 tests) |
 
 ---
 
@@ -28,7 +29,7 @@
 | **Backend** | Ruby on Rails 8 (API mode), JWT, RSpec | Complete |
 | **Database** | PostgreSQL 15+ (3NF) | Complete |
 | **Security** | XSS prevention, rate limiting, CORS, user status | Complete |
-| **Deployment** | AWS Free Tier (Docker) | Planned |
+| **Deployment** | Render + Netlify (free tier) | Planned |
 
 ---
 
@@ -48,15 +49,17 @@ catalog-it/
 │   ├── src/
 │   │   ├── components/   # Layout, StarRating, Modals, Skeletons
 │   │   ├── context/      # AuthContext
-│   │   ├── pages/        # Home, Login, Signup, Explore, Dashboard, ListDetail, 404
+│   │   ├── pages/        # Home, Login, Signup, ForgotPassword, ResetPassword,
+│   │   │                 # Explore, Dashboard, ListDetail, SharedList, 404
 │   │   ├── services/     # Axios API client (auth, lists, items)
 │   │   ├── hooks/        # Custom hooks
 │   │   └── utils/        # Helpers
 │   └── vite.config.js
 ├── docs/                 # Design documents (NOT in git)
-├── FRONTEND_SETUP.md     # Frontend docs
-├── WEEKLY_PLAN.md        # Weekly roadmap
-├── PROJECT_STATUS.md     # Status & compliance
+├── FRONTEND_SETUP.md
+├── WEEKLY_PLAN.md
+├── PROJECT_STATUS.md
+├── DEPLOY_PLAN.md
 └── README.md             # This file
 ```
 
@@ -120,6 +123,8 @@ cd backend && RAILS_ENV=test bundle exec rspec
 | POST | `/api/v1/auth/signup` | Create account | No |
 | POST | `/api/v1/auth/login` | Sign in, get JWT | No |
 | GET | `/api/v1/auth/me` | Current user info | Yes |
+| POST | `/api/v1/auth/forgot_password` | Request password reset | No |
+| POST | `/api/v1/auth/reset_password` | Reset password with token | No |
 
 ### Lists
 
@@ -130,6 +135,8 @@ cd backend && RAILS_ENV=test bundle exec rspec
 | POST | `/api/v1/lists` | Create list | Yes |
 | PATCH | `/api/v1/lists/:id` | Update list (owner) | Yes |
 | DELETE | `/api/v1/lists/:id` | Delete list (owner) | Yes |
+| POST | `/api/v1/lists/:id/share` | Generate share link | Yes |
+| GET | `/api/v1/lists/shared/:code` | Look up by share code | No |
 
 ### Items
 
@@ -145,29 +152,30 @@ cd backend && RAILS_ENV=test bundle exec rspec
 
 ## Current Status
 
-| Component | Status | Details |
-|-----------|--------|---------|
-| Database schema | Complete | Users, Lists, Items (3NF) |
-| JWT authentication | Complete | Signup, login, token expiry, user status |
-| Authorization | Complete | Owner-based CRUD, public/private |
-| Security hardening | Complete | XSS, rate limiting, CORS, input validation |
-| Backend tests | Complete | 175 tests passing |
-| API docs (Swagger) | Complete | Interactive at `/api-docs` |
-| Frontend setup | Complete | Vite + React + Tailwind + routing |
-| Auth UI | Complete | Login, Signup pages + AuthContext |
-| Public list browsing | Complete | Explore page with search + skeletons |
-| List detail + items | Complete | View list, star ratings, item CRUD |
-| User dashboard | Complete | Stats, list CRUD, visibility management |
-| Item management | Complete | Add/edit/delete via modals |
-| Seed data | Complete | 5 users, 10 lists, 50+ items |
-| Search & filter | Partial | Client-side search on Explore |
-| Deployment | Planned | Week 5 |
+| Feature | Status |
+|---------|--------|
+| Database schema (3NF) | Complete |
+| JWT authentication + password reset | Complete |
+| Authorization (owner-based CRUD) | Complete |
+| Security (XSS, rate limiting, CORS) | Complete |
+| Backend tests (175 passing) | Complete |
+| API docs (Swagger) | Complete |
+| Frontend setup + routing | Complete |
+| Auth UI (login, signup, forgot/reset password) | Complete |
+| Public list browsing (Explore + search) | Complete |
+| List detail + star ratings | Complete |
+| User dashboard + list CRUD | Complete |
+| Item management (add/edit/delete) | Complete |
+| Share list (short URL) | Complete |
+| Seed data (5 users, 10 lists, 50+ items) | Complete |
+| Deployment | Planned |
 
 ---
 
 ## Security
 
 - JWT authentication (24h expiry, bcrypt)
+- Password reset with secure tokens (1h expiry)
 - XSS prevention (HTML sanitization)
 - Rate limiting (Rack::Attack)
 - User status management (active/suspended/deleted)

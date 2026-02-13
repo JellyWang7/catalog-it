@@ -2,24 +2,24 @@
 
 **Last Updated**: February 9, 2026  
 **Current Branch**: `feature/frontend-init`  
-**Project Status**: Phase 5 - Frontend Core Complete
+**Project Status**: Frontend Core Complete
 
 ---
 
-## Current Progress
+## Progress
 
 ```
-Backend:     ████████████ 100%  Complete
-Frontend:    ████████░░░░  70%  Core complete, polish remaining
-Deployment:  ░░░░░░░░░░░░   0%  Week 5
-Overall:     ████████░░░░  70%
+Backend:     ████████████ 100%
+Frontend:    █████████░░░  75%
+Deployment:  ░░░░░░░░░░░░   0%
+Overall:     ████████░░░░  75%
 ```
 
 ---
 
-## Completed (Weeks 1-3)
+## Completed
 
-### Week 1-2: Backend + Security
+### Weeks 1-2: Backend + Security
 
 - [x] Database schema (Users, Lists, Items) -- 3NF, PostgreSQL
 - [x] JWT authentication (signup, login, me)
@@ -31,139 +31,96 @@ Overall:     ████████░░░░  70%
 
 ### Week 3: Frontend Development
 
-#### Day 1 (Monday) - Setup + Scaffold
-
-- [x] Initialize React app with Vite 4
-- [x] Install dependencies (react-router-dom, axios, tailwindcss, headlessui, heroicons, react-hot-toast)
-- [x] Setup project structure: `src/{components,pages,services,hooks,context,utils}`
-- [x] Configure Tailwind CSS with deep-blue/teal theme
-- [x] Setup `.env` with API URL
-- [x] Create Axios instance with JWT interceptors
-- [x] Create API service modules (auth, lists, items)
-- [x] Build AuthContext (login/signup/logout/token verification)
-- [x] Build Layout component with responsive navbar
-- [x] Build ProtectedRoute wrapper
-- [x] Create Home page (hero + feature cards)
-- [x] Create Login page (form + validation + error toasts)
-- [x] Create Signup page (form + password confirmation)
-- [x] Create Explore page (public list grid + search)
-- [x] Create 404 page
-- [x] Configure routing (`/`, `/explore`, `/login`, `/signup`, `/dashboard`)
-- [x] Merge security-compliance-fixes branch
-- [x] Git branch `feature/frontend-init` off `added-auth`
-- [x] Push to GitHub
-
-#### Day 2 (Monday continued) - CRUD + Polish
-
-- [x] Build Dashboard with real CRUD (create/edit/delete lists)
-- [x] Build ListDetail page (`/lists/:id`) with item display
-- [x] Build StarRating component (color-coded 1-5 stars)
-- [x] Build ItemFormModal (add/edit items with name, category, rating, notes)
-- [x] Build ListFormModal (create/edit lists with title, description, visibility)
-- [x] Build ConfirmModal (generic confirmation with danger variant)
-- [x] Build ListCardSkeleton (loading animation)
-- [x] Dashboard stats cards (total lists, public lists, total items)
-- [x] Explore page empty states + result count
-- [x] Enrich seed data (5 users, 10 lists, 50+ items, varied ratings)
-- [x] Production build verified (430 modules, 0 errors)
-- [x] Push all changes to GitHub
+- [x] React 18 + Vite 4 + Tailwind CSS 3 setup
+- [x] React Router 6 with 10 routes
+- [x] Axios with JWT interceptors + Vite dev proxy
+- [x] AuthContext (login/signup/logout/token verification)
+- [x] Layout + ProtectedRoute + 404 page
+- [x] Home page (hero + feature cards)
+- [x] Login + Signup pages
+- [x] Forgot Password page (email input, reset token)
+- [x] Reset Password page (new password with token from URL)
+- [x] Explore page (public list grid, search, skeletons, empty states)
+- [x] Dashboard (stats cards, list CRUD, visibility badges)
+- [x] ListDetail page (items, star ratings, item CRUD)
+- [x] Share list (generates short URL, copies to clipboard, `/s/:code` redirect)
+- [x] Reusable components (StarRating, ListFormModal, ItemFormModal, ConfirmModal, ListCardSkeleton)
+- [x] Enriched seed data (5 users, 10 lists, 50+ items)
+- [x] Merged security-compliance-fixes branch
+- [x] Production build verified (433 modules, 0 errors)
 
 ---
 
 ## Remaining Work
 
-### Week 3 Remaining (Tue-Fri)
+### Week 3-4: Polish
 
-- [ ] End-to-end testing with backend running
-- [ ] Search/filter improvements (server-side, category filter)
+- [ ] End-to-end testing with backend
+- [ ] Server-side search/filter
 - [ ] Sort options (by date, rating, name)
-- [ ] Responsive design refinements (mobile nav)
-- [ ] Share list functionality (copy link)
-
-### Week 4: Advanced Features & Polish
-
-#### Monday-Tuesday: Polish
-- [ ] Loading skeletons on Dashboard
+- [ ] Mobile responsive hamburger menu
 - [ ] Error boundary component
-- [ ] Mobile-responsive hamburger menu
 - [ ] Form validation improvements
-- [ ] Optimistic UI updates
 
-#### Wednesday: Testing
+### Week 4: Testing & Prep
+
 - [ ] Install Vitest + React Testing Library
 - [ ] Component tests for auth flow
-- [ ] Component tests for list CRUD
-- [ ] Integration tests
-
-#### Thursday-Friday: Documentation & Prep
-- [ ] Update all documentation
-- [ ] Midterm presentation preparation
-- [ ] Create user guide / walkthrough
-- [ ] Record demo video (optional)
+- [ ] Component tests for list/item CRUD
+- [ ] Midterm presentation prep
+- [ ] Demo walkthrough / user guide
 
 ### Week 5: Deployment
 
-#### Backend (Render.com or AWS)
-- [ ] Setup production database (PostgreSQL)
-- [ ] Deploy Rails API
-- [ ] Configure environment variables
-- [ ] Enable SSL/TLS
-- [ ] Test production API
+- [ ] Backend on Render.com (Rails + PostgreSQL)
+- [ ] Frontend on Netlify (static SPA)
+- [ ] Production environment variables
+- [ ] SSL/TLS enabled
+- [ ] CORS configured for production domain
+- [ ] End-to-end production test
 
-#### Frontend (Netlify)
-- [ ] Connect GitHub repository
-- [ ] Configure build settings (`npm run build`, `dist/`)
-- [ ] Setup environment variables
-- [ ] Configure SPA redirects (`_redirects` file)
-- [ ] Test production build
-
-#### Integration
-- [ ] Update CORS for production domain
-- [ ] End-to-end test in production
-- [ ] Mobile responsiveness check
-- [ ] Performance audit
+See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for step-by-step instructions.
 
 ---
 
 ## Feature Checklist
 
-### Backend (100% Complete)
+### Backend (100%)
 - [x] Database schema (Users, Lists, Items)
 - [x] JWT authentication (signup, login, me)
+- [x] Password reset (forgot + reset with token)
 - [x] Authorization (public/private, owner-based)
-- [x] CRUD endpoints for lists (5 endpoints)
-- [x] CRUD endpoints for items (5 endpoints)
-- [x] Auth endpoints (3 endpoints)
+- [x] CRUD endpoints for lists (5 + share + shared lookup)
+- [x] CRUD endpoints for items (5)
+- [x] Auth endpoints (5: signup, login, me, forgot, reset)
 - [x] API documentation (Swagger)
 - [x] Security (XSS, rate limiting, user status, CORS)
 - [x] 175 tests passing (100%)
 
-### Frontend (70% Complete)
+### Frontend (75%)
 - [x] React + Vite + Tailwind setup
 - [x] Authentication UI (login, signup, logout)
+- [x] Forgot password + reset password flow
 - [x] AuthContext (token storage, verification)
 - [x] Protected routes
 - [x] Public catalog browsing (Explore)
-- [x] List detail view with items
+- [x] List detail view with items + star ratings
 - [x] User dashboard with stats
 - [x] List management (create, edit, delete)
 - [x] Item management (add, edit, delete)
-- [x] Star rating display
-- [x] Loading skeletons (Explore)
-- [x] Empty states
+- [x] Share list (short URL, clipboard copy)
+- [x] Loading skeletons + empty states
 - [x] Toast notifications
-- [x] Search (client-side)
+- [x] Client-side search
 - [ ] Server-side search/filter
 - [ ] Mobile responsive nav
 - [ ] Component tests
-- [ ] Integration tests
 
-### Deployment (0% Complete)
-- [ ] Backend deployment
-- [ ] Frontend deployment
+### Deployment (0%)
+- [ ] Backend on Render
+- [ ] Frontend on Netlify
 - [ ] Production database
-- [ ] SSL/TLS
-- [ ] Monitoring
+- [ ] SSL/TLS + CORS
 
 ---
 
@@ -171,38 +128,20 @@ Overall:     ████████░░░░  70%
 
 | Component | Technology |
 |-----------|-----------|
-| Backend | Ruby on Rails 8.1.2 (API mode) |
+| Backend | Ruby on Rails 8 (API mode) |
 | Database | PostgreSQL 15+ |
 | Auth | JWT + bcrypt |
 | Testing | RSpec + FactoryBot |
 | API Docs | Swagger/OpenAPI (rswag) |
 | Frontend | React 18 + Vite 4 |
 | Styling | Tailwind CSS 3 |
-| Icons | Heroicons |
 | HTTP | Axios |
 | Routing | React Router 6 |
 | Notifications | react-hot-toast |
 
 ---
 
-## Git Workflow
-
-| Branch | Status |
-|--------|--------|
-| `main` | Stable |
-| `added-auth` | Backend complete |
-| `security-compliance-fixes` | Security merged |
-| `feature/frontend-init` | **Current** -- frontend dev |
-
-- Never commit `docs/`, `.env`, or credentials
-- Conventional commits (`feat:`, `fix:`, `docs:`)
-- Push to feature branch, PR when ready
-
----
-
 ## Seed Data
-
-After `rails db:seed`:
 
 | User | Email | Password | Role | Status |
 |------|-------|----------|------|--------|
@@ -212,7 +151,7 @@ After `rails db:seed`:
 | collector | collector@example.com | password123 | user | active |
 | banned_user | banned@example.com | password123 | user | suspended |
 
-**Data**: 10 lists (7 public, 1 shared, 2 private), 50+ items with varied ratings.
+10 lists (7 public, 1 shared, 2 private), 50+ items with varied ratings.
 
 ---
 

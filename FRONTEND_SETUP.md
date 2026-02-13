@@ -2,7 +2,7 @@
 
 **Last Updated**: February 9, 2026  
 **Branch**: `feature/frontend-init`  
-**Status**: Core frontend complete — Auth, CRUD, list details, item management
+**Status**: Core frontend complete -- auth, CRUD, list details, sharing, password reset
 
 ---
 
@@ -46,16 +46,19 @@ frontend/
 │   ├── hooks/                   # Custom React hooks
 │   ├── pages/                   # Route-level page components
 │   │   ├── Home.jsx             # Landing page (hero + features)
-│   │   ├── Login.jsx            # Login form
+│   │   ├── Login.jsx            # Login form + forgot password link
 │   │   ├── Signup.jsx           # Registration form
+│   │   ├── ForgotPassword.jsx   # Email input, sends reset token
+│   │   ├── ResetPassword.jsx    # New password form (token from URL)
 │   │   ├── Explore.jsx          # Browse public lists (search, skeletons)
 │   │   ├── Dashboard.jsx        # User dashboard (CRUD, stats)
-│   │   ├── ListDetail.jsx       # List view + item management
+│   │   ├── ListDetail.jsx       # List view + item management + share
+│   │   ├── SharedList.jsx       # Resolves /s/:code to /lists/:id
 │   │   └── NotFound.jsx         # 404 page
 │   ├── services/                # API service modules
 │   │   ├── api.js               # Axios instance + interceptors
-│   │   ├── auth.js              # Auth endpoints (signup/login/me)
-│   │   ├── lists.js             # Lists CRUD
+│   │   ├── auth.js              # Auth endpoints (signup/login/me/reset)
+│   │   ├── lists.js             # Lists CRUD + share
 │   │   └── items.js             # Items CRUD
 │   ├── utils/                   # Utility functions
 │   ├── App.jsx                  # Router + route definitions
@@ -86,31 +89,18 @@ frontend/
 
 ---
 
-## Environment Variables
-
-Copy the example file and customize:
-
-```bash
-cp .env.example .env
-```
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `VITE_API_URL` | `http://localhost:3000/api/v1` | Backend API base URL |
-
-> **IMPORTANT**: `.env` is in `.gitignore` and must NEVER be committed.
-
----
-
 ## Routes
 
-| Path | Component | Auth Required | Description |
-|------|-----------|---------------|-------------|
+| Path | Component | Auth | Description |
+|------|-----------|------|-------------|
 | `/` | Home | No | Landing page with hero + features |
 | `/explore` | Explore | No | Browse public lists with search |
 | `/lists/:id` | ListDetail | No | List details + item management (owner) |
+| `/s/:code` | SharedList | No | Resolves share code, redirects to list |
 | `/login` | Login | No | Sign in form |
 | `/signup` | Signup | No | Registration form |
+| `/forgot-password` | ForgotPassword | No | Request password reset email |
+| `/reset-password` | ResetPassword | No | Set new password (token in URL) |
 | `/dashboard` | Dashboard | Yes | User's lists with full CRUD |
 | `*` | NotFound | No | 404 page |
 
@@ -123,11 +113,14 @@ cp .env.example .env
 | Component | Features |
 |-----------|----------|
 | **Home** | Hero section, feature cards, CTA |
-| **Login** | Email/password form, error toasts, redirect to dashboard |
+| **Login** | Email/password form, forgot password link, error toasts |
 | **Signup** | Username/email/password form with confirmation |
+| **ForgotPassword** | Email input, success state, demo reset link |
+| **ResetPassword** | New password + confirmation, token validation |
 | **Explore** | Public list grid, search filter, skeleton loading, empty states |
 | **Dashboard** | User's lists, stats cards, create/edit/delete list modals |
-| **ListDetail** | List header, item catalog with ratings, add/edit/delete items |
+| **ListDetail** | List header, item catalog, ratings, add/edit/delete items, share button |
+| **SharedList** | Resolves share code and redirects to full list page |
 | **NotFound** | 404 with home link |
 
 ### Shared Components
@@ -148,7 +141,7 @@ cp .env.example .env
 
 ### Axios Instance (`services/api.js`)
 
-- **Base URL**: Read from `VITE_API_URL` environment variable
+- **Base URL**: `/api/v1` (proxied through Vite to Rails backend)
 - **Request interceptor**: Attaches `Authorization: Bearer <token>` from `localStorage`
 - **Response interceptor**: On `401`, clears stored auth and redirects to `/login`
 
@@ -157,27 +150,31 @@ cp .env.example .env
 ```javascript
 authService.signup({ username, email, password, password_confirmation })
 authService.login({ email, password })
-authService.me()  // requires valid token
+authService.me()
+authService.forgotPassword({ email })
+authService.resetPassword({ token, password, password_confirmation })
 ```
 
 ### Lists Service (`services/lists.js`)
 
 ```javascript
-listsService.getAll()              // GET /lists
-listsService.getById(id)           // GET /lists/:id
-listsService.create(data)          // POST /lists
-listsService.update(id, data)      // PATCH /lists/:id
-listsService.delete(id)            // DELETE /lists/:id
+listsService.getAll()
+listsService.getById(id)
+listsService.create(data)
+listsService.update(id, data)
+listsService.delete(id)
+listsService.share(id)                  // generate share code
+listsService.getByShareCode(shareCode)  // lookup by code
 ```
 
 ### Items Service (`services/items.js`)
 
 ```javascript
-itemsService.getByListId(listId)       // GET /lists/:listId/items
-itemsService.getById(id)               // GET /items/:id
-itemsService.create(listId, data)      // POST /lists/:listId/items
-itemsService.update(id, data)          // PATCH /items/:id
-itemsService.delete(id)                // DELETE /items/:id
+itemsService.getByListId(listId)
+itemsService.getById(id)
+itemsService.create(listId, data)
+itemsService.update(id, data)
+itemsService.delete(id)
 ```
 
 ---
@@ -186,62 +183,26 @@ itemsService.delete(id)                // DELETE /items/:id
 
 The `AuthContext` provides authentication state to the entire app:
 
-- **`user`** — current user object (`{ id, username, email, role, status }`)
-- **`token`** — JWT string
-- **`isAuthenticated`** — boolean
-- **`loading`** — true while verifying stored token on mount
-- **`login(credentials)`** — authenticate and store token
-- **`signup(data)`** — register and store token
-- **`logout()`** — clear token and user
-
-Usage in any component:
-
-```jsx
-import { useAuth } from '../context/AuthContext';
-
-function MyComponent() {
-  const { user, isAuthenticated, logout } = useAuth();
-  // ...
-}
-```
+- **`user`** -- current user object
+- **`token`** -- JWT string
+- **`isAuthenticated`** -- boolean
+- **`loading`** -- true while verifying stored token on mount
+- **`login(credentials)`** -- authenticate and store token
+- **`signup(data)`** -- register and store token
+- **`logout()`** -- clear token and user
 
 ---
 
 ## Tailwind Theme
-
-Custom colors matching the UI mockups:
 
 | Token | Hex | Usage |
 |-------|-----|-------|
 | `deep-blue` | `#0d47a1` | Primary brand color, nav, buttons |
 | `teal` | `#00897b` | Accent color, highlights |
 
-Both include a full shade scale (50-900) in `tailwind.config.js`.
-
----
-
-## Vite Dev Proxy
-
-The Vite config proxies `/api` requests to the Rails backend during development:
-
-```javascript
-// vite.config.js
-server: {
-  port: 5173,
-  proxy: {
-    '/api': {
-      target: 'http://localhost:3000',
-      changeOrigin: true,
-    },
-  },
-},
-```
-
 ---
 
 ## Seed Data (for demo)
-
-After running `rails db:seed`, the following test accounts are available:
 
 | User | Email | Password | Role |
 |------|-------|----------|------|
@@ -256,7 +217,7 @@ After running `rails db:seed`, the following test accounts are available:
 ## What's Next
 
 - [ ] End-to-end testing with backend
-- [ ] Search and filter across lists
-- [ ] Responsive design refinements
+- [ ] Server-side search/filter
+- [ ] Mobile responsive nav
 - [ ] Component tests (Vitest)
-- [ ] Deployment (Netlify for frontend)
+- [ ] Deployment (Netlify + Render)
