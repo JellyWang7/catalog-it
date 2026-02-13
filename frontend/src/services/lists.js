@@ -15,6 +15,12 @@ const listsService = {
 
   /** DELETE /api/v1/lists/:id — delete list (requires ownership) */
   delete: (id) => api.delete(`/lists/${id}`),
+
+  /** POST /api/v1/lists/:id/share — generate share code */
+  share: (id) => api.post(`/lists/${id}/share`),
+
+  /** GET /api/v1/lists/shared/:shareCode — look up list by share code */
+  getByShareCode: (shareCode) => api.get(`/lists/shared/${shareCode}`),
 };
 
 export default listsService;

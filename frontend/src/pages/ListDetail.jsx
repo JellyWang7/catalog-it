@@ -18,6 +18,7 @@ export default function ListDetail() {
   const [editingItem, setEditingItem] = useState(null);
   const [showAddItem, setShowAddItem] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null); // { type: 'item'|'list', id, name }
+  const [sharing, setSharing] = useState(false);
 
   const isOwner = isAuthenticated && list && user?.id === list.user_id;
 
@@ -86,6 +87,20 @@ export default function ListDetail() {
     }
   };
 
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      const res = await listsService.share(list.id);
+      const shareUrl = `${window.location.origin}/s/${res.data.share_code}`;
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Share link copied to clipboard!');
+    } catch {
+      toast.error('Failed to generate share link');
+    } finally {
+      setSharing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -129,22 +144,36 @@ export default function ListDetail() {
             </div>
           </div>
 
-          {isOwner && (
-            <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {isOwner && (
+              <>
+                <button
+                  onClick={() => setShowAddItem(true)}
+                  className="px-5 py-2 bg-deep-blue text-white font-semibold rounded-xl hover:bg-deep-blue-800 transition-colors shadow-md text-sm"
+                >
+                  + Add Item
+                </button>
+                <button
+                  onClick={() => setDeleteTarget({ type: 'list', id: list.id, name: list.title })}
+                  className="px-4 py-2 text-red-600 border border-red-300 font-semibold rounded-xl hover:bg-red-50 transition-colors text-sm"
+                >
+                  Delete List
+                </button>
+              </>
+            )}
+            {isOwner && (
               <button
-                onClick={() => setShowAddItem(true)}
-                className="px-5 py-2 bg-deep-blue text-white font-semibold rounded-xl hover:bg-deep-blue-800 transition-colors shadow-md text-sm"
+                onClick={handleShare}
+                disabled={sharing}
+                className="px-4 py-2 text-teal border border-teal font-semibold rounded-xl hover:bg-teal-50 transition-colors text-sm flex items-center gap-1.5 disabled:opacity-50"
               >
-                + Add Item
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                {sharing ? 'Sharing...' : 'Share'}
               </button>
-              <button
-                onClick={() => setDeleteTarget({ type: 'list', id: list.id, name: list.title })}
-                className="px-4 py-2 text-red-600 border border-red-300 font-semibold rounded-xl hover:bg-red-50 transition-colors text-sm"
-              >
-                Delete List
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Items */}

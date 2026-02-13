@@ -22,4 +22,27 @@ class User < ApplicationRecord
   def deleted?
     status == 'deleted'
   end
+
+  # Generate a secure reset token and store it with a 1-hour expiry
+  def generate_password_reset_token!
+    self.reset_password_token = SecureRandom.urlsafe_base64(32)
+    self.reset_password_sent_at = Time.current
+    save!
+    reset_password_token
+  end
+
+  # Check if the reset token is still valid (within 1 hour)
+  def password_reset_token_valid?
+    reset_password_token.present? && reset_password_sent_at.present? &&
+      reset_password_sent_at > 1.hour.ago
+  end
+
+  # Reset password and clear the token
+  def reset_password!(new_password, new_password_confirmation)
+    self.password = new_password
+    self.password_confirmation = new_password_confirmation
+    self.reset_password_token = nil
+    self.reset_password_sent_at = nil
+    save
+  end
 end

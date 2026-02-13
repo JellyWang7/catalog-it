@@ -11,9 +11,15 @@ Rails.application.routes.draw do
       post 'auth/signup', to: 'authentication#signup'
       post 'auth/login', to: 'authentication#login'
       get 'auth/me', to: 'authentication#me'
+      post 'auth/forgot_password', to: 'authentication#forgot_password'
+      post 'auth/reset_password', to: 'authentication#reset_password'
+
+      # Shared list lookup (must be before resources :lists)
+      get 'lists/shared/:share_code', to: 'lists#shared'
 
       # Resource routes
       resources :lists, only: [:index, :show, :create, :update, :destroy] do
+        post 'share', on: :member
         resources :items, only: [:index, :create]
       end
       resources :items, only: [:show, :update, :destroy]

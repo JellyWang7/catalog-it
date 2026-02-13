@@ -1,7 +1,7 @@
 module Api
   module V1
     class AuthenticationController < ApplicationController
-      skip_before_action :authenticate_request, only: [:signup, :login]
+      skip_before_action :authenticate_request, only: [:signup, :login, :forgot_password, :reset_password]
 
       # POST /api/v1/auth/signup
       def signup
@@ -78,6 +78,48 @@ module Api
         }, status: :ok
       end
 
+      # POST /api/v1/auth/forgot_password
+      def forgot_password
+        user = User.find_by(email: forgot_password_params[:email])
+
+        if user&.active?
+          token = user.generate_password_reset_token!
+          # In production, send email here with ActionMailer
+          # For development/demo, include the token in the response
+          reset_url = "#{request.protocol}#{request.host_with_port.gsub('3000', '5173')}/reset-password?token=#{token}"
+          Rails.logger.info "PASSWORD RESET LINK: #{reset_url}"
+
+          response_data = { message: 'If an account exists with that email, a reset link has been sent.' }
+          # Include token in development for demo convenience
+          response_data[:reset_token] = token unless Rails.env.production?
+          render json: response_data, status: :ok
+        else
+          # Always return success to prevent email enumeration
+          render json: { message: 'If an account exists with that email, a reset link has been sent.' }, status: :ok
+        end
+      end
+
+      # POST /api/v1/auth/reset_password
+      def reset_password
+        user = User.find_by(reset_password_token: reset_password_params[:token])
+
+        if user.nil?
+          render json: { error: 'Invalid or expired reset token' }, status: :unprocessable_entity
+          return
+        end
+
+        unless user.password_reset_token_valid?
+          render json: { error: 'Reset token has expired. Please request a new one.' }, status: :unprocessable_entity
+          return
+        end
+
+        if user.reset_password!(reset_password_params[:password], reset_password_params[:password_confirmation])
+          render json: { message: 'Password has been reset successfully. You can now log in.' }, status: :ok
+        else
+          render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+        end
+      end
+
       private
 
       def user_params
@@ -86,6 +128,14 @@ module Api
 
       def login_params
         params.require(:user).permit(:email, :password)
+      end
+
+      def forgot_password_params
+        params.permit(:email)
+      end
+
+      def reset_password_params
+        params.permit(:token, :password, :password_confirmation)
       end
     end
   end

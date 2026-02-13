@@ -18,6 +18,18 @@ const authService = {
    * Requires Authorization header (handled by interceptor)
    */
   me: () => api.get('/auth/me'),
+
+  /**
+   * POST /api/v1/auth/forgot_password
+   * @param {{ email: string }} data
+   */
+  forgotPassword: (data) => api.post('/auth/forgot_password', data),
+
+  /**
+   * POST /api/v1/auth/reset_password
+   * @param {{ token: string, password: string, password_confirmation: string }} data
+   */
+  resetPassword: (data) => api.post('/auth/reset_password', data),
 };
 
 export default authService;

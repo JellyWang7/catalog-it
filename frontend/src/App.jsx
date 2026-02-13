@@ -6,9 +6,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Explore from './pages/Explore';
 import Dashboard from './pages/Dashboard';
 import ListDetail from './pages/ListDetail';
+import SharedList from './pages/SharedList';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -22,8 +25,11 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/lists/:id" element={<ListDetail />} />
+            <Route path="/s/:code" element={<SharedList />} />
 
             {/* Protected routes */}
             <Route
