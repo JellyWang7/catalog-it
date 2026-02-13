@@ -1,8 +1,51 @@
-# React + Vite
+# CatalogIt Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React frontend for the CatalogIt cataloging platform.
 
-Currently, two official plugins are available:
+## Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Runs at **http://localhost:5173** — requires the Rails backend on `:3000`.
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server with HMR |
+| `npm run build` | Production build to `dist/` |
+| `npm run preview` | Preview production build locally |
+
+## Stack
+
+- **React 18** + **Vite 4** — fast dev/build
+- **React Router 6** — client-side routing
+- **Axios** — API client with JWT interceptors
+- **Tailwind CSS 3** — utility-first styling
+- **Headless UI** — accessible dropdowns, modals
+- **Heroicons** — SVG icon set
+- **react-hot-toast** — toast notifications
+
+## Architecture
+
+```
+src/
+├── components/      Layout, ProtectedRoute
+├── context/         AuthContext (login/signup/logout/token)
+├── pages/           Home, Login, Signup, Explore, Dashboard, 404
+├── services/        api.js, auth.js, lists.js, items.js
+├── hooks/           Custom hooks (planned)
+└── utils/           Helpers (planned)
+```
+
+## Environment
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VITE_API_URL` | `http://localhost:3000/api/v1` | Backend API base URL |
+
+> See [../FRONTEND_SETUP.md](../FRONTEND_SETUP.md) for full documentation.
