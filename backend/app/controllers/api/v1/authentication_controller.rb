@@ -6,6 +6,7 @@ module Api
       # POST /api/v1/auth/signup
       def signup
         user = User.new(user_params)
+        # Status defaults to 'active' in database
         
         if user.save
           token = JsonWebToken.encode(user_id: user.id)
@@ -16,7 +17,8 @@ module Api
               id: user.id,
               username: user.username,
               email: user.email,
-              role: user.role
+              role: user.role,
+              status: user.status
             }
           }, status: :created
         else
@@ -29,6 +31,18 @@ module Api
         user = User.find_by(email: login_params[:email])
         
         if user&.authenticate(login_params[:password])
+          # Check if user account is active
+          unless user.active?
+            status_message = case user.status
+            when 'suspended' then 'Your account has been suspended. Please contact support.'
+            when 'deleted' then 'This account has been deleted.'
+            else 'Your account is not active.'
+            end
+            
+            render json: { error: status_message }, status: :forbidden
+            return
+          end
+          
           token = JsonWebToken.encode(user_id: user.id)
           render json: {
             message: 'Login successful',
@@ -37,7 +51,8 @@ module Api
               id: user.id,
               username: user.username,
               email: user.email,
-              role: user.role
+              role: user.role,
+              status: user.status
             }
           }, status: :ok
         else
@@ -57,7 +72,8 @@ module Api
             id: current_user.id,
             username: current_user.username,
             email: current_user.email,
-            role: current_user.role
+            role: current_user.role,
+            status: current_user.status
           }
         }, status: :ok
       end

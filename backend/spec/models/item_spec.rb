@@ -7,7 +7,7 @@ RSpec.describe Item, type: :model do
 
   describe 'validations' do
     it { should validate_presence_of(:name) }
-    it { should validate_inclusion_of(:rating).in_range(0..5).allow_nil }
+    it { should validate_numericality_of(:rating).is_greater_than_or_equal_to(1).is_less_than_or_equal_to(5).allow_nil }
   end
 
   describe 'scopes' do
@@ -30,19 +30,25 @@ RSpec.describe Item, type: :model do
   describe 'rating validation' do
     let(:list) { create(:list) }
 
-    it 'allows rating from 0 to 5' do
-      (0..5).each do |rating|
+    it 'allows rating from 1 to 5' do
+      (1..5).each do |rating|
         item = build(:item, list: list, rating: rating)
         expect(item).to be_valid
       end
     end
 
-    it 'allows nil rating' do
+    it 'allows nil rating (unrated items)' do
       item = build(:item, :unrated, list: list)
       expect(item).to be_valid
     end
 
-    it 'does not allow rating less than 0' do
+    it 'does not allow rating of 0' do
+      item = build(:item, list: list, rating: 0)
+      expect(item).not_to be_valid
+      expect(item.errors[:rating]).to include('must be greater than or equal to 1')
+    end
+
+    it 'does not allow rating less than 1' do
       item = build(:item, list: list, rating: -1)
       expect(item).not_to be_valid
     end
