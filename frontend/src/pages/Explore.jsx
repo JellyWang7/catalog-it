@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import listsService from '../services/lists';
 import toast from 'react-hot-toast';
+import ListCardSkeleton from '../components/ListCardSkeleton';
 
 export default function Explore() {
   const [lists, setLists] = useState([]);
@@ -28,14 +29,6 @@ export default function Explore() {
       list.description?.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-deep-blue" />
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Header & Search */}
@@ -46,29 +39,53 @@ export default function Explore() {
         <p className="text-lg text-gray-600">
           Discover curated collections shared by the CatalogIt community.
         </p>
-        <div className="mt-6 relative w-full sm:w-80">
-          <input
-            type="text"
-            placeholder="Search public lists..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-teal transition-all"
-          />
-          <svg
-            className="w-5 h-5 text-gray-400 absolute left-3 top-3.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+        <div className="mt-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="relative w-full sm:w-80">
+            <input
+              type="text"
+              placeholder="Search public lists..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-teal transition-all"
+            />
+            <svg
+              className="w-5 h-5 text-gray-400 absolute left-3 top-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          {!loading && (
+            <span className="text-sm text-gray-400">
+              {filtered.length} list{filtered.length !== 1 ? 's' : ''} found
+            </span>
+          )}
         </div>
       </header>
 
-      {/* List Grid */}
-      {filtered.length === 0 ? (
+      {/* Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <ListCardSkeleton count={8} />
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-gray-400 text-lg">No public lists found.</p>
+          <svg className="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-gray-400 text-lg">
+            {search ? `No lists match "${search}"` : 'No public lists found.'}
+          </p>
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="mt-3 text-deep-blue font-semibold hover:underline"
+            >
+              Clear search
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -76,18 +93,25 @@ export default function Explore() {
             <Link
               key={list.id}
               to={`/lists/${list.id}`}
-              className="bg-white p-5 rounded-2xl shadow-lg border-t-4 border-deep-blue hover:shadow-xl transition-all"
+              className="bg-white rounded-2xl shadow-lg border-t-4 border-deep-blue hover:shadow-xl transition-all group overflow-hidden"
             >
-              <h3 className="text-xl font-bold text-gray-800 mb-1 truncate">
-                {list.title}
-              </h3>
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                {list.description || 'No description'}
-              </p>
-              <div className="flex items-center text-sm text-gray-500">
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-deep-blue">
-                  {list.items?.length || 0} items
-                </span>
+              <div className="p-5">
+                <h3 className="text-xl font-bold text-gray-800 mb-1 truncate group-hover:text-deep-blue transition-colors">
+                  {list.title}
+                </h3>
+                <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                  {list.description || 'No description'}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-deep-blue">
+                    {list.items?.length || 0} items
+                  </span>
+                  {list.user && (
+                    <span className="text-xs text-gray-400">
+                      by {list.user.username || `User #${list.user_id}`}
+                    </span>
+                  )}
+                </div>
               </div>
             </Link>
           ))}

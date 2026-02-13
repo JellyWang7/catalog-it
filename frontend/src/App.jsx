@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Explore from './pages/Explore';
 import Dashboard from './pages/Dashboard';
+import ListDetail from './pages/ListDetail';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/explore" element={<Explore />} />
+            <Route path="/lists/:id" element={<ListDetail />} />
 
             {/* Protected routes */}
             <Route
