@@ -1,8 +1,8 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: February 9, 2026
-**Branch**: `feature/frontend-init`
-**Status**: Phase 1 Complete — Core setup, routing, auth context, and API services
+**Last Updated**: February 9, 2026  
+**Branch**: `feature/frontend-init`  
+**Status**: Core frontend complete — Auth, CRUD, list details, item management
 
 ---
 
@@ -33,33 +33,39 @@ frontend/
 ├── public/
 │   └── vite.svg
 ├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── Layout.jsx       # Shared navbar + footer (Outlet)
-│   │   └── ProtectedRoute.jsx  # Auth guard for protected pages
-│   ├── context/             # React Context providers
-│   │   └── AuthContext.jsx  # Auth state (login/signup/logout/me)
-│   ├── hooks/               # Custom React hooks (future)
-│   ├── pages/               # Route-level page components
-│   │   ├── Home.jsx         # Landing page (hero + features)
-│   │   ├── Login.jsx        # Login form
-│   │   ├── Signup.jsx       # Registration form
-│   │   ├── Explore.jsx      # Browse public lists
-│   │   ├── Dashboard.jsx    # User dashboard (protected)
-│   │   └── NotFound.jsx     # 404 page
-│   ├── services/            # API service modules
-│   │   ├── api.js           # Axios instance + interceptors
-│   │   ├── auth.js          # Auth endpoints (signup/login/me)
-│   │   ├── lists.js         # Lists CRUD
-│   │   └── items.js         # Items CRUD
-│   ├── utils/               # Utility functions (future)
-│   ├── App.jsx              # Router + route definitions
-│   ├── main.jsx             # React entry point
-│   └── index.css            # Tailwind directives + Inter font
-├── .env                     # Local env vars (NOT committed)
-├── .env.example             # Template for .env
-├── tailwind.config.js       # Tailwind theme (deep-blue, teal)
-├── postcss.config.js        # PostCSS + Autoprefixer
-├── vite.config.js           # Vite config + API proxy
+│   ├── components/              # Reusable UI components
+│   │   ├── Layout.jsx           # Shared navbar + footer (Outlet)
+│   │   ├── ProtectedRoute.jsx   # Auth guard for protected pages
+│   │   ├── StarRating.jsx       # 1-5 star display with color coding
+│   │   ├── ListFormModal.jsx    # Create/edit list modal form
+│   │   ├── ItemFormModal.jsx    # Create/edit item modal form
+│   │   ├── ConfirmModal.jsx     # Generic confirmation dialog
+│   │   └── ListCardSkeleton.jsx # Loading skeleton for list grids
+│   ├── context/                 # React Context providers
+│   │   └── AuthContext.jsx      # Auth state (login/signup/logout/me)
+│   ├── hooks/                   # Custom React hooks
+│   ├── pages/                   # Route-level page components
+│   │   ├── Home.jsx             # Landing page (hero + features)
+│   │   ├── Login.jsx            # Login form
+│   │   ├── Signup.jsx           # Registration form
+│   │   ├── Explore.jsx          # Browse public lists (search, skeletons)
+│   │   ├── Dashboard.jsx        # User dashboard (CRUD, stats)
+│   │   ├── ListDetail.jsx       # List view + item management
+│   │   └── NotFound.jsx         # 404 page
+│   ├── services/                # API service modules
+│   │   ├── api.js               # Axios instance + interceptors
+│   │   ├── auth.js              # Auth endpoints (signup/login/me)
+│   │   ├── lists.js             # Lists CRUD
+│   │   └── items.js             # Items CRUD
+│   ├── utils/                   # Utility functions
+│   ├── App.jsx                  # Router + route definitions
+│   ├── main.jsx                 # React entry point
+│   └── index.css                # Tailwind directives + Inter font
+├── .env                         # Local env vars (NOT committed)
+├── .env.example                 # Template for .env
+├── tailwind.config.js           # Tailwind theme (deep-blue, teal)
+├── postcss.config.js            # PostCSS + Autoprefixer
+├── vite.config.js               # Vite config + API proxy
 └── package.json
 ```
 
@@ -101,11 +107,40 @@ cp .env.example .env
 | Path | Component | Auth Required | Description |
 |------|-----------|---------------|-------------|
 | `/` | Home | No | Landing page with hero + features |
-| `/explore` | Explore | No | Browse public lists |
+| `/explore` | Explore | No | Browse public lists with search |
+| `/lists/:id` | ListDetail | No | List details + item management (owner) |
 | `/login` | Login | No | Sign in form |
 | `/signup` | Signup | No | Registration form |
-| `/dashboard` | Dashboard | Yes | User's list management |
+| `/dashboard` | Dashboard | Yes | User's lists with full CRUD |
 | `*` | NotFound | No | 404 page |
+
+---
+
+## Components
+
+### Pages
+
+| Component | Features |
+|-----------|----------|
+| **Home** | Hero section, feature cards, CTA |
+| **Login** | Email/password form, error toasts, redirect to dashboard |
+| **Signup** | Username/email/password form with confirmation |
+| **Explore** | Public list grid, search filter, skeleton loading, empty states |
+| **Dashboard** | User's lists, stats cards, create/edit/delete list modals |
+| **ListDetail** | List header, item catalog with ratings, add/edit/delete items |
+| **NotFound** | 404 with home link |
+
+### Shared Components
+
+| Component | Purpose |
+|-----------|---------|
+| **Layout** | Top navbar with auth state, footer, `<Outlet>` |
+| **ProtectedRoute** | Redirects to `/login` if not authenticated |
+| **StarRating** | Renders 1-5 stars with color coding (green/yellow/red) |
+| **ListFormModal** | Create or edit a list (title, description, visibility) |
+| **ItemFormModal** | Create or edit an item (name, category, rating, notes) |
+| **ConfirmModal** | Generic yes/no confirmation with danger variant |
+| **ListCardSkeleton** | Animated loading placeholder for list grids |
 
 ---
 
@@ -181,13 +216,13 @@ Custom colors matching the UI mockups:
 | `deep-blue` | `#0d47a1` | Primary brand color, nav, buttons |
 | `teal` | `#00897b` | Accent color, highlights |
 
-Both include a full shade scale (50–900) in `tailwind.config.js`.
+Both include a full shade scale (50-900) in `tailwind.config.js`.
 
 ---
 
 ## Vite Dev Proxy
 
-The Vite config proxies `/api` requests to the Rails backend during development, so you can make relative API calls without CORS issues:
+The Vite config proxies `/api` requests to the Rails backend during development:
 
 ```javascript
 // vite.config.js
@@ -204,13 +239,24 @@ server: {
 
 ---
 
-## What's Next (Day 2+)
+## Seed Data (for demo)
 
-- [ ] Authentication UI end-to-end testing with backend
-- [ ] Public list browsing with real data
-- [ ] List detail page (`/lists/:id`)
-- [ ] User dashboard with list CRUD
-- [ ] Item management within lists
-- [ ] Search and filter functionality
-- [ ] Loading skeletons and error states
+After running `rails db:seed`, the following test accounts are available:
+
+| User | Email | Password | Role |
+|------|-------|----------|------|
+| admin | admin@catalogit.com | password123 | admin |
+| movie_buff | movies@example.com | password123 | user |
+| bookworm | books@example.com | password123 | user |
+| collector | collector@example.com | password123 | user |
+| banned_user | banned@example.com | password123 | suspended |
+
+---
+
+## What's Next
+
+- [ ] End-to-end testing with backend
+- [ ] Search and filter across lists
 - [ ] Responsive design refinements
+- [ ] Component tests (Vitest)
+- [ ] Deployment (Netlify for frontend)

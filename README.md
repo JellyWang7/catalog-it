@@ -3,7 +3,7 @@
 > A production-ready web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS701  
-**Status**: Backend Complete | Frontend In Progress  
+**Status**: Backend Complete | Frontend Core Complete  
 **Tests**: 175/175 passing  
 
 ---
@@ -12,7 +12,9 @@
 
 | Document | Purpose |
 |----------|---------|
-| **[FRONTEND_SETUP.md](FRONTEND_SETUP.md)** | Frontend setup guide |
+| **[FRONTEND_SETUP.md](FRONTEND_SETUP.md)** | Frontend setup & component guide |
+| **[WEEKLY_PLAN.md](WEEKLY_PLAN.md)** | Week-by-week roadmap |
+| **[PROJECT_STATUS.md](PROJECT_STATUS.md)** | Detailed status & compliance |
 | **[backend/AUTHENTICATION.md](backend/AUTHENTICATION.md)** | JWT auth guide |
 | **[backend/TESTING.md](backend/TESTING.md)** | Testing guide (175 tests) |
 
@@ -22,7 +24,7 @@
 
 | Layer | Technology | Status |
 |-------|-----------|--------|
-| **Frontend** | React 18, Vite 4, Tailwind CSS 3, React Router 6, Axios | In Progress |
+| **Frontend** | React 18, Vite 4, Tailwind CSS 3, React Router 6, Axios | Core Complete |
 | **Backend** | Ruby on Rails 8 (API mode), JWT, RSpec | Complete |
 | **Database** | PostgreSQL 15+ (3NF) | Complete |
 | **Security** | XSS prevention, rate limiting, CORS, user status | Complete |
@@ -44,15 +46,17 @@ catalog-it/
 │   └── swagger/          # OpenAPI spec
 ├── frontend/             # React + Vite app
 │   ├── src/
-│   │   ├── components/   # Layout, ProtectedRoute
+│   │   ├── components/   # Layout, StarRating, Modals, Skeletons
 │   │   ├── context/      # AuthContext
-│   │   ├── pages/        # Home, Login, Signup, Explore, Dashboard, 404
+│   │   ├── pages/        # Home, Login, Signup, Explore, Dashboard, ListDetail, 404
 │   │   ├── services/     # Axios API client (auth, lists, items)
 │   │   ├── hooks/        # Custom hooks
 │   │   └── utils/        # Helpers
 │   └── vite.config.js
 ├── docs/                 # Design documents (NOT in git)
 ├── FRONTEND_SETUP.md     # Frontend docs
+├── WEEKLY_PLAN.md        # Weekly roadmap
+├── PROJECT_STATUS.md     # Status & compliance
 └── README.md             # This file
 ```
 
@@ -96,6 +100,15 @@ App: **http://localhost:5173**
 cd backend && RAILS_ENV=test bundle exec rspec
 ```
 
+### Demo Accounts (after seeding)
+
+| Email | Password | Role |
+|-------|----------|------|
+| admin@catalogit.com | password123 | admin |
+| movies@example.com | password123 | user |
+| books@example.com | password123 | user |
+| collector@example.com | password123 | user |
+
 ---
 
 ## API Endpoints
@@ -130,6 +143,28 @@ cd backend && RAILS_ENV=test bundle exec rspec
 
 ---
 
+## Current Status
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| Database schema | Complete | Users, Lists, Items (3NF) |
+| JWT authentication | Complete | Signup, login, token expiry, user status |
+| Authorization | Complete | Owner-based CRUD, public/private |
+| Security hardening | Complete | XSS, rate limiting, CORS, input validation |
+| Backend tests | Complete | 175 tests passing |
+| API docs (Swagger) | Complete | Interactive at `/api-docs` |
+| Frontend setup | Complete | Vite + React + Tailwind + routing |
+| Auth UI | Complete | Login, Signup pages + AuthContext |
+| Public list browsing | Complete | Explore page with search + skeletons |
+| List detail + items | Complete | View list, star ratings, item CRUD |
+| User dashboard | Complete | Stats, list CRUD, visibility management |
+| Item management | Complete | Add/edit/delete via modals |
+| Seed data | Complete | 5 users, 10 lists, 50+ items |
+| Search & filter | Partial | Client-side search on Explore |
+| Deployment | Planned | Week 5 |
+
+---
+
 ## Security
 
 - JWT authentication (24h expiry, bcrypt)
@@ -141,23 +176,6 @@ cd backend && RAILS_ENV=test bundle exec rspec
 
 ---
 
-## Environment Variables
-
-**Backend** — never commit `.env`, `database.yml`, or `master.key`
-
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_USERNAME` | PostgreSQL username |
-| `FRONTEND_URL` | Allowed CORS origin |
-
-**Frontend** (`frontend/.env`)
-
-| Variable | Default |
-|----------|---------|
-| `VITE_API_URL` | `http://localhost:3000/api/v1` |
-
----
-
 ## Git Workflow
 
 | Branch | Purpose |
@@ -165,7 +183,7 @@ cd backend && RAILS_ENV=test bundle exec rspec
 | `main` | Stable releases |
 | `added-auth` | Backend + authentication |
 | `security-compliance-fixes` | Security hardening |
-| `feature/frontend-init` | Frontend (current) |
+| `feature/frontend-init` | Frontend development (current) |
 
 Never commit `docs/`, `.env`, or credentials.
 
