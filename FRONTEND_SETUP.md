@@ -1,8 +1,8 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: February 10, 2026  
+**Last Updated**: February 17, 2026  
 **Branch**: `feature/frontend-init`  
-**Status**: 85% -- auth, CRUD, sharing, password reset, profile, mobile nav, sorting
+**Status**: 90% -- Midterm Ready
 
 ---
 
@@ -47,7 +47,7 @@ frontend/
 │   │   ├── ForgotPassword.jsx   # Request reset token
 │   │   ├── ResetPassword.jsx    # Set new password
 │   │   ├── Explore.jsx          # Public lists (search + sort)
-│   │   ├── Dashboard.jsx        # User dashboard (CRUD, stats)
+│   │   ├── Dashboard.jsx        # User dashboard (search, filter, CRUD, stats)
 │   │   ├── ListDetail.jsx       # List + items + share
 │   │   ├── SharedList.jsx       # /s/:code redirect
 │   │   ├── Profile.jsx          # User profile + stats
@@ -72,34 +72,19 @@ frontend/
 
 ---
 
-## Tech Stack
-
-| Tool | Version | Purpose |
-|------|---------|---------|
-| Vite | ^4.5.5 | Build tool / dev server |
-| React | ^18.3.1 | UI library |
-| React Router DOM | ^6.28.0 | Client-side routing |
-| Axios | ^1.7.0 | HTTP client |
-| Tailwind CSS | ^3.4.0 | Utility-first CSS |
-| Headless UI | ^1.7.19 | Accessible components |
-| Heroicons | ^2.1.5 | SVG icons |
-| react-hot-toast | ^2.4.1 | Toast notifications |
-
----
-
 ## Routes (11)
 
 | Path | Component | Auth | Description |
 |------|-----------|------|-------------|
 | `/` | Home | No | Landing page |
 | `/explore` | Explore | No | Public lists with search + sort |
-| `/lists/:id` | ListDetail | No | List + items + share button |
+| `/lists/:id` | ListDetail | No | List + items + ratings + share |
 | `/s/:code` | SharedList | No | Resolve share code |
 | `/login` | Login | No | Sign in |
 | `/signup` | Signup | No | Register |
 | `/forgot-password` | ForgotPassword | No | Request reset |
 | `/reset-password` | ResetPassword | No | New password |
-| `/dashboard` | Dashboard | Yes | List CRUD + stats |
+| `/dashboard` | Dashboard | Yes | Search, filter, list CRUD + stats |
 | `/profile` | Profile | Yes | User info + stats |
 | `*` | NotFound | No | 404 |
 
@@ -113,10 +98,43 @@ frontend/
 | **ProtectedRoute** | Redirects to `/login` if not authenticated |
 | **ErrorBoundary** | Catches React errors, shows recovery UI |
 | **StarRating** | Renders 1-5 color-coded stars |
-| **ListFormModal** | Create/edit list modal |
-| **ItemFormModal** | Create/edit item modal |
+| **ListFormModal** | Create/edit list modal (title, description, visibility) |
+| **ItemFormModal** | Create/edit item modal (name, category, notes, rating) |
 | **ConfirmModal** | Confirmation dialog (danger variant) |
 | **ListCardSkeleton** | Animated loading placeholder |
+
+---
+
+## Key Features
+
+### Authentication
+- Login / Signup with form validation
+- JWT stored in localStorage, attached via Axios interceptor
+- 401 responses auto-clear auth and redirect to login
+- Forgot password -> email -> reset token -> new password
+
+### Dashboard
+- Stats cards (total lists, public lists, total items)
+- Search bar to filter lists by title/description
+- Visibility dropdown filter (all/public/shared/private)
+- Create, edit, delete lists via modals
+- Color-coded cards by visibility
+
+### Explore
+- Public list grid with search
+- Sort by newest, oldest, A-Z, Z-A, most items
+- Loading skeletons, empty state, count badge
+
+### List Detail
+- Items displayed with star ratings
+- Add/edit/delete items via modals
+- Share button generates short URL (`/s/:code`)
+- Owner vs. visitor views
+
+### Profile
+- Avatar initials, username, email
+- Role badge, status badge
+- Stats cards (lists, public, items)
 
 ---
 
@@ -125,7 +143,7 @@ frontend/
 ### Base Config (`services/api.js`)
 - Base URL: `/api/v1` (proxied via Vite to Rails)
 - Request interceptor: JWT token from localStorage
-- Response interceptor: 401 -> clear auth, redirect to login
+- Response interceptor: 401 -> clear auth, redirect
 
 ### Auth (`services/auth.js`)
 `signup`, `login`, `me`, `forgotPassword`, `resetPassword`
@@ -158,8 +176,8 @@ frontend/
 
 ---
 
-## What's Next
+## What's Next (post-midterm)
 
-- [ ] Server-side search/filter
-- [ ] Component tests (Vitest)
+- [ ] Component tests (Vitest + React Testing Library)
+- [ ] Server-side search/filter API
 - [ ] Deployment (Netlify + Render)

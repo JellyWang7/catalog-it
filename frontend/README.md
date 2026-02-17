@@ -22,7 +22,7 @@ Runs at **http://localhost:5173** -- requires Rails backend on `:3000`.
 
 ## Stack
 
-React 18 + Vite 4, React Router 6, Axios, Tailwind CSS 3, Headless UI, Heroicons, react-hot-toast
+React 18, Vite 4, React Router 6, Axios, Tailwind CSS 3, Headless UI, Heroicons, react-hot-toast
 
 ## Architecture
 
@@ -49,7 +49,7 @@ src/
 | `/signup` | Signup | Register |
 | `/forgot-password` | ForgotPassword | Request password reset |
 | `/reset-password` | ResetPassword | Set new password |
-| `/dashboard` | Dashboard | List CRUD + stats |
+| `/dashboard` | Dashboard | Search, filter, list CRUD + stats |
 | `/profile` | Profile | User info + stats |
 | `*` | NotFound | 404 |
 
@@ -59,4 +59,4 @@ src/
 |----------|---------|-------------|
 | `VITE_API_URL` | `/api/v1` | Backend API (proxied via Vite) |
 
-> See [../FRONTEND_SETUP.md](../FRONTEND_SETUP.md) for full docs.
+> See [../FRONTEND_SETUP.md](../FRONTEND_SETUP.md) for full documentation.

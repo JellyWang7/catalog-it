@@ -1,10 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import listsService from '../services/lists';
 import toast from 'react-hot-toast';
 import ListFormModal from '../components/ListFormModal';
 import ConfirmModal from '../components/ConfirmModal';
+
+const FILTER_OPTIONS = [
+  { value: 'all', label: 'All Lists' },
+  { value: 'public', label: 'Public' },
+  { value: 'shared', label: 'Shared' },
+  { value: 'private', label: 'Private' },
+];
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -13,6 +20,8 @@ export default function Dashboard() {
   const [showCreate, setShowCreate] = useState(false);
   const [editingList, setEditingList] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     fetchLists();
@@ -66,8 +75,23 @@ export default function Dashboard() {
   };
 
   const publicLists = lists.filter((l) => l.visibility === 'public');
-  const privateLists = lists.filter((l) => l.visibility !== 'public');
   const totalItems = lists.reduce((sum, l) => sum + (l.items?.length || 0), 0);
+
+  const displayed = useMemo(() => {
+    let out = lists;
+    if (filter !== 'all') {
+      out = out.filter((l) => l.visibility === filter);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      out = out.filter(
+        (l) =>
+          l.title?.toLowerCase().includes(q) ||
+          l.description?.toLowerCase().includes(q)
+      );
+    }
+    return out;
+  }, [lists, filter, search]);
 
   if (loading) {
     return (
@@ -111,6 +135,43 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Search & Filter */}
+      {lists.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search your lists..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-teal transition-all"
+            />
+            <svg
+              className="w-5 h-5 text-gray-400 absolute left-3 top-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm text-gray-700 focus:ring-2 focus:ring-teal focus:border-teal transition-all"
+          >
+            {FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <span className="self-center text-sm text-gray-400 whitespace-nowrap">
+            {displayed.length} of {lists.length} lists
+          </span>
+        </div>
+      )}
+
       {/* Lists */}
       {lists.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-lg p-16 text-center">
@@ -124,7 +185,17 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lists.map((list) => (
+          {displayed.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-gray-400">
+              <p>No lists match your search.</p>
+              <button
+                onClick={() => { setSearch(''); setFilter('all'); }}
+                className="mt-2 text-deep-blue font-semibold hover:underline"
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : displayed.map((list) => (
             <div
               key={list.id}
               className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all group"
