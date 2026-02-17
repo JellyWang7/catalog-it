@@ -1,8 +1,8 @@
-# CatalogIt - Project Status & Compliance
+# CatalogIt - Project Status
 
-**Last Updated**: February 9, 2026  
+**Last Updated**: February 10, 2026  
 **Branch**: `feature/frontend-init`  
-**Overall Progress**: 75%
+**Overall Progress**: 80%
 
 ---
 
@@ -10,72 +10,39 @@
 
 ```
 Backend:     ████████████ 100%  (175 tests, 17 endpoints)
-Frontend:    █████████░░░  75%  (auth, CRUD, sharing, password reset)
-Deployment:  ░░░░░░░░░░░░   0%  Planned for Week 5
+Frontend:    ██████████░░  85%  (11 routes, 8 components, 11 pages)
+Deployment:  ░░░░░░░░░░░░   0%  Planned
 ```
 
 ---
 
-## Backend: 100% Complete
+## Backend: 100%
 
-### Database Schema
-- Users (username, email, password_digest, role, status, reset_password_token)
-- Lists (title, description, visibility, user_id, share_code)
-- Items (name, category, notes, rating, list_id)
-- Foreign keys, indexes, 3NF normalization
+- 17 API endpoints (auth, lists, items, share)
+- JWT auth + password reset (secure token, 1h expiry)
+- Security: XSS, rate limiting, user status, CORS
+- 175 tests passing (100%)
 
-### API Endpoints (17 total)
-
-| Group | Endpoints |
-|-------|-----------|
-| Auth | signup, login, me, forgot_password, reset_password |
-| Lists | index, show, create, update, destroy, share, shared lookup |
-| Items | index, show, create, update, destroy |
-
-### Security
-- JWT authentication (24h expiry, bcrypt)
-- Password reset (secure token, 1h expiry)
-- XSS prevention (sanitize gem)
-- Rate limiting (Rack::Attack)
-- User status (active/suspended/deleted)
-- CORS (environment-based origins)
-- Input validation (rating 1-5, dates)
-
-### Testing
-- **175 tests passing (100%)**
-- Models, requests, authentication, authorization, services, security
-
----
-
-## Frontend: 75% Complete
+## Frontend: 85%
 
 ### Done
-- [x] React 18 + Vite 4 + Tailwind CSS 3
-- [x] 10 routes (React Router 6)
-- [x] Auth UI (login, signup, forgot password, reset password)
-- [x] AuthContext with JWT token management
-- [x] Explore page (public lists, search, loading skeletons)
-- [x] List detail (items, star ratings, share button)
+- [x] 11 routes, 11 pages, 8 shared components
+- [x] Auth (login, signup, forgot/reset password)
+- [x] Explore (search + 5 sort options)
 - [x] Dashboard (stats, list CRUD)
-- [x] Item management (add/edit/delete via modals)
-- [x] Share list (short URL copied to clipboard, `/s/:code` redirect)
-- [x] Reusable components (7 shared components)
-- [x] Toast notifications, empty states
+- [x] ListDetail (items, ratings, item CRUD, share button)
+- [x] Profile page (user info, role, status, stats)
+- [x] Mobile responsive nav (hamburger menu)
+- [x] ErrorBoundary (React crash recovery)
+- [x] Share list (short URL, clipboard, `/s/:code`)
+- [x] Loading skeletons, empty states, toast notifications
 
 ### Remaining
-- [ ] Server-side search/filter
-- [ ] Mobile responsive navigation
 - [ ] Component tests (Vitest)
+- [ ] Server-side search
 
----
-
-## Deployment: 0% (Week 5)
-
-- [ ] Render.com (Rails + PostgreSQL)
-- [ ] Netlify (React SPA)
-- [ ] Production env vars, SSL, CORS
-
-See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for full instructions.
+## Deployment: 0%
+- [ ] Render + Netlify (see [DEPLOY_PLAN.md](DEPLOY_PLAN.md))
 
 ---
 
@@ -91,67 +58,38 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for full instructions.
 | User Status Management | Done |
 | CORS | Done |
 | Input Validation | Done |
-| Owner-based Authorization | Done |
+| Authorization | Done |
+| Error Boundary | Done |
 | SSL/TLS | Pending (deployment) |
 
-**Business Rules**: 95% compliant  
-**Security Controls**: 85% compliant  
+**Business Rules**: 95% | **Security Controls**: 85%
 
 ---
 
-## Database Compliance (ERD: 95%)
-
-### Business Rules Implemented
-1. User uniqueness (username + email)
-2. User status (active/suspended/deleted)
-3. User roles (admin/user)
-4. Password security (bcrypt)
-5. Password reset (secure token, 1h expiry)
-6. List visibility (private/shared/public)
-7. List ownership (user_id FK)
-8. List sharing (unique share codes)
-9. Rating range (1-5)
-10. Date validation (item after list creation)
-11. Cascading deletes (User -> Lists -> Items)
-12. 3NF normalization
-
----
-
-## Project Timeline
+## Timeline
 
 | Phase | Period | Status |
 |-------|--------|--------|
-| 1-3. Planning & Setup | Jan 11-19 | Complete |
-| 4. Backend | Feb 1-7 | Complete |
-| 5. Frontend | Feb 8-14 | **In Progress** (75%) |
-| 6. Core Features | Feb 15-21 | Upcoming |
-| 7. Midterm | Feb 22-28 | Upcoming |
-| 8-10. Integration & Closing | Mar 1-29 | Upcoming |
+| Planning & Setup | Jan 11-19 | Complete |
+| Backend | Feb 1-7 | Complete |
+| Frontend Core | Feb 8-9 | Complete |
+| Frontend Polish | Feb 10-14 | **In Progress** |
+| Midterm | Feb 22-28 | Upcoming |
+| Deployment | Mar | Upcoming |
 
 ---
 
 ## Quick Commands
 
 ```bash
-# Backend
-cd backend && bundle exec puma -p 3000
-
-# Frontend
-cd frontend && npm run dev
-
-# Tests
-cd backend && RAILS_ENV=test bundle exec rspec
-
-# Seed database
-cd backend && rails db:seed
-
-# Build frontend
-cd frontend && npm run build
+cd backend && bundle exec puma -p 3000    # API
+cd frontend && npm run dev                 # App
+cd backend && RAILS_ENV=test bundle exec rspec  # Tests
+cd frontend && npm run build               # Build
 ```
 
 ---
 
-*Last updated: February 9, 2026*  
-*Branch: feature/frontend-init*  
+*Last updated: February 10, 2026*  
 *Backend: 175 tests, 17 endpoints*  
-*Frontend: 433 modules, 0 build errors*
+*Frontend: 435 modules, 0 build errors*

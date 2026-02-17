@@ -3,7 +3,7 @@
 > A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS701  
-**Status**: Backend Complete | Frontend Core Complete  
+**Status**: Backend Complete | Frontend 85%  
 **Tests**: 175/175 passing  
 
 ---
@@ -25,7 +25,7 @@
 
 | Layer | Technology | Status |
 |-------|-----------|--------|
-| **Frontend** | React 18, Vite 4, Tailwind CSS 3, React Router 6, Axios | Core Complete |
+| **Frontend** | React 18, Vite 4, Tailwind CSS 3, React Router 6, Axios | 85% |
 | **Backend** | Ruby on Rails 8 (API mode), JWT, RSpec | Complete |
 | **Database** | PostgreSQL 15+ (3NF) | Complete |
 | **Security** | XSS prevention, rate limiting, CORS, user status | Complete |
@@ -43,24 +43,19 @@ catalog-it/
 │   │   ├── models/       # User, List, Item
 │   │   └── services/     # JWT encoder/decoder
 │   ├── spec/             # RSpec tests (175 passing)
-│   ├── config/           # CORS, rate limiting, routes
 │   └── swagger/          # OpenAPI spec
 ├── frontend/             # React + Vite app
 │   ├── src/
-│   │   ├── components/   # Layout, StarRating, Modals, Skeletons
+│   │   ├── components/   # Layout, ErrorBoundary, StarRating, Modals, Skeletons
 │   │   ├── context/      # AuthContext
 │   │   ├── pages/        # Home, Login, Signup, ForgotPassword, ResetPassword,
-│   │   │                 # Explore, Dashboard, ListDetail, SharedList, 404
+│   │   │                 # Explore, Dashboard, ListDetail, SharedList, Profile, 404
 │   │   ├── services/     # Axios API client (auth, lists, items)
 │   │   ├── hooks/        # Custom hooks
 │   │   └── utils/        # Helpers
 │   └── vite.config.js
 ├── docs/                 # Design documents (NOT in git)
-├── FRONTEND_SETUP.md
-├── WEEKLY_PLAN.md
-├── PROJECT_STATUS.md
-├── DEPLOY_PLAN.md
-└── README.md             # This file
+└── *.md                  # Project documentation
 ```
 
 ---
@@ -78,8 +73,6 @@ catalog-it/
 ```bash
 cd backend
 bundle install
-cp config/database.yml.example config/database.yml
-# Edit database.yml with your PostgreSQL credentials
 rails db:create db:migrate db:seed
 bundle exec puma -p 3000
 ```
@@ -97,12 +90,6 @@ npm run dev
 
 App: **http://localhost:5173**
 
-### Run Tests
-
-```bash
-cd backend && RAILS_ENV=test bundle exec rspec
-```
-
 ### Demo Accounts (after seeding)
 
 | Email | Password | Role |
@@ -114,61 +101,39 @@ cd backend && RAILS_ENV=test bundle exec rspec
 
 ---
 
-## API Endpoints
+## API Endpoints (17)
 
 ### Authentication
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/api/v1/auth/signup` | Create account | No |
-| POST | `/api/v1/auth/login` | Sign in, get JWT | No |
-| GET | `/api/v1/auth/me` | Current user info | Yes |
-| POST | `/api/v1/auth/forgot_password` | Request password reset | No |
-| POST | `/api/v1/auth/reset_password` | Reset password with token | No |
+| Method | Endpoint | Auth |
+|--------|----------|------|
+| POST | `/api/v1/auth/signup` | No |
+| POST | `/api/v1/auth/login` | No |
+| GET | `/api/v1/auth/me` | Yes |
+| POST | `/api/v1/auth/forgot_password` | No |
+| POST | `/api/v1/auth/reset_password` | No |
 
 ### Lists
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/v1/lists` | Public lists (+ own if auth'd) | Optional |
-| GET | `/api/v1/lists/:id` | List with items | Optional |
-| POST | `/api/v1/lists` | Create list | Yes |
-| PATCH | `/api/v1/lists/:id` | Update list (owner) | Yes |
-| DELETE | `/api/v1/lists/:id` | Delete list (owner) | Yes |
-| POST | `/api/v1/lists/:id/share` | Generate share link | Yes |
-| GET | `/api/v1/lists/shared/:code` | Look up by share code | No |
+| Method | Endpoint | Auth |
+|--------|----------|------|
+| GET | `/api/v1/lists` | Optional |
+| GET | `/api/v1/lists/:id` | Optional |
+| POST | `/api/v1/lists` | Yes |
+| PATCH | `/api/v1/lists/:id` | Owner |
+| DELETE | `/api/v1/lists/:id` | Owner |
+| POST | `/api/v1/lists/:id/share` | Owner |
+| GET | `/api/v1/lists/shared/:code` | No |
 
 ### Items
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/v1/lists/:list_id/items` | Items in list | Optional |
-| GET | `/api/v1/items/:id` | Single item | Optional |
-| POST | `/api/v1/lists/:list_id/items` | Add item (owner) | Yes |
-| PATCH | `/api/v1/items/:id` | Update item (owner) | Yes |
-| DELETE | `/api/v1/items/:id` | Delete item (owner) | Yes |
-
----
-
-## Current Status
-
-| Feature | Status |
-|---------|--------|
-| Database schema (3NF) | Complete |
-| JWT authentication + password reset | Complete |
-| Authorization (owner-based CRUD) | Complete |
-| Security (XSS, rate limiting, CORS) | Complete |
-| Backend tests (175 passing) | Complete |
-| API docs (Swagger) | Complete |
-| Frontend setup + routing | Complete |
-| Auth UI (login, signup, forgot/reset password) | Complete |
-| Public list browsing (Explore + search) | Complete |
-| List detail + star ratings | Complete |
-| User dashboard + list CRUD | Complete |
-| Item management (add/edit/delete) | Complete |
-| Share list (short URL) | Complete |
-| Seed data (5 users, 10 lists, 50+ items) | Complete |
-| Deployment | Planned |
+| Method | Endpoint | Auth |
+|--------|----------|------|
+| GET | `/api/v1/lists/:list_id/items` | Optional |
+| GET | `/api/v1/items/:id` | Optional |
+| POST | `/api/v1/lists/:list_id/items` | Owner |
+| PATCH | `/api/v1/items/:id` | Owner |
+| DELETE | `/api/v1/items/:id` | Owner |
 
 ---
 
@@ -181,6 +146,7 @@ cd backend && RAILS_ENV=test bundle exec rspec
 - User status management (active/suspended/deleted)
 - Owner-based authorization (IDOR prevention)
 - CORS (environment-based origins)
+- Error boundary (React crash recovery)
 
 ---
 
@@ -189,8 +155,6 @@ cd backend && RAILS_ENV=test bundle exec rspec
 | Branch | Purpose |
 |--------|---------|
 | `main` | Stable releases |
-| `added-auth` | Backend + authentication |
-| `security-compliance-fixes` | Security hardening |
 | `feature/frontend-init` | Frontend development (current) |
 
 Never commit `docs/`, `.env`, or credentials.

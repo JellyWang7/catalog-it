@@ -1,13 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import listsService from '../services/lists';
 import toast from 'react-hot-toast';
 import ListCardSkeleton from '../components/ListCardSkeleton';
 
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest First' },
+  { value: 'oldest', label: 'Oldest First' },
+  { value: 'name_asc', label: 'Name A-Z' },
+  { value: 'name_desc', label: 'Name Z-A' },
+  { value: 'most_items', label: 'Most Items' },
+];
+
 export default function Explore() {
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('newest');
 
   useEffect(() => {
     const fetchLists = async () => {
@@ -23,23 +32,49 @@ export default function Explore() {
     fetchLists();
   }, []);
 
-  const filtered = lists.filter(
-    (list) =>
-      list.title?.toLowerCase().includes(search.toLowerCase()) ||
-      list.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const results = useMemo(() => {
+    let out = lists.filter(
+      (list) =>
+        list.title?.toLowerCase().includes(search.toLowerCase()) ||
+        list.description?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    switch (sort) {
+      case 'oldest':
+        out = [...out].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        break;
+      case 'newest':
+        out = [...out].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        break;
+      case 'name_asc':
+        out = [...out].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+        break;
+      case 'name_desc':
+        out = [...out].sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+        break;
+      case 'most_items':
+        out = [...out].sort((a, b) => (b.items?.length || 0) - (a.items?.length || 0));
+        break;
+      default:
+        break;
+    }
+
+    return out;
+  }, [lists, search, sort]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header & Search */}
+      {/* Header */}
       <header className="mb-8 pb-4 border-b border-gray-200">
-        <h1 className="text-4xl font-extrabold text-deep-blue mb-2">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-deep-blue mb-2">
           Explore Public Lists
         </h1>
         <p className="text-lg text-gray-600">
           Discover curated collections shared by the CatalogIt community.
         </p>
-        <div className="mt-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+
+        {/* Search + Sort */}
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           <div className="relative w-full sm:w-80">
             <input
               type="text"
@@ -57,9 +92,22 @@ export default function Explore() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
+
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm text-gray-700 focus:ring-2 focus:ring-teal focus:border-teal transition-all"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
           {!loading && (
             <span className="text-sm text-gray-400">
-              {filtered.length} list{filtered.length !== 1 ? 's' : ''} found
+              {results.length} list{results.length !== 1 ? 's' : ''} found
             </span>
           )}
         </div>
@@ -70,7 +118,7 @@ export default function Explore() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <ListCardSkeleton count={8} />
         </div>
-      ) : filtered.length === 0 ? (
+      ) : results.length === 0 ? (
         <div className="text-center py-20">
           <svg className="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -89,7 +137,7 @@ export default function Explore() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filtered.map((list) => (
+          {results.map((list) => (
             <Link
               key={list.id}
               to={`/lists/${list.id}`}

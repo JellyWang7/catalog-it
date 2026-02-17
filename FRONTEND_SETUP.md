@@ -1,8 +1,8 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: February 9, 2026  
+**Last Updated**: February 10, 2026  
 **Branch**: `feature/frontend-init`  
-**Status**: Core frontend complete -- auth, CRUD, list details, sharing, password reset
+**Status**: 85% -- auth, CRUD, sharing, password reset, profile, mobile nav, sorting
 
 ---
 
@@ -20,9 +20,7 @@ npm install
 npm run dev
 ```
 
-The app will be available at **http://localhost:5173**.
-
-> Make sure the Rails backend is running first: `cd backend && bundle exec puma`
+App: **http://localhost:5173** (backend must be running on `:3000`)
 
 ---
 
@@ -30,45 +28,45 @@ The app will be available at **http://localhost:5173**.
 
 ```
 frontend/
-├── public/
-│   └── vite.svg
 ├── src/
-│   ├── components/              # Reusable UI components
-│   │   ├── Layout.jsx           # Shared navbar + footer (Outlet)
-│   │   ├── ProtectedRoute.jsx   # Auth guard for protected pages
-│   │   ├── StarRating.jsx       # 1-5 star display with color coding
-│   │   ├── ListFormModal.jsx    # Create/edit list modal form
-│   │   ├── ItemFormModal.jsx    # Create/edit item modal form
-│   │   ├── ConfirmModal.jsx     # Generic confirmation dialog
-│   │   └── ListCardSkeleton.jsx # Loading skeleton for list grids
-│   ├── context/                 # React Context providers
-│   │   └── AuthContext.jsx      # Auth state (login/signup/logout/me)
-│   ├── hooks/                   # Custom React hooks
-│   ├── pages/                   # Route-level page components
-│   │   ├── Home.jsx             # Landing page (hero + features)
-│   │   ├── Login.jsx            # Login form + forgot password link
-│   │   ├── Signup.jsx           # Registration form
-│   │   ├── ForgotPassword.jsx   # Email input, sends reset token
-│   │   ├── ResetPassword.jsx    # New password form (token from URL)
-│   │   ├── Explore.jsx          # Browse public lists (search, skeletons)
+│   ├── components/
+│   │   ├── Layout.jsx           # Navbar (mobile hamburger) + footer
+│   │   ├── ProtectedRoute.jsx   # Auth guard
+│   │   ├── ErrorBoundary.jsx    # React crash recovery
+│   │   ├── StarRating.jsx       # 1-5 star display
+│   │   ├── ListFormModal.jsx    # Create/edit list modal
+│   │   ├── ItemFormModal.jsx    # Create/edit item modal
+│   │   ├── ConfirmModal.jsx     # Confirmation dialog
+│   │   └── ListCardSkeleton.jsx # Loading skeleton
+│   ├── context/
+│   │   └── AuthContext.jsx      # Auth state management
+│   ├── pages/
+│   │   ├── Home.jsx             # Landing page
+│   │   ├── Login.jsx            # Login + forgot password link
+│   │   ├── Signup.jsx           # Registration
+│   │   ├── ForgotPassword.jsx   # Request reset token
+│   │   ├── ResetPassword.jsx    # Set new password
+│   │   ├── Explore.jsx          # Public lists (search + sort)
 │   │   ├── Dashboard.jsx        # User dashboard (CRUD, stats)
-│   │   ├── ListDetail.jsx       # List view + item management + share
-│   │   ├── SharedList.jsx       # Resolves /s/:code to /lists/:id
-│   │   └── NotFound.jsx         # 404 page
-│   ├── services/                # API service modules
-│   │   ├── api.js               # Axios instance + interceptors
-│   │   ├── auth.js              # Auth endpoints (signup/login/me/reset)
+│   │   ├── ListDetail.jsx       # List + items + share
+│   │   ├── SharedList.jsx       # /s/:code redirect
+│   │   ├── Profile.jsx          # User profile + stats
+│   │   └── NotFound.jsx         # 404
+│   ├── services/
+│   │   ├── api.js               # Axios + interceptors
+│   │   ├── auth.js              # Auth API (signup/login/reset)
 │   │   ├── lists.js             # Lists CRUD + share
 │   │   └── items.js             # Items CRUD
-│   ├── utils/                   # Utility functions
-│   ├── App.jsx                  # Router + route definitions
-│   ├── main.jsx                 # React entry point
-│   └── index.css                # Tailwind directives + Inter font
-├── .env                         # Local env vars (NOT committed)
-├── .env.example                 # Template for .env
-├── tailwind.config.js           # Tailwind theme (deep-blue, teal)
-├── postcss.config.js            # PostCSS + Autoprefixer
-├── vite.config.js               # Vite config + API proxy
+│   ├── hooks/                   # Custom hooks
+│   ├── utils/                   # Helpers
+│   ├── App.jsx                  # Router + ErrorBoundary
+│   ├── main.jsx                 # Entry point
+│   └── index.css                # Tailwind + Inter font
+├── .env                         # NOT committed
+├── .env.example
+├── tailwind.config.js
+├── postcss.config.js
+├── vite.config.js
 └── package.json
 ```
 
@@ -83,113 +81,60 @@ frontend/
 | React Router DOM | ^6.28.0 | Client-side routing |
 | Axios | ^1.7.0 | HTTP client |
 | Tailwind CSS | ^3.4.0 | Utility-first CSS |
-| Headless UI | ^1.7.19 | Accessible UI components |
+| Headless UI | ^1.7.19 | Accessible components |
 | Heroicons | ^2.1.5 | SVG icons |
 | react-hot-toast | ^2.4.1 | Toast notifications |
 
 ---
 
-## Routes
+## Routes (11)
 
 | Path | Component | Auth | Description |
 |------|-----------|------|-------------|
-| `/` | Home | No | Landing page with hero + features |
-| `/explore` | Explore | No | Browse public lists with search |
-| `/lists/:id` | ListDetail | No | List details + item management (owner) |
-| `/s/:code` | SharedList | No | Resolves share code, redirects to list |
-| `/login` | Login | No | Sign in form |
-| `/signup` | Signup | No | Registration form |
-| `/forgot-password` | ForgotPassword | No | Request password reset email |
-| `/reset-password` | ResetPassword | No | Set new password (token in URL) |
-| `/dashboard` | Dashboard | Yes | User's lists with full CRUD |
-| `*` | NotFound | No | 404 page |
+| `/` | Home | No | Landing page |
+| `/explore` | Explore | No | Public lists with search + sort |
+| `/lists/:id` | ListDetail | No | List + items + share button |
+| `/s/:code` | SharedList | No | Resolve share code |
+| `/login` | Login | No | Sign in |
+| `/signup` | Signup | No | Register |
+| `/forgot-password` | ForgotPassword | No | Request reset |
+| `/reset-password` | ResetPassword | No | New password |
+| `/dashboard` | Dashboard | Yes | List CRUD + stats |
+| `/profile` | Profile | Yes | User info + stats |
+| `*` | NotFound | No | 404 |
 
 ---
 
-## Components
-
-### Pages
-
-| Component | Features |
-|-----------|----------|
-| **Home** | Hero section, feature cards, CTA |
-| **Login** | Email/password form, forgot password link, error toasts |
-| **Signup** | Username/email/password form with confirmation |
-| **ForgotPassword** | Email input, success state, demo reset link |
-| **ResetPassword** | New password + confirmation, token validation |
-| **Explore** | Public list grid, search filter, skeleton loading, empty states |
-| **Dashboard** | User's lists, stats cards, create/edit/delete list modals |
-| **ListDetail** | List header, item catalog, ratings, add/edit/delete items, share button |
-| **SharedList** | Resolves share code and redirects to full list page |
-| **NotFound** | 404 with home link |
-
-### Shared Components
+## Components (8)
 
 | Component | Purpose |
 |-----------|---------|
-| **Layout** | Top navbar with auth state, footer, `<Outlet>` |
+| **Layout** | Responsive navbar with hamburger menu, footer |
 | **ProtectedRoute** | Redirects to `/login` if not authenticated |
-| **StarRating** | Renders 1-5 stars with color coding (green/yellow/red) |
-| **ListFormModal** | Create or edit a list (title, description, visibility) |
-| **ItemFormModal** | Create or edit an item (name, category, rating, notes) |
-| **ConfirmModal** | Generic yes/no confirmation with danger variant |
-| **ListCardSkeleton** | Animated loading placeholder for list grids |
+| **ErrorBoundary** | Catches React errors, shows recovery UI |
+| **StarRating** | Renders 1-5 color-coded stars |
+| **ListFormModal** | Create/edit list modal |
+| **ItemFormModal** | Create/edit item modal |
+| **ConfirmModal** | Confirmation dialog (danger variant) |
+| **ListCardSkeleton** | Animated loading placeholder |
 
 ---
 
 ## API Service Layer
 
-### Axios Instance (`services/api.js`)
+### Base Config (`services/api.js`)
+- Base URL: `/api/v1` (proxied via Vite to Rails)
+- Request interceptor: JWT token from localStorage
+- Response interceptor: 401 -> clear auth, redirect to login
 
-- **Base URL**: `/api/v1` (proxied through Vite to Rails backend)
-- **Request interceptor**: Attaches `Authorization: Bearer <token>` from `localStorage`
-- **Response interceptor**: On `401`, clears stored auth and redirects to `/login`
+### Auth (`services/auth.js`)
+`signup`, `login`, `me`, `forgotPassword`, `resetPassword`
 
-### Auth Service (`services/auth.js`)
+### Lists (`services/lists.js`)
+`getAll`, `getById`, `create`, `update`, `delete`, `share`, `getByShareCode`
 
-```javascript
-authService.signup({ username, email, password, password_confirmation })
-authService.login({ email, password })
-authService.me()
-authService.forgotPassword({ email })
-authService.resetPassword({ token, password, password_confirmation })
-```
-
-### Lists Service (`services/lists.js`)
-
-```javascript
-listsService.getAll()
-listsService.getById(id)
-listsService.create(data)
-listsService.update(id, data)
-listsService.delete(id)
-listsService.share(id)                  // generate share code
-listsService.getByShareCode(shareCode)  // lookup by code
-```
-
-### Items Service (`services/items.js`)
-
-```javascript
-itemsService.getByListId(listId)
-itemsService.getById(id)
-itemsService.create(listId, data)
-itemsService.update(id, data)
-itemsService.delete(id)
-```
-
----
-
-## Auth Context
-
-The `AuthContext` provides authentication state to the entire app:
-
-- **`user`** -- current user object
-- **`token`** -- JWT string
-- **`isAuthenticated`** -- boolean
-- **`loading`** -- true while verifying stored token on mount
-- **`login(credentials)`** -- authenticate and store token
-- **`signup(data)`** -- register and store token
-- **`logout()`** -- clear token and user
+### Items (`services/items.js`)
+`getByListId`, `getById`, `create`, `update`, `delete`
 
 ---
 
@@ -197,27 +142,24 @@ The `AuthContext` provides authentication state to the entire app:
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `deep-blue` | `#0d47a1` | Primary brand color, nav, buttons |
-| `teal` | `#00897b` | Accent color, highlights |
+| `deep-blue` | `#0d47a1` | Primary brand, nav, buttons |
+| `teal` | `#00897b` | Accent, highlights |
 
 ---
 
-## Seed Data (for demo)
+## Seed Accounts
 
-| User | Email | Password | Role |
-|------|-------|----------|------|
-| admin | admin@catalogit.com | password123 | admin |
-| movie_buff | movies@example.com | password123 | user |
-| bookworm | books@example.com | password123 | user |
-| collector | collector@example.com | password123 | user |
-| banned_user | banned@example.com | password123 | suspended |
+| User | Email | Password |
+|------|-------|----------|
+| admin | admin@catalogit.com | password123 |
+| movie_buff | movies@example.com | password123 |
+| bookworm | books@example.com | password123 |
+| collector | collector@example.com | password123 |
 
 ---
 
 ## What's Next
 
-- [ ] End-to-end testing with backend
 - [ ] Server-side search/filter
-- [ ] Mobile responsive nav
 - [ ] Component tests (Vitest)
 - [ ] Deployment (Netlify + Render)
