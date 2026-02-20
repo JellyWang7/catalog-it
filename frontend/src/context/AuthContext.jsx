@@ -36,6 +36,9 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials) => {
     const res = await authService.login(credentials);
+    if (res.data.mfa_required) {
+      return res.data; // caller handles MFA step
+    }
     const { token: jwt, user: userData } = res.data;
     localStorage.setItem('token', jwt);
     localStorage.setItem('user', JSON.stringify(userData));

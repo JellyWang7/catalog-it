@@ -30,6 +30,10 @@ const authService = {
    * @param {{ token: string, password: string, password_confirmation: string }} data
    */
   resetPassword: (data) => api.post('/auth/reset_password', data),
+
+  mfaSetup: () => api.post('/auth/mfa/setup'),
+  mfaVerify: (otp_code) => api.post('/auth/mfa/verify', { otp_code }),
+  mfaDisable: () => api.delete('/auth/mfa'),
 };
 
 export default authService;

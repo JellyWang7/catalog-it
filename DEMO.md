@@ -1,6 +1,6 @@
 # CatalogIt - Demo Guide
 
-**Date**: February 17, 2026  
+**Date**: February 19, 2026
 **Branch**: `midterm-demo`
 
 ---

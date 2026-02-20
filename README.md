@@ -99,9 +99,9 @@ App: **http://localhost:5173**
 
 ---
 
-## API Endpoints (17)
+## API Endpoints (20)
 
-### Authentication (5)
+### Authentication (8)
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
@@ -110,6 +110,9 @@ App: **http://localhost:5173**
 | GET | `/api/v1/auth/me` | Yes | Current user info |
 | POST | `/api/v1/auth/forgot_password` | No | Request reset token |
 | POST | `/api/v1/auth/reset_password` | No | Reset password |
+| POST | `/api/v1/auth/mfa/setup` | Yes | Generate MFA secret |
+| POST | `/api/v1/auth/mfa/verify` | Yes | Verify code, enable MFA |
+| DELETE | `/api/v1/auth/mfa` | Yes | Disable MFA |
 
 ### Lists (7)
 
@@ -137,14 +140,18 @@ App: **http://localhost:5173**
 
 ## Security
 
-- JWT authentication (24h expiry, bcrypt)
-- Password reset with secure tokens (1h expiry)
-- XSS prevention (HTML sanitization)
-- Rate limiting (Rack::Attack)
-- User status management (active/suspended/deleted)
-- Owner-based authorization (IDOR prevention)
-- CORS (environment-based origins)
-- Error boundary (React crash recovery)
+- **TLS/SSL** enforced in production (HSTS)
+- **At-rest encryption** (AES-256-GCM via Rails ActiveRecord::Encryption)
+- **Admin MFA** (TOTP-based two-factor authentication)
+- **JWT authentication** (24h expiry, bcrypt password hashing)
+- **Password reset** with secure tokens (1h expiry)
+- **XSS prevention** (HTML sanitization)
+- **Rate limiting** (Rack::Attack)
+- **User status management** (active/suspended/deleted)
+- **Owner-based authorization** (IDOR prevention)
+- **CORS** (environment-based origins)
+- **Error boundary** (React crash recovery)
+- **Network defense** (AWS WAF + CloudFront planned for production)
 
 ---
 

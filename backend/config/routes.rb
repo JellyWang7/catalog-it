@@ -13,6 +13,9 @@ Rails.application.routes.draw do
       get 'auth/me', to: 'authentication#me'
       post 'auth/forgot_password', to: 'authentication#forgot_password'
       post 'auth/reset_password', to: 'authentication#reset_password'
+      post 'auth/mfa/setup', to: 'authentication#mfa_setup'
+      post 'auth/mfa/verify', to: 'authentication#mfa_verify'
+      delete 'auth/mfa', to: 'authentication#mfa_disable'
 
       # Shared list lookup (must be before resources :lists)
       get 'lists/shared/:share_code', to: 'lists#shared'

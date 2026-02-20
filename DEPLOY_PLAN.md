@@ -320,4 +320,39 @@ This is significantly more complex and not needed for MVP/demo. Start with Rende
 
 ---
 
-*Last updated: February 9, 2026*
+## Security Architecture (Production)
+
+### Network Defense
+- **AWS WAF & CloudFront** (future): Blocks SQL injection and absorbs DDoS at the edge
+- **Subnet Isolation**: Render managed PostgreSQL runs in a private subnet; API server is in a DMZ
+- Netlify CDN serves frontend with built-in DDoS protection
+
+### Data Encryption
+- **In-Transit**: TLS 1.3 enforced (`config.force_ssl = true`, Render + Netlify provide free SSL)
+- **At-Rest**: PostgreSQL data encrypted at rest via Render managed encryption (AES-256)
+- **Credentials**: Passwords hashed with bcrypt + salt (never stored in plain text)
+- **OTP Secrets**: Encrypted via Rails ActiveRecord::Encryption (AES-256-GCM)
+
+### Access & Threat Prevention
+- **Admin MFA**: TOTP-based two-factor authentication for admin/business admin accounts
+- **XSS Prevention**: Input sanitization via `sanitize` gem
+- **IDOR Prevention**: Object-level ownership checks on all CRUD endpoints
+- **Rate Limiting**: Rack::Attack throttles login attempts and API abuse
+- **User Status**: Active/suspended/deleted status blocks compromised accounts
+- **Error Boundary**: React ErrorBoundary prevents UI crashes from exposing internals
+
+### Environment Variables (Security-Sensitive)
+
+| Variable | Purpose |
+|----------|---------|
+| `SECRET_KEY_BASE` | Rails session/encryption master key |
+| `JWT_SECRET_KEY` | JWT signing key |
+| `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | AES-256 encryption key |
+| `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` | Deterministic encryption key |
+| `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | Key derivation salt |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `FRONTEND_URL` | CORS allowed origin |
+
+---
+
+*Last updated: February 17, 2026*
