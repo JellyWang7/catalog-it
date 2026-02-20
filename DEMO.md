@@ -7,7 +7,7 @@
 
 ## 1. Start the App
 
-Open **three terminal tabs** and run:
+Open **two terminal tabs** and run:
 
 ```bash
 # Terminal 1 — Backend API
@@ -25,8 +25,9 @@ npm install
 npm run dev
 ```
 
+For SQL queries, open a third tab when needed:
+
 ```bash
-# Terminal 3 — SQL / Commands (keep open for live queries)
 psql -d catalogit_development
 ```
 
@@ -103,37 +104,59 @@ FROM pg_constraint WHERE contype = 'f';
 
 ---
 
-## 3. Test the API (curl)
+## 3. Test the API (Swagger UI)
 
-### Login and get JWT token
+Open **http://localhost:3000/api-docs** in your browser.
 
-```bash
-curl -s http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"user":{"email":"movies@example.com","password":"password123"}}' \
-  | python3 -m json.tool
-```
+### Step 1 — Login and copy JWT token
 
-### List public lists
+1. Expand **POST /api/v1/auth/login**
+2. Click **Try it out**
+3. Use this request body:
+   ```json
+   {
+     "user": {
+       "email": "movies@example.com",
+       "password": "password123"
+     }
+   }
+   ```
+4. Click **Execute** — copy the `token` from the response
 
-```bash
-curl -s http://localhost:3000/api/v1/lists | python3 -m json.tool | head -30
-```
+### Step 2 — Authorize Swagger
 
-### Create a list (authenticated)
+1. Click the **Authorize** button (lock icon, top right)
+2. Paste: `Bearer <your-token>`
+3. Click **Authorize**, then **Close**
 
-```bash
-TOKEN=$(curl -s http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"user":{"email":"movies@example.com","password":"password123"}}' \
-  | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+### Step 3 — Browse public lists
 
-curl -s http://localhost:3000/api/v1/lists \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"list":{"title":"Demo List","description":"Created via API","visibility":"public"}}' \
-  | python3 -m json.tool
-```
+1. Expand **GET /api/v1/lists**
+2. Click **Try it out** → **Execute**
+3. Show the JSON response with public lists, owners, and items
+
+### Step 4 — Create a list (authenticated)
+
+1. Expand **POST /api/v1/lists**
+2. Click **Try it out**
+3. Use this request body:
+   ```json
+   {
+     "list": {
+       "title": "Demo List",
+       "description": "Created live via Swagger",
+       "visibility": "public"
+     }
+   }
+   ```
+4. Click **Execute** — show the 200 response with the new list
+
+### Step 5 — Show all 20 endpoints
+
+Scroll through Swagger to highlight all endpoint groups:
+- **Authentication (8)** — signup, login, me, forgot/reset password, MFA setup/verify/disable
+- **Lists (7)** — CRUD + share + shared lookup
+- **Items (5)** — CRUD nested under lists
 
 ---
 
