@@ -1,7 +1,7 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: February 17, 2026  
-**Current Branch**: `feature/frontend-init`  
+**Last Updated**: February 17, 2026
+**Current Branch**: `feature/frontend-init`
 **Project Status**: Midterm Ready (Frontend 90%)
 
 ---
@@ -58,20 +58,7 @@ Overall:     █████████░░░  85%
 - [ ] Live demo walkthrough
 - [ ] Q&A preparation
 
-### Demo Script
-1. Home page (hero, features)
-2. Sign up new account
-3. Login with seed account
-4. Dashboard (stats, search/filter, CRUD)
-5. Create a list (public + private)
-6. Add items with ratings
-7. Share list (short URL)
-8. Explore public lists (search + sort)
-9. Profile page
-10. Forgot password flow
-11. Mobile responsive nav
-
----
+See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 
 ## Remaining Work
 
