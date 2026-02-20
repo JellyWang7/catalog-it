@@ -29,10 +29,10 @@ React 18, Vite 4, React Router 6, Axios, Tailwind CSS 3, Headless UI, Heroicons,
 ```
 src/
 ├── components/   Layout (mobile nav), ErrorBoundary, StarRating, Modals, Skeletons
-├── context/      AuthContext (login/signup/logout/token)
-├── pages/        Home, Login, Signup, ForgotPassword, ResetPassword,
-│                 Explore, Dashboard, ListDetail, SharedList, Profile, 404
-├── services/     api.js, auth.js, lists.js, items.js
+├── context/      AuthContext (login/signup/logout/token/MFA)
+├── pages/        Home, Login (MFA step), Signup, ForgotPassword, ResetPassword,
+│                 Explore, Dashboard, ListDetail, SharedList, Profile (MFA), 404
+├── services/     api.js, auth.js (MFA), lists.js, items.js
 ├── hooks/        Custom hooks
 └── utils/        Helpers
 ```
@@ -45,12 +45,12 @@ src/
 | `/explore` | Explore | Public lists with search + sort |
 | `/lists/:id` | ListDetail | List + items + ratings + share |
 | `/s/:code` | SharedList | Resolve share code |
-| `/login` | Login | Sign in |
+| `/login` | Login | Sign in (with MFA step if enabled) |
 | `/signup` | Signup | Register |
 | `/forgot-password` | ForgotPassword | Request password reset |
 | `/reset-password` | ResetPassword | Set new password |
 | `/dashboard` | Dashboard | Search, filter, list CRUD + stats |
-| `/profile` | Profile | User info + stats |
+| `/profile` | Profile | User info, stats, MFA setup |
 | `*` | NotFound | 404 |
 
 ## Environment

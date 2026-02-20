@@ -1,16 +1,17 @@
 # CatalogIt - Project Status
 
-**Last Updated**: February 17, 2026  
-**Branch**: `feature/frontend-init`  
-**Overall Progress**: 85% | Midterm Ready
+**Last Updated**: February 20, 2026  
+**Branch**: `midterm-demo`  
+**Overall Progress**: 90% | Midterm Ready
 
 ---
 
 ## Quick Status
 
 ```
-Backend:     ████████████ 100%  (175 tests, 17 endpoints)
-Frontend:    ███████████░  90%  (11 routes, 8 components, 11 pages)
+Backend:     ████████████ 100%  (175 tests, 20 endpoints)
+Frontend:    ███████████░  95%  (11 routes, 8 components, 11 pages)
+Security:    ████████████ 100%  (TLS, MFA, XSS, encryption, rate limiting)
 Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 ```
 
@@ -18,20 +19,22 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 
 ## Backend: 100%
 
-- 17 API endpoints (auth, lists, items, share)
+- 20 API endpoints (auth 8, lists 7, items 5)
 - JWT auth + password reset (secure token, 1h expiry)
-- Security: XSS, rate limiting, user status, CORS
+- TOTP-based MFA (rotp gem, setup/verify/disable endpoints)
+- Security: TLS, MFA, XSS, rate limiting, encryption, CORS
 - 175 tests passing (100%)
 
-## Frontend: 90%
+## Frontend: 95%
 
 ### Done
 - [x] 11 routes, 11 pages, 8 shared components
 - [x] Auth (login, signup, forgot/reset password)
+- [x] Login with MFA step (TOTP OTP code input)
 - [x] Explore (search + 5 sort options)
 - [x] Dashboard (stats, search, filter by visibility, list CRUD)
 - [x] ListDetail (items, ratings, item CRUD, share button)
-- [x] Profile page (user info, role, status, stats)
+- [x] Profile page (user info, role, status, stats, MFA setup/disable)
 - [x] Mobile responsive nav (hamburger menu)
 - [x] ErrorBoundary (React crash recovery)
 - [x] Share list (short URL, clipboard, `/s/:code`)
@@ -76,6 +79,9 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 
 | Control | Status |
 |---------|--------|
+| TLS/SSL (Force SSL in production) | Done |
+| At-Rest Encryption (AES-256-GCM) | Done |
+| Admin MFA (TOTP) | Done |
 | JWT Authentication | Done |
 | Password Reset | Done |
 | Password Hashing (bcrypt) | Done |
@@ -84,9 +90,8 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 | User Status Management | Done |
 | CORS | Done |
 | Input Validation | Done |
-| Authorization | Done |
+| Owner Authorization (IDOR) | Done |
 | Error Boundary | Done |
-| SSL/TLS | Pending (deployment) |
 
 ---
 
@@ -108,6 +113,6 @@ cd frontend && npm run build
 
 ---
 
-*Last updated: February 17, 2026*  
-*Backend: 175 tests, 17 endpoints*  
+*Last updated: February 20, 2026*  
+*Backend: 175 tests, 20 endpoints*  
 *Frontend: 11 pages, 8 components, 0 build errors*

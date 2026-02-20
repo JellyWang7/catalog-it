@@ -1,6 +1,6 @@
 # CatalogIt - Demo Guide
 
-**Date**: February 19, 2026
+**Date**: February 20, 2026
 **Branch**: `midterm-demo`
 
 ---
@@ -172,9 +172,10 @@ Open http://localhost:5173 and walk through:
 | 7 | **Add Item** | Click "+ Add Item", fill name/category/rating/notes |
 | 8 | **Share List** | Click "Share" button, short URL copied to clipboard |
 | 9 | **Explore** (`/explore`) | Public list grid, search, sort dropdown (5 options) |
-| 10 | **Profile** (`/profile`) | Avatar, role badge, status, stats cards |
-| 11 | **Forgot Password** (`/forgot-password`) | Enter email, show reset token (dev mode) |
-| 12 | **Mobile Nav** | Resize browser narrow, show hamburger menu |
+| 10 | **Profile** (`/profile`) | Avatar, role badge, status, stats cards, MFA section |
+| 11 | **MFA Setup** | Click "Enable MFA", copy secret, verify with TOTP code |
+| 12 | **Forgot Password** (`/forgot-password`) | Enter email, show reset token (dev mode) |
+| 13 | **Mobile Nav** | Resize browser narrow, show hamburger menu |
 
 ### Demo Accounts
 
@@ -194,6 +195,9 @@ Open http://localhost:5173 and walk through:
 - **Password Reset** — secure random token, 1h expiry
 - **Owner Authorization** — only list owners can edit/delete (try with different accounts)
 - **3NF Database** — Users -> Lists -> Items, no redundancy, FK constraints
+- **TLS/SSL** — enforced in production (HSTS, TLS 1.3)
+- **At-Rest Encryption** — AES-256-GCM via Rails ActiveRecord::Encryption
+- **Admin MFA** — TOTP-based two-factor authentication (setup, verify, disable)
 - **Security** — XSS prevention, rate limiting, user status, CORS, error boundary
 - **Share Lists** — generates short URL (`/s/:code`), clipboard copy
 - **Responsive** — mobile hamburger menu, works on all screen sizes

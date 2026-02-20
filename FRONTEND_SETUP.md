@@ -1,8 +1,8 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: February 17, 2026  
-**Branch**: `feature/frontend-init`  
-**Status**: 90% -- Midterm Ready
+**Last Updated**: February 20, 2026  
+**Branch**: `midterm-demo`  
+**Status**: 95% -- Midterm Ready
 
 ---
 
@@ -54,7 +54,7 @@ frontend/
 │   │   └── NotFound.jsx         # 404
 │   ├── services/
 │   │   ├── api.js               # Axios + interceptors
-│   │   ├── auth.js              # Auth API (signup/login/reset)
+│   │   ├── auth.js              # Auth API (signup/login/reset/MFA)
 │   │   ├── lists.js             # Lists CRUD + share
 │   │   └── items.js             # Items CRUD
 │   ├── hooks/                   # Custom hooks
@@ -109,6 +109,7 @@ frontend/
 
 ### Authentication
 - Login / Signup with form validation
+- Login with MFA step (TOTP OTP code input when MFA enabled)
 - JWT stored in localStorage, attached via Axios interceptor
 - 401 responses auto-clear auth and redirect to login
 - Forgot password -> email -> reset token -> new password
@@ -135,6 +136,7 @@ frontend/
 - Avatar initials, username, email
 - Role badge, status badge
 - Stats cards (lists, public, items)
+- MFA setup (enable TOTP, verify code, disable)
 
 ---
 
@@ -146,7 +148,7 @@ frontend/
 - Response interceptor: 401 -> clear auth, redirect
 
 ### Auth (`services/auth.js`)
-`signup`, `login`, `me`, `forgotPassword`, `resetPassword`
+`signup`, `login`, `me`, `forgotPassword`, `resetPassword`, `mfaSetup`, `mfaVerify`, `mfaDisable`
 
 ### Lists (`services/lists.js`)
 `getAll`, `getById`, `create`, `update`, `delete`, `share`, `getByShareCode`

@@ -16,23 +16,28 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 ## Stack
 
 - **Ruby on Rails 8** (API mode)
-- **PostgreSQL 15+** (3NF schema)
+- **PostgreSQL 15+** (3NF schema, AES-256 encryption at rest)
 - **JWT** (authentication, 24h expiry)
 - **bcrypt** (password hashing)
+- **ROTP** (TOTP-based MFA for admin accounts)
+- **ActiveRecord::Encryption** (AES-256-GCM for sensitive fields)
 - **RSpec** (175 tests passing)
 - **Swagger/OpenAPI** (interactive docs)
 
-## API Endpoints (17 total)
+## API Endpoints (20 total)
 
-### Authentication
+### Authentication (8)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/v1/auth/signup` | Create account |
-| POST | `/api/v1/auth/login` | Sign in, get JWT |
+| POST | `/api/v1/auth/login` | Sign in, get JWT (supports MFA) |
 | GET | `/api/v1/auth/me` | Current user info (auth required) |
 | POST | `/api/v1/auth/forgot_password` | Request password reset token |
 | POST | `/api/v1/auth/reset_password` | Reset password with token |
+| POST | `/api/v1/auth/mfa/setup` | Generate MFA secret (auth required) |
+| POST | `/api/v1/auth/mfa/verify` | Verify code, enable MFA (auth required) |
+| DELETE | `/api/v1/auth/mfa` | Disable MFA (auth required) |
 
 ### Lists
 
@@ -58,13 +63,16 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 
 ## Security
 
-- JWT with 24h expiry + bcrypt password hashing
-- Password reset with secure tokens (1h expiry)
-- XSS prevention (sanitize gem)
-- Rate limiting (Rack::Attack)
-- User status management (active/suspended/deleted)
-- CORS (environment-based origins)
-- Owner-based authorization (IDOR prevention)
+- **TLS/SSL** enforced in production (HSTS, TLS 1.3)
+- **At-rest encryption** (AES-256-GCM via Rails ActiveRecord::Encryption)
+- **Admin MFA** (TOTP-based two-factor authentication via rotp)
+- **JWT** with 24h expiry + bcrypt password hashing
+- **Password reset** with secure tokens (1h expiry)
+- **XSS prevention** (sanitize gem)
+- **Rate limiting** (Rack::Attack)
+- **User status management** (active/suspended/deleted)
+- **CORS** (environment-based origins)
+- **Owner-based authorization** (IDOR prevention)
 
 ## Testing
 

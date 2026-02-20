@@ -3,8 +3,8 @@
 > A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS 701 -- Special Projects in CS II  
-**Status**: Backend Complete | Frontend 90% | Midterm Ready  
-**Tests**: 175/175 passing  
+**Status**: Backend Complete | Frontend 95% | Midterm Ready  
+**Tests**: 175/175 core tests passing | 20 API endpoints  
 
 ---
 
@@ -25,10 +25,10 @@
 
 | Layer | Technology | Status |
 |-------|-----------|--------|
-| **Frontend** | React 18, Vite 4, Tailwind CSS 3, React Router 6, Axios | 90% |
-| **Backend** | Ruby on Rails 8 (API mode), JWT, RSpec | Complete |
-| **Database** | PostgreSQL 15+ (3NF) | Complete |
-| **Security** | XSS prevention, rate limiting, CORS, user status | Complete |
+| **Frontend** | React 18, Vite 4, Tailwind CSS 3, React Router 6, Axios | 95% |
+| **Backend** | Ruby on Rails 8 (API mode), JWT, TOTP MFA, RSpec | Complete |
+| **Database** | PostgreSQL 15+ (3NF), AES-256 encryption at rest | Complete |
+| **Security** | TLS, MFA, XSS, rate limiting, CORS, IDOR prevention | Complete |
 | **Deployment** | Render + Netlify (planned) | 0% |
 
 ---
@@ -165,9 +165,10 @@ App: **http://localhost:5173**
 6. **List Detail** -- Add/edit/delete items with ratings (1-5 stars)
 7. **Share List** -- Generate short URL, copy to clipboard
 8. **Explore** -- Browse public lists with search + sort
-9. **Profile** -- View user info, role, status, stats
-10. **Forgot Password** -- Request reset, receive token
-11. **Mobile** -- Responsive hamburger menu
+9. **Profile** -- View user info, role, status, stats, MFA setup
+10. **MFA** -- Enable TOTP two-factor auth from Profile page
+11. **Forgot Password** -- Request reset, receive token
+12. **Mobile** -- Responsive hamburger menu
 
 ---
 
@@ -176,7 +177,8 @@ App: **http://localhost:5173**
 | Branch | Purpose |
 |--------|---------|
 | `main` | Stable releases |
-| `feature/frontend-init` | Frontend development (current) |
+| `feature/frontend-init` | Frontend development |
+| `midterm-demo` | Midterm demo (current) |
 
 Never commit `docs/`, `.env`, or credentials.
 

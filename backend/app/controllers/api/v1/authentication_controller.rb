@@ -1,7 +1,7 @@
 module Api
   module V1
     class AuthenticationController < ApplicationController
-      skip_before_action :authenticate_request, only: [:signup, :login, :forgot_password, :reset_password, :verify_mfa]
+      skip_before_action :authenticate_request, only: [:signup, :login, :forgot_password, :reset_password]
 
       # POST /api/v1/auth/signup
       def signup
