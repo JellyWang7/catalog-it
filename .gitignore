@@ -94,6 +94,8 @@ Thumbs.db
 # Testing
 /backend/test/tmp/
 /backend/test/version_tmp/
+/frontend/test-results/
+/backend/tmp/cache/bootsnap/
 
 # Yarn
 yarn-error.log
