@@ -10,6 +10,7 @@ class Item < ApplicationRecord
   }, allow_nil: true
   
   validate :date_added_after_list_creation
+  validate :notes_is_age_friendly
   before_validation :sanitize_notes
   
   scope :by_category, ->(category) { where(category: category) }
@@ -31,6 +32,13 @@ class Item < ApplicationRecord
       # Allow basic formatting but strip dangerous HTML/JavaScript
       self.notes = Sanitize.fragment(notes, Sanitize::Config::BASIC)
     end
+  end
+
+  def notes_is_age_friendly
+    return unless notes.present?
+    return unless ContentModeration.inappropriate?(notes)
+
+    errors.add(:base, ContentModeration::ERROR_MESSAGE)
   end
   
   def date_added_after_list_creation

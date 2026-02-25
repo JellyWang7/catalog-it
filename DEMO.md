@@ -208,6 +208,7 @@ Open http://localhost:5173 and walk through:
 | 7 | **Add Item** | Click "+ Add Item", fill name/category/rating/notes |
 | 8 | **Share List** | Click "Share" button, short URL copied to clipboard |
 | 9 | **List Interactions** (`/lists/:id`) | Like list, like item, add comment, delete own comment |
+| 9a | **Moderation** (`/lists/:id`) | Try profanity/slur text in comment or item notes and show 422 clean warning |
 | 10 | **Explore** (`/explore`) | Public list grid, search, sort dropdown (5 options) |
 | 11 | **Profile** (`/profile`) | Avatar, role badge, status, stats cards, MFA section |
 | 12 | **MFA Setup** | Click "Enable MFA", copy secret, verify with TOTP code |
@@ -238,5 +239,6 @@ Open http://localhost:5173 and walk through:
 - **Security** — XSS prevention, rate limiting, user status, CORS, error boundary
 - **Share Lists** — generates short URL (`/s/:code`), clipboard copy
 - **Comments + Likes** — social feedback on public/shared lists and list items
+- **Strict content moderation** — profanity/slur filtering blocks inappropriate comments and item notes with clear 422 messaging
 - **Responsive** — mobile hamburger menu, works on all screen sizes
 - **Automated Test Coverage** — backend core specs + frontend UI tests + frontend E2E tests

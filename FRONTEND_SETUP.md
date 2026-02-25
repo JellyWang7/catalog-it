@@ -135,6 +135,8 @@ frontend/
 - Comments on public/shared lists
 - "Thumbs up / I like it" reactions for lists and items
 - Comment moderation: comment owner or list owner can delete
+- List owners cannot like or comment on their own lists
+- 422 moderation errors are surfaced with clean, user-friendly warnings
 - Owner vs. visitor views
 
 ### Profile

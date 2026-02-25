@@ -56,6 +56,14 @@ export default function ListDetail() {
       setShowAddItem(false);
       fetchList();
     } catch (err) {
+      const moderationError = err.response?.status === 422
+        && err.response?.data?.errors?.some((message) => message.includes('Content contains inappropriate language'));
+
+      if (moderationError) {
+        toast.error('Content contains inappropriate language. Please keep notes clean and age-friendly.');
+        return;
+      }
+
       toast.error(err.response?.data?.errors?.join(', ') || 'Failed to add item');
     }
   };
@@ -67,6 +75,14 @@ export default function ListDetail() {
       setEditingItem(null);
       fetchList();
     } catch (err) {
+      const moderationError = err.response?.status === 422
+        && err.response?.data?.errors?.some((message) => message.includes('Content contains inappropriate language'));
+
+      if (moderationError) {
+        toast.error('Content contains inappropriate language. Please keep notes clean and age-friendly.');
+        return;
+      }
+
       toast.error(err.response?.data?.errors?.join(', ') || 'Failed to update item');
     }
   };
@@ -113,6 +129,10 @@ export default function ListDetail() {
 
   const handleToggleListLike = async () => {
     if (!ensureAuthenticated()) return;
+    if (isOwner) {
+      toast.error('You cannot like your own list');
+      return;
+    }
 
     setListLikeLoading(true);
     try {
@@ -160,6 +180,10 @@ export default function ListDetail() {
   const handleAddComment = async (e) => {
     e.preventDefault();
     if (!ensureAuthenticated()) return;
+    if (isOwner) {
+      toast.error('You cannot comment on your own list');
+      return;
+    }
 
     const body = commentBody.trim();
     if (!body) {
@@ -177,6 +201,14 @@ export default function ListDetail() {
       setCommentBody('');
       toast.success('Comment posted');
     } catch (err) {
+      const moderationError = err.response?.status === 422
+        && err.response?.data?.errors?.some((message) => message.includes('Content contains inappropriate language'));
+
+      if (moderationError) {
+        toast.error('Content contains inappropriate language. Please keep comments clean and age-friendly.');
+        return;
+      }
+
       toast.error(err.response?.data?.errors?.join(', ') || err.response?.data?.error || 'Failed to post comment');
     } finally {
       setSubmittingComment(false);
@@ -237,18 +269,24 @@ export default function ListDetail() {
               }`}>
                 {items.length} Items | {list.visibility?.toUpperCase()}
               </span>
-              <button
-                onClick={handleToggleListLike}
-                disabled={listLikeLoading}
-                className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors disabled:opacity-60 ${
-                  list.liked_by_current_user
-                    ? 'bg-pink-100 text-pink-700 border-pink-300 hover:bg-pink-200'
-                    : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
-                }`}
-                title="Like this list"
-              >
-                {list.liked_by_current_user ? '👍 Liked' : '👍 I like it'} ({list.likes_count || 0})
-              </button>
+              {!isOwner ? (
+                <button
+                  onClick={handleToggleListLike}
+                  disabled={listLikeLoading}
+                  className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors disabled:opacity-60 ${
+                    list.liked_by_current_user
+                      ? 'bg-pink-100 text-pink-700 border-pink-300 hover:bg-pink-200'
+                      : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
+                  }`}
+                  title="Like this list"
+                >
+                  {list.liked_by_current_user ? '👍 Liked' : '👍 I like it'} ({list.likes_count || 0})
+                </button>
+              ) : (
+                <span className="text-xs font-semibold px-3 py-1 rounded-full border bg-gray-100 text-gray-500 border-gray-300">
+                  Owner cannot like own list
+                </span>
+              )}
             </div>
           </div>
 
@@ -404,15 +442,21 @@ export default function ListDetail() {
                 onChange={(e) => setCommentBody(e.target.value)}
                 rows={3}
                 maxLength={500}
-                placeholder={isAuthenticated ? 'Share your thoughts about this list...' : 'Log in to leave a comment'}
-                disabled={!isAuthenticated || submittingComment}
+                placeholder={
+                  !isAuthenticated
+                    ? 'Log in to leave a comment'
+                    : isOwner
+                    ? 'Owners cannot comment on their own lists'
+                    : 'Share your thoughts about this list...'
+                }
+                disabled={!isAuthenticated || submittingComment || isOwner}
                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-teal disabled:bg-gray-100 disabled:text-gray-500"
               />
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-xs text-gray-400">{commentBody.length}/500</span>
                 <button
                   type="submit"
-                  disabled={!isAuthenticated || submittingComment || !commentBody.trim()}
+                  disabled={!isAuthenticated || submittingComment || !commentBody.trim() || isOwner}
                   className="px-4 py-2 bg-deep-blue text-white text-sm font-semibold rounded-lg hover:bg-deep-blue-800 disabled:opacity-60"
                 >
                   {submittingComment ? 'Posting...' : 'Post Comment'}

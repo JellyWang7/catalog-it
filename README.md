@@ -182,6 +182,8 @@ App: **http://localhost:5173**
 | POST | `/api/v1/lists/:list_id/comments` | Yes | Add comment |
 | DELETE | `/api/v1/comments/:id` | Owner/List Owner | Delete comment |
 
+> Note: list owners cannot like or comment on their own lists.
+
 ### Item Reactions (2)
 
 | Method | Endpoint | Auth | Description |
@@ -199,6 +201,7 @@ App: **http://localhost:5173**
 - **JWT authentication** (24h expiry, bcrypt password hashing)
 - **Password reset** with secure tokens (1h expiry)
 - **XSS prevention** (HTML sanitization)
+- **Content moderation** (dictionary + slur-aware filtering for comments and item notes)
 - **Rate limiting** (Rack::Attack)
 - **User status management** (active/suspended/deleted)
 - **Owner-based authorization** (IDOR prevention)

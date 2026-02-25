@@ -31,6 +31,17 @@ RSpec.describe "Api::V1::Likes", type: :request do
       expect(json['liked_by_current_user']).to eq(false)
       expect(json['likes_count']).to eq(0)
     end
+
+    it "forbids list owner from liking own list" do
+      owned_list = create(:list, :public, user: user)
+
+      expect do
+        post "/api/v1/lists/#{owned_list.id}/like", headers: auth_headers
+      end.not_to change(ListLike, :count)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(JSON.parse(response.body)['error']).to eq('List owners cannot like their own lists')
+    end
   end
 
   describe "item likes" do

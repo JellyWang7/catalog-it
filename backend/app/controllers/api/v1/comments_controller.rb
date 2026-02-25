@@ -7,6 +7,7 @@ module Api
       before_action :set_list, only: [:index, :create]
       before_action :set_comment, only: [:destroy]
       before_action :authorize_commentable_list, only: [:index, :create]
+      before_action :authorize_non_owner_commenter, only: [:create]
       before_action :authorize_comment_owner_or_list_owner, only: [:destroy]
 
       # GET /api/v1/lists/:list_id/comments
@@ -51,6 +52,12 @@ module Api
         return if @list.visibility.in?(%w[public shared])
 
         render json: { error: 'Comments are only enabled for public and shared lists' }, status: :forbidden
+      end
+
+      def authorize_non_owner_commenter
+        return unless @list.user_id == current_user.id
+
+        render json: { error: 'List owners cannot comment on their own lists' }, status: :forbidden
       end
 
       def authorize_comment_owner_or_list_owner

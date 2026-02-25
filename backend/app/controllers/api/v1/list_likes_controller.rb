@@ -5,6 +5,7 @@ module Api
       before_action :authenticate_request_required
       before_action :set_list
       before_action :authorize_likeable_list
+      before_action :authorize_non_owner_reactor
 
       # POST /api/v1/lists/:id/like
       def create
@@ -30,6 +31,12 @@ module Api
         return if @list.visibility.in?(%w[public shared])
 
         render json: { error: 'Likes are only enabled for public and shared lists' }, status: :forbidden
+      end
+
+      def authorize_non_owner_reactor
+        return unless @list.user_id == current_user.id
+
+        render json: { error: 'List owners cannot like their own lists' }, status: :forbidden
       end
 
       def render_like_state

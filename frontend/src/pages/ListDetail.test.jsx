@@ -200,4 +200,39 @@ describe('ListDetail', () => {
     fireEvent.click(screen.getByRole('button', { name: /post comment/i }));
     expect(listsService.addComment).not.toHaveBeenCalled();
   });
+
+  it('blocks owner from like/comment actions in UI', async () => {
+    authState.user = { id: 1, username: 'owner' };
+    authState.isAuthenticated = true;
+
+    renderListDetail();
+    await screen.findByText('Test List');
+
+    expect(screen.getByText(/owner cannot like own list/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/owners cannot comment on their own lists/i)).toBeDisabled();
+    expect(screen.getByRole('button', { name: /post comment/i })).toBeDisabled();
+  });
+
+  it('shows friendly moderation message on comment 422', async () => {
+    listsService.addComment.mockRejectedValue({
+      response: {
+        status: 422,
+        data: { errors: ['Content contains inappropriate language.'] },
+      },
+    });
+
+    renderListDetail();
+
+    await screen.findByText('Comments');
+    fireEvent.change(screen.getByPlaceholderText(/share your thoughts/i), {
+      target: { value: 'n1gg@' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /post comment/i }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        'Content contains inappropriate language. Please keep comments clean and age-friendly.'
+      );
+    });
+  });
 });

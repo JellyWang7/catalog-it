@@ -44,6 +44,9 @@ gem "rack-cors"
 # Security: HTML sanitization for XSS prevention
 gem "sanitize"
 
+# Profanity and hate-speech detection for user-generated content
+gem "obscenity"
+
 # Security: Rate limiting and request throttling
 gem "rack-attack"
 

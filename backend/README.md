@@ -21,6 +21,7 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 - **bcrypt** (password hashing)
 - **ROTP** (TOTP-based MFA for admin accounts)
 - **ActiveRecord::Encryption** (AES-256-GCM for sensitive fields)
+- **Obscenity + custom moderation service** (strict profanity/slur filtering)
 - **RSpec** (core suites passing; Swagger integration specs tracked separately)
 - **Swagger/OpenAPI** (interactive docs)
 
@@ -53,6 +54,8 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 | POST | `/api/v1/lists/:id/like` | Like list (auth) |
 | DELETE | `/api/v1/lists/:id/like` | Unlike list (auth) |
 
+> Note: list owners cannot like their own lists.
+
 ### Items
 
 | Method | Endpoint | Description |
@@ -73,6 +76,8 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 | POST | `/api/v1/lists/:list_id/comments` | Add comment (auth) |
 | DELETE | `/api/v1/comments/:id` | Delete comment (comment owner or list owner) |
 
+> Note: list owners cannot comment on their own lists.
+
 ## Security
 
 - **TLS/SSL** enforced in production (HSTS, TLS 1.3)
@@ -81,6 +86,7 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 - **JWT** with 24h expiry + bcrypt password hashing
 - **Password reset** with secure tokens (1h expiry)
 - **XSS prevention** (sanitize gem)
+- **Profanity/slur filtering** (`obscenity` dictionary + strict custom slur patterns)
 - **Rate limiting** (Rack::Attack)
 - **User status management** (active/suspended/deleted)
 - **CORS** (environment-based origins)

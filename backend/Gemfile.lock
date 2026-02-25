@@ -203,6 +203,7 @@ GEM
       racc (~> 1.4)
     nokogiri (1.19.0-x86_64-linux-musl)
       racc (~> 1.4)
+    obscenity (1.0.2)
     ostruct (0.6.3)
     parallel (1.27.0)
     parser (3.3.10.1)
@@ -412,6 +413,7 @@ DEPENDENCIES
   image_processing (~> 1.2)
   jwt
   kamal
+  obscenity
   pg (~> 1.1)
   puma (>= 5.0)
   rack-attack
@@ -513,6 +515,7 @@ CHECKSUMS
   nokogiri (1.19.0-arm64-darwin) sha256=0811dfd936d5f6dd3f6d32ef790568bf29b2b7bead9ba68866847b33c9cf5810
   nokogiri (1.19.0-x86_64-linux-gnu) sha256=f482b95c713d60031d48c44ce14562f8d2ce31e3a9e8dd0ccb131e9e5a68b58c
   nokogiri (1.19.0-x86_64-linux-musl) sha256=1c4ca6b381622420073ce6043443af1d321e8ed93cc18b08e2666e5bd02ffae4
+  obscenity (1.0.2) sha256=6d6bb4e651b4d028714be13b9de5214870f6964288487a99f1f78104407c52d7
   ostruct (0.6.3) sha256=95a2ed4a4bd1d190784e666b47b2d3f078e4a9efda2fccf18f84ddc6538ed912
   parallel (1.27.0) sha256=4ac151e1806b755fb4e2dc2332cbf0e54f2e24ba821ff2d3dcf86bf6dc4ae130
   parser (3.3.10.1) sha256=06f6a725d2cd91e5e7f2b7c32ba143631e1f7c8ae2fb918fc4cebec187e6a688

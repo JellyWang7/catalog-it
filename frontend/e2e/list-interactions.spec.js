@@ -241,3 +241,27 @@ test('unauthenticated user sees disabled comment input and blocked actions', asy
   await expect(page.getByText('Please log in to use this feature')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Delete' })).not.toBeVisible();
 });
+
+test('shows clean moderation warning when comment is rejected with 422', async ({ page }) => {
+  await mockListApi(page, { authenticated: true });
+
+  await page.route('**/api/v1/lists/1/comments', async (route) => {
+    if (route.request().method() === 'POST') {
+      await route.fulfill({
+        status: 422,
+        contentType: 'application/json',
+        body: JSON.stringify({ errors: ['Content contains inappropriate language.'] }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.goto('/lists/1');
+  await page.getByPlaceholder('Share your thoughts about this list...').fill('n1gg@');
+  await page.getByRole('button', { name: 'Post Comment' }).click();
+
+  await expect(
+    page.getByText('Content contains inappropriate language. Please keep comments clean and age-friendly.')
+  ).toBeVisible();
+});

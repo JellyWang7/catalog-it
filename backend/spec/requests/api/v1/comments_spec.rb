@@ -44,6 +44,44 @@ RSpec.describe "Api::V1::Comments", type: :request do
       expect(json['body']).to eq('Great list!')
       expect(json['user_id']).to eq(user.id)
     end
+
+    it "blocks list owner from commenting on own list" do
+      owner_token = JsonWebToken.encode(user_id: other_user.id)
+      owner_headers = { 'Authorization' => "Bearer #{owner_token}" }
+
+      expect do
+        post "/api/v1/lists/#{list.id}/comments", params: valid_params, headers: owner_headers, as: :json
+      end.not_to change(Comment, :count)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(JSON.parse(response.body)['error']).to eq('List owners cannot comment on their own lists')
+    end
+
+    it "rejects profanity in comment body" do
+      expect do
+        post "/api/v1/lists/#{list.id}/comments",
+             params: { comment: { body: 'This list is shit' } },
+             headers: auth_headers,
+             as: :json
+      end.not_to change(Comment, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      errors = JSON.parse(response.body)['errors']
+      expect(errors).to include('Content contains inappropriate language.')
+    end
+
+    it "rejects obfuscated slur variants" do
+      expect do
+        post "/api/v1/lists/#{list.id}/comments",
+             params: { comment: { body: 'you are n1gg@' } },
+             headers: auth_headers,
+             as: :json
+      end.not_to change(Comment, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      errors = JSON.parse(response.body)['errors']
+      expect(errors).to include('Content contains inappropriate language.')
+    end
   end
 
   describe "DELETE /api/v1/comments/:id" do

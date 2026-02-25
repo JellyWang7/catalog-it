@@ -59,6 +59,22 @@ RSpec.describe Item, type: :model do
     end
   end
 
+  describe 'content moderation' do
+    let(:list) { create(:list) }
+
+    it 'rejects profane notes' do
+      item = build(:item, list: list, notes: 'this is shit')
+      expect(item).not_to be_valid
+      expect(item.errors.full_messages).to include('Content contains inappropriate language.')
+    end
+
+    it 'rejects obfuscated slur notes' do
+      item = build(:item, list: list, notes: 'n1gg@')
+      expect(item).not_to be_valid
+      expect(item.errors.full_messages).to include('Content contains inappropriate language.')
+    end
+  end
+
   describe 'factory' do
     it 'creates a valid item' do
       item = build(:item)
