@@ -43,6 +43,13 @@ RSpec.configure do |config|
         }
       ],
       components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: :http,
+            scheme: :bearer,
+            bearerFormat: :JWT
+          }
+        },
         schemas: {
           List: {
             type: :object,
@@ -50,29 +57,39 @@ RSpec.configure do |config|
               id: { type: :integer },
               title: { type: :string },
               description: { type: :string, nullable: true },
-              is_public: { type: :boolean },
+              visibility: { type: :string, enum: %w[public private shared] },
               user_id: { type: :integer },
+              likes_count: { type: :integer },
+              liked_by_current_user: { type: :boolean },
               created_at: { type: :string, format: 'date-time' },
               updated_at: { type: :string, format: 'date-time' }
             },
-            required: ['id', 'title', 'is_public', 'user_id']
+            required: ['id', 'title', 'visibility', 'user_id']
           },
           Item: {
             type: :object,
             properties: {
               id: { type: :integer },
-              title: { type: :string },
-              description: { type: :string, nullable: true },
+              name: { type: :string },
+              category: { type: :string, nullable: true },
+              notes: { type: :string, nullable: true },
+              rating: { type: :integer, nullable: true },
               list_id: { type: :integer },
+              likes_count: { type: :integer },
+              liked_by_current_user: { type: :boolean },
               created_at: { type: :string, format: 'date-time' },
               updated_at: { type: :string, format: 'date-time' }
             },
-            required: ['id', 'title', 'list_id']
+            required: ['id', 'name', 'list_id']
           },
           Error: {
             type: :object,
             properties: {
-              error: { type: :string }
+              error: { type: :string },
+              errors: {
+                type: :array,
+                items: { type: :string }
+              }
             }
           }
         }

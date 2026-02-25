@@ -12,12 +12,12 @@ module Api
       # GET /api/v1/lists/:list_id/items
       def index
         @items = @list.items.order(created_at: :desc)
-        render json: @items
+        render json: @items.map { |item| serialize_item(item) }
       end
       
       # GET /api/v1/items/:id
       def show
-        render json: @item
+        render json: serialize_item(@item)
       end
       
       # POST /api/v1/lists/:list_id/items
@@ -25,7 +25,7 @@ module Api
         @item = @list.items.build(item_params)
         
         if @item.save
-          render json: @item, status: :created
+          render json: serialize_item(@item), status: :created
         else
           render json: { errors: @item.errors.full_messages }, status: :unprocessable_entity
         end
@@ -34,7 +34,7 @@ module Api
       # PATCH/PUT /api/v1/items/:id
       def update
         if @item.update(item_params)
-          render json: @item
+          render json: serialize_item(@item)
         else
           render json: { errors: @item.errors.full_messages }, status: :unprocessable_entity
         end
@@ -82,6 +82,21 @@ module Api
       
       def item_params
         params.require(:item).permit(:name, :category, :notes, :rating)
+      end
+
+      def serialize_item(item)
+        {
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          notes: item.notes,
+          rating: item.rating,
+          list_id: item.list_id,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          likes_count: item.likes_count,
+          liked_by_current_user: item.liked_by?(current_user)
+        }
       end
     end
   end

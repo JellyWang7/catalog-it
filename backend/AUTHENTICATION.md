@@ -341,13 +341,85 @@ eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3MDk4NTcyMDB9.signature
 
 ---
 
+---
+
+### 4. Forgot Password
+
+**Endpoint:** `POST /api/v1/auth/forgot_password`
+
+**Description:** Request a password reset token. Returns a generic success message to prevent email enumeration. In development, the token is included in the response for demo convenience.
+
+**Request Body:**
+```json
+{
+  "email": "john@example.com"
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "message": "If an account exists with that email, a reset link has been sent.",
+  "reset_token": "abc123..."
+}
+```
+
+> Note: `reset_token` is only included in non-production environments.
+
+---
+
+### 5. Reset Password
+
+**Endpoint:** `POST /api/v1/auth/reset_password`
+
+**Description:** Reset a user's password using the token from the forgot password endpoint. Tokens expire after 1 hour.
+
+**Request Body:**
+```json
+{
+  "token": "abc123...",
+  "password": "NewPassword123!",
+  "password_confirmation": "NewPassword123!"
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "message": "Password has been reset successfully. You can now log in."
+}
+```
+
+**Error Response (422 Unprocessable Entity):**
+```json
+{
+  "error": "Reset token has expired. Please request a new one."
+}
+```
+
+---
+
+## Password Reset Flow
+
+1. User clicks "Forgot Password" on the login page
+2. User enters their email address
+3. Backend generates a secure reset token (valid for 1 hour)
+4. In production: email is sent with reset link
+5. In development: token is returned in the API response
+6. User clicks the reset link (`/reset-password?token=...`)
+7. User enters and confirms new password
+8. Backend validates token, updates password, clears token
+9. User is redirected to login
+
+---
+
 ## Next Steps
 
-1. ✅ Authentication system is implemented
-2. 🔄 **Next:** Integrate with frontend React app
-3. 📝 **Later:** Add password reset functionality
-4. 🔐 **Later:** Implement refresh tokens
-5. 👥 **Later:** Add role-based permissions (admin features)
+- [x] Authentication system implemented
+- [x] Frontend integration complete
+- [x] Password reset functionality added
+- [ ] Implement refresh tokens (future)
+- [ ] Add role-based admin permissions (future)
 
 ---
 
@@ -355,4 +427,4 @@ eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3MDk4NTcyMDB9.signature
 
 - Review API documentation at: http://localhost:3000/api-docs
 - Check logs in `backend/log/development.log`
-- See QUICKSTART.md for general setup instructions
+- See [TESTING.md](TESTING.md) for test guide

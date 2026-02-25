@@ -15,7 +15,7 @@ RSpec.describe 'api/v1/items', type: :request do
         schema type: :array,
           items: { '$ref' => '#/components/schemas/Item' }
 
-        let(:list_id) { create(:list).id }
+        let(:list_id) { create(:list, :public).id }
         let!(:item) { create(:item, list_id: list_id) }
 
         run_test! do |response|
@@ -38,6 +38,8 @@ RSpec.describe 'api/v1/items', type: :request do
       consumes 'application/json'
       produces 'application/json'
       description 'Creates a new item in a specific list'
+      security [{ bearerAuth: [] }]
+      parameter name: 'Authorization', in: :header, type: :string, required: true
 
       parameter name: :item, in: :body, schema: {
         type: :object,
@@ -45,10 +47,12 @@ RSpec.describe 'api/v1/items', type: :request do
           item: {
             type: :object,
             properties: {
-              title: { type: :string },
-              description: { type: :string }
+              name: { type: :string },
+              category: { type: :string, nullable: true },
+              notes: { type: :string, nullable: true },
+              rating: { type: :integer, nullable: true }
             },
-            required: ['title']
+            required: ['name']
           }
         },
         required: ['item']
@@ -57,27 +61,31 @@ RSpec.describe 'api/v1/items', type: :request do
       response(201, 'item created') do
         schema '$ref' => '#/components/schemas/Item'
 
-        let(:list_id) { create(:list).id }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:list_id) { create(:list, user: user).id }
         let(:item) do
           {
             item: {
-              title: 'New Item',
-              description: 'A brand new item'
+              name: 'New Item',
+              notes: 'A brand new item'
             }
           }
         end
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['title']).to eq('New Item')
+          expect(data['name']).to eq('New Item')
         end
       end
 
       response(422, 'invalid request') do
         schema '$ref' => '#/components/schemas/Error'
 
-        let(:list_id) { create(:list).id }
-        let(:item) { { item: { title: '' } } }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:list_id) { create(:list, user: user).id }
+        let(:item) { { item: { name: '' } } }
 
         run_test!
       end
@@ -85,8 +93,10 @@ RSpec.describe 'api/v1/items', type: :request do
       response(404, 'list not found') do
         schema '$ref' => '#/components/schemas/Error'
 
-        let(:list_id) { 'invalid' }
-        let(:item) { { item: { title: 'New Item' } } }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:list_id) { 999_999 }
+        let(:item) { { item: { name: 'New Item' } } }
 
         run_test!
       end
@@ -104,19 +114,19 @@ RSpec.describe 'api/v1/items', type: :request do
       response(200, 'successful') do
         schema '$ref' => '#/components/schemas/Item'
 
-        let(:id) { create(:item).id }
+        let(:id) { create(:item, list: create(:list, :public)).id }
 
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data).to have_key('id')
-          expect(data).to have_key('title')
+          expect(data).to have_key('name')
         end
       end
 
       response(404, 'item not found') do
         schema '$ref' => '#/components/schemas/Error'
 
-        let(:id) { 'invalid' }
+        let(:id) { 999_999 }
 
         run_test!
       end
@@ -127,6 +137,8 @@ RSpec.describe 'api/v1/items', type: :request do
       consumes 'application/json'
       produces 'application/json'
       description 'Updates an existing item'
+      security [{ bearerAuth: [] }]
+      parameter name: 'Authorization', in: :header, type: :string, required: true
 
       parameter name: :item, in: :body, schema: {
         type: :object,
@@ -134,8 +146,9 @@ RSpec.describe 'api/v1/items', type: :request do
           item: {
             type: :object,
             properties: {
-              title: { type: :string },
-              description: { type: :string }
+              name: { type: :string },
+              notes: { type: :string, nullable: true },
+              rating: { type: :integer, nullable: true }
             }
           }
         },
@@ -145,20 +158,24 @@ RSpec.describe 'api/v1/items', type: :request do
       response(200, 'item updated') do
         schema '$ref' => '#/components/schemas/Item'
 
-        let(:id) { create(:item).id }
-        let(:item) { { item: { title: 'Updated Item Title' } } }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:id) { create(:item, list: create(:list, user: user)).id }
+        let(:item) { { item: { name: 'Updated Item Title' } } }
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['title']).to eq('Updated Item Title')
+          expect(data['name']).to eq('Updated Item Title')
         end
       end
 
       response(404, 'item not found') do
         schema '$ref' => '#/components/schemas/Error'
 
-        let(:id) { 'invalid' }
-        let(:item) { { item: { title: 'Updated Title' } } }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:id) { 999_999 }
+        let(:item) { { item: { name: 'Updated Title' } } }
 
         run_test!
       end
@@ -168,9 +185,13 @@ RSpec.describe 'api/v1/items', type: :request do
       tags 'Items'
       produces 'application/json'
       description 'Deletes a specific item'
+      security [{ bearerAuth: [] }]
+      parameter name: 'Authorization', in: :header, type: :string, required: true
 
       response(204, 'item deleted') do
-        let(:id) { create(:item).id }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:id) { create(:item, list: create(:list, user: user)).id }
 
         run_test!
       end
@@ -178,7 +199,9 @@ RSpec.describe 'api/v1/items', type: :request do
       response(404, 'item not found') do
         schema '$ref' => '#/components/schemas/Error'
 
-        let(:id) { 'invalid' }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:id) { 999_999 }
 
         run_test!
       end

@@ -106,6 +106,16 @@ Edit `spec/swagger_helper.rb` to customize:
 
 ## 📚 API Overview
 
+### Authentication Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/auth/signup` | Create account |
+| POST | `/api/v1/auth/login` | Sign in, get JWT |
+| GET | `/api/v1/auth/me` | Current user info |
+| POST | `/api/v1/auth/forgot_password` | Request password reset |
+| POST | `/api/v1/auth/reset_password` | Reset password with token |
+
 ### Lists Endpoints
 
 | Method | Endpoint | Description |
@@ -115,6 +125,8 @@ Edit `spec/swagger_helper.rb` to customize:
 | GET | `/api/v1/lists/:id` | Show a specific list |
 | PATCH | `/api/v1/lists/:id` | Update a list |
 | DELETE | `/api/v1/lists/:id` | Delete a list |
+| POST | `/api/v1/lists/:id/share` | Generate share code |
+| GET | `/api/v1/lists/shared/:code` | Look up by share code |
 
 ### Items Endpoints
 

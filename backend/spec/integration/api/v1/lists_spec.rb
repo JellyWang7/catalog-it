@@ -17,7 +17,7 @@ RSpec.describe 'api/v1/lists', type: :request do
               id: { type: :integer },
               title: { type: :string },
               description: { type: :string, nullable: true },
-              is_public: { type: :boolean },
+              visibility: { type: :string },
               user_id: { type: :integer },
               created_at: { type: :string, format: 'date-time' },
               updated_at: { type: :string, format: 'date-time' },
@@ -28,7 +28,7 @@ RSpec.describe 'api/v1/lists', type: :request do
             }
           }
 
-        let!(:list) { create(:list, is_public: true) }
+        let!(:list) { create(:list, :public) }
 
         run_test! do |response|
           data = JSON.parse(response.body)
@@ -44,6 +44,8 @@ RSpec.describe 'api/v1/lists', type: :request do
       consumes 'application/json'
       produces 'application/json'
       description 'Creates a new list'
+      security [{ bearerAuth: [] }]
+      parameter name: 'Authorization', in: :header, type: :string, required: true
 
       parameter name: :list, in: :body, schema: {
         type: :object,
@@ -53,10 +55,9 @@ RSpec.describe 'api/v1/lists', type: :request do
             properties: {
               title: { type: :string },
               description: { type: :string },
-              is_public: { type: :boolean },
-              user_id: { type: :integer }
+              visibility: { type: :string, enum: %w[public private shared] }
             },
-            required: ['title', 'user_id']
+            required: ['title']
           }
         },
         required: ['list']
@@ -66,13 +67,13 @@ RSpec.describe 'api/v1/lists', type: :request do
         schema '$ref' => '#/components/schemas/List'
 
         let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
         let(:list) do
           {
             list: {
               title: 'New List',
               description: 'A brand new list',
-              is_public: true,
-              user_id: user.id
+              visibility: 'public'
             }
           }
         end
@@ -86,6 +87,8 @@ RSpec.describe 'api/v1/lists', type: :request do
       response(422, 'invalid request') do
         schema '$ref' => '#/components/schemas/Error'
 
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
         let(:list) { { list: { title: '' } } }
 
         run_test!
@@ -107,7 +110,7 @@ RSpec.describe 'api/v1/lists', type: :request do
             id: { type: :integer },
             title: { type: :string },
             description: { type: :string, nullable: true },
-            is_public: { type: :boolean },
+            visibility: { type: :string },
             user_id: { type: :integer },
             created_at: { type: :string, format: 'date-time' },
             updated_at: { type: :string, format: 'date-time' },
@@ -117,7 +120,7 @@ RSpec.describe 'api/v1/lists', type: :request do
             }
           }
 
-        let(:id) { create(:list).id }
+        let(:id) { create(:list, :public).id }
 
         run_test! do |response|
           data = JSON.parse(response.body)
@@ -129,7 +132,7 @@ RSpec.describe 'api/v1/lists', type: :request do
       response(404, 'list not found') do
         schema '$ref' => '#/components/schemas/Error'
 
-        let(:id) { 'invalid' }
+        let(:id) { 999_999 }
 
         run_test!
       end
@@ -140,6 +143,8 @@ RSpec.describe 'api/v1/lists', type: :request do
       consumes 'application/json'
       produces 'application/json'
       description 'Updates an existing list'
+      security [{ bearerAuth: [] }]
+      parameter name: 'Authorization', in: :header, type: :string, required: true
 
       parameter name: :list, in: :body, schema: {
         type: :object,
@@ -149,7 +154,7 @@ RSpec.describe 'api/v1/lists', type: :request do
             properties: {
               title: { type: :string },
               description: { type: :string },
-              is_public: { type: :boolean }
+              visibility: { type: :string, enum: %w[public private shared] }
             }
           }
         },
@@ -159,7 +164,9 @@ RSpec.describe 'api/v1/lists', type: :request do
       response(200, 'list updated') do
         schema '$ref' => '#/components/schemas/List'
 
-        let(:id) { create(:list).id }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:id) { create(:list, user: user).id }
         let(:list) { { list: { title: 'Updated Title' } } }
 
         run_test! do |response|
@@ -171,7 +178,9 @@ RSpec.describe 'api/v1/lists', type: :request do
       response(404, 'list not found') do
         schema '$ref' => '#/components/schemas/Error'
 
-        let(:id) { 'invalid' }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:id) { 999_999 }
         let(:list) { { list: { title: 'Updated Title' } } }
 
         run_test!
@@ -182,9 +191,13 @@ RSpec.describe 'api/v1/lists', type: :request do
       tags 'Lists'
       produces 'application/json'
       description 'Deletes a list and all its items'
+      security [{ bearerAuth: [] }]
+      parameter name: 'Authorization', in: :header, type: :string, required: true
 
       response(204, 'list deleted') do
-        let(:id) { create(:list).id }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:id) { create(:list, user: user).id }
 
         run_test!
       end
@@ -192,7 +205,9 @@ RSpec.describe 'api/v1/lists', type: :request do
       response(404, 'list not found') do
         schema '$ref' => '#/components/schemas/Error'
 
-        let(:id) { 'invalid' }
+        let(:user) { create(:user) }
+        let(:Authorization) { "Bearer #{JsonWebToken.encode(user_id: user.id)}" }
+        let(:id) { 999_999 }
 
         run_test!
       end

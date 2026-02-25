@@ -1,7 +1,7 @@
 module Api
   module V1
     class AuthenticationController < ApplicationController
-      skip_before_action :authenticate_request, only: [:signup, :login]
+      skip_before_action :authenticate_request, only: [:signup, :login, :forgot_password, :reset_password]
 
       # POST /api/v1/auth/signup
       def signup
@@ -31,7 +31,6 @@ module Api
         user = User.find_by(email: login_params[:email])
         
         if user&.authenticate(login_params[:password])
-          # Check if user account is active
           unless user.active?
             status_message = case user.status
             when 'suspended' then 'Your account has been suspended. Please contact support.'
@@ -41,6 +40,19 @@ module Api
             
             render json: { error: status_message }, status: :forbidden
             return
+          end
+
+          # If MFA is enabled, require OTP before issuing token
+          if user.mfa_enabled?
+            if login_params[:otp_code].present?
+              unless user.verify_otp(login_params[:otp_code])
+                render json: { error: 'Invalid MFA code' }, status: :unauthorized
+                return
+              end
+            else
+              render json: { mfa_required: true, message: 'MFA code required' }, status: :ok
+              return
+            end
           end
           
           token = JsonWebToken.encode(user_id: user.id)
@@ -52,12 +64,59 @@ module Api
               username: user.username,
               email: user.email,
               role: user.role,
-              status: user.status
+              status: user.status,
+              mfa_enabled: user.mfa_enabled?
             }
           }, status: :ok
         else
           render json: { error: 'Invalid email or password' }, status: :unauthorized
         end
+      end
+
+      # POST /api/v1/auth/mfa/setup — generate OTP secret (admin only)
+      def mfa_setup
+        unless current_user
+          render json: { error: 'Unauthorized' }, status: :unauthorized
+          return
+        end
+
+        secret = current_user.generate_otp_secret!
+        render json: {
+          otp_secret: secret,
+          provisioning_uri: current_user.otp_provisioning_uri,
+          message: 'Scan the URI with your authenticator app, then verify with a code.'
+        }, status: :ok
+      end
+
+      # POST /api/v1/auth/mfa/verify — verify code and enable MFA
+      def mfa_verify
+        unless current_user
+          render json: { error: 'Unauthorized' }, status: :unauthorized
+          return
+        end
+
+        if current_user.otp_secret.blank?
+          render json: { error: 'MFA not set up. Call setup first.' }, status: :unprocessable_entity
+          return
+        end
+
+        if current_user.verify_otp(params[:otp_code])
+          current_user.enable_mfa!
+          render json: { message: 'MFA enabled successfully', mfa_enabled: true }, status: :ok
+        else
+          render json: { error: 'Invalid code. Please try again.' }, status: :unprocessable_entity
+        end
+      end
+
+      # DELETE /api/v1/auth/mfa — disable MFA
+      def mfa_disable
+        unless current_user
+          render json: { error: 'Unauthorized' }, status: :unauthorized
+          return
+        end
+
+        current_user.disable_mfa!
+        render json: { message: 'MFA disabled', mfa_enabled: false }, status: :ok
       end
 
       # GET /api/v1/auth/me
@@ -73,9 +132,52 @@ module Api
             username: current_user.username,
             email: current_user.email,
             role: current_user.role,
-            status: current_user.status
+            status: current_user.status,
+            mfa_enabled: current_user.mfa_enabled?
           }
         }, status: :ok
+      end
+
+      # POST /api/v1/auth/forgot_password
+      def forgot_password
+        user = User.find_by(email: forgot_password_params[:email])
+
+        if user&.active?
+          token = user.generate_password_reset_token!
+          # In production, send email here with ActionMailer
+          # For development/demo, include the token in the response
+          reset_url = "#{request.protocol}#{request.host_with_port.gsub('3000', '5173')}/reset-password?token=#{token}"
+          Rails.logger.info "PASSWORD RESET LINK: #{reset_url}"
+
+          response_data = { message: 'If an account exists with that email, a reset link has been sent.' }
+          # Include token in development for demo convenience
+          response_data[:reset_token] = token unless Rails.env.production?
+          render json: response_data, status: :ok
+        else
+          # Always return success to prevent email enumeration
+          render json: { message: 'If an account exists with that email, a reset link has been sent.' }, status: :ok
+        end
+      end
+
+      # POST /api/v1/auth/reset_password
+      def reset_password
+        user = User.find_by(reset_password_token: reset_password_params[:token])
+
+        if user.nil?
+          render json: { error: 'Invalid or expired reset token' }, status: :unprocessable_entity
+          return
+        end
+
+        unless user.password_reset_token_valid?
+          render json: { error: 'Reset token has expired. Please request a new one.' }, status: :unprocessable_entity
+          return
+        end
+
+        if user.reset_password!(reset_password_params[:password], reset_password_params[:password_confirmation])
+          render json: { message: 'Password has been reset successfully. You can now log in.' }, status: :ok
+        else
+          render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+        end
       end
 
       private
@@ -85,7 +187,15 @@ module Api
       end
 
       def login_params
-        params.require(:user).permit(:email, :password)
+        params.require(:user).permit(:email, :password, :otp_code)
+      end
+
+      def forgot_password_params
+        params.permit(:email)
+      end
+
+      def reset_password_params
+        params.permit(:token, :password, :password_confirmation)
       end
     end
   end

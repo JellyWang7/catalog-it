@@ -110,6 +110,19 @@ RSpec.describe "Api::V1::Items", type: :request do
         post "/api/v1/lists/#{list.id}/items", params: invalid_attributes, headers: auth_headers, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
       end
+
+      it "rejects inappropriate language in notes" do
+        expect do
+          post "/api/v1/lists/#{list.id}/items",
+               params: { item: { name: 'Bad Notes Item', notes: 'you are n1gg@' } },
+               headers: auth_headers,
+               as: :json
+        end.not_to change(Item, :count)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        errors = JSON.parse(response.body)['errors']
+        expect(errors).to include('Content contains inappropriate language.')
+      end
     end
   end
 

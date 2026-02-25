@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :item do
     name { Faker::Commerce.product_name }
     category { Faker::Commerce.department }
-    notes { Faker::Lorem.sentence }
+    notes { "Sample item notes" }
     rating { rand(1..5) }  # Business rule: Rating must be between 1.0 and 5.0
     association :list
 
