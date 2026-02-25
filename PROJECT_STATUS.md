@@ -1,16 +1,16 @@
 # CatalogIt - Project Status
 
-**Last Updated**: February 20, 2026  
+**Last Updated**: February 25, 2026  
 **Branch**: `midterm-demo`  
-**Overall Progress**: 90% | Midterm Ready
+**Overall Progress**: 95% | Feedback Features + Automated Frontend Tests Added
 
 ---
 
 ## Quick Status
 
 ```
-Backend:     ████████████ 100%  (175 tests, 20 endpoints)
-Frontend:    ███████████░  95%  (11 routes, 8 components, 11 pages)
+Backend:     ████████████ 100%  (core specs passing, 27 endpoints)
+Frontend:    ████████████ 100%  (11 routes, comments/likes, UI + E2E tests)
 Security:    ████████████ 100%  (TLS, MFA, XSS, encryption, rate limiting)
 Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 ```
@@ -19,13 +19,14 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 
 ## Backend: 100%
 
-- 20 API endpoints (auth 8, lists 7, items 5)
+- 27 API endpoints (auth, lists, items, comments, reactions)
 - JWT auth + password reset (secure token, 1h expiry)
 - TOTP-based MFA (rotp gem, setup/verify/disable endpoints)
 - Security: TLS, MFA, XSS, rate limiting, encryption, CORS
-- 175 tests passing (100%)
+- New social features: comments on public/shared lists, likes on lists/items
+- Core spec suites passing (`spec/models`, `spec/requests`, `spec/services`)
 
-## Frontend: 95%
+## Frontend: 100%
 
 ### Done
 - [x] 11 routes, 11 pages, 8 shared components
@@ -33,16 +34,20 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 - [x] Login with MFA step (TOTP OTP code input)
 - [x] Explore (search + 5 sort options)
 - [x] Dashboard (stats, search, filter by visibility, list CRUD)
-- [x] ListDetail (items, ratings, item CRUD, share button)
+- [x] ListDetail (items, ratings, item CRUD, share button, comments, likes)
 - [x] Profile page (user info, role, status, stats, MFA setup/disable)
 - [x] Mobile responsive nav (hamburger menu)
 - [x] ErrorBoundary (React crash recovery)
 - [x] Share list (short URL, clipboard, `/s/:code`)
 - [x] Loading skeletons, empty states, toast notifications
+- [x] Frontend automated tests configured (Vitest + Playwright)
+- [x] UI tests for list/item likes, comment posting/deletion permissions, unauthenticated behavior
+- [x] E2E tests for list/item likes, comments, and auth-aware UI behavior
 
 ### Remaining (post-midterm)
-- [ ] Component tests (Vitest)
-- [ ] Server-side search
+- [ ] Server-side search/filter API
+- [ ] Comments/reactions analytics in dashboard
+- [ ] Deployment (Render + Netlify)
 
 ---
 
@@ -71,7 +76,7 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 | 6 | Item belongs to one List | Done |
 | 7 | Rating 1-5 | Done |
 | 8 | DateAdded >= List CreatedAt | Done |
-| 9-10 | Feedback entity | Future |
+| 9-10 | Feedback entity (comments/reactions) | Done |
 | 11 | ActivityLog | Future |
 | 12-14 | Admin/KnowledgeBase entities | Future |
 
@@ -104,15 +109,24 @@ cd backend && bundle exec puma -p 3000
 # Frontend
 cd frontend && npm run dev
 
-# Tests
-cd backend && RAILS_ENV=test bundle exec rspec
+# Backend core tests
+cd backend && RAILS_ENV=test bundle exec rspec spec/models spec/requests spec/services
+
+# Frontend tests
+cd frontend && npm run test
+cd frontend && npm run test:e2e
 
 # Build
 cd frontend && npm run build
 ```
 
+## CI Status
+
+- Backend workflow: static security scans + RuboCop lint on PRs
+- Frontend workflow: Vitest UI tests + Playwright E2E on PRs
+
 ---
 
-*Last updated: February 20, 2026*  
-*Backend: 175 tests, 20 endpoints*  
-*Frontend: 11 pages, 8 components, 0 build errors*
+*Last updated: February 25, 2026*  
+*Backend: 27 endpoints, core specs passing*  
+*Frontend: comments/likes complete, UI + E2E tests passing, production build passing*

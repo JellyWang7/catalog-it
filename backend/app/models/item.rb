@@ -1,5 +1,6 @@
 class Item < ApplicationRecord
   belongs_to :list
+  has_many :item_likes, dependent: :destroy
   
   validates :name, presence: true
   validates :rating, numericality: { 
@@ -12,6 +13,16 @@ class Item < ApplicationRecord
   before_validation :sanitize_notes
   
   scope :by_category, ->(category) { where(category: category) }
+
+  def likes_count
+    item_likes.count
+  end
+
+  def liked_by?(user)
+    return false unless user
+
+    item_likes.exists?(user_id: user.id)
+  end
   
   private
   

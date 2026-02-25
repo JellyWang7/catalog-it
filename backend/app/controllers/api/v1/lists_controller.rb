@@ -14,16 +14,16 @@ module Api
           # Show user's own lists (all visibility) + other users' public lists
           @lists = List.where(user_id: current_user.id)
                        .or(List.where(visibility: 'public'))
-                       .includes(:user, :items)
+                       .includes(:user, :items, :list_likes)
                        .order(created_at: :desc)
         else
           # Only show public lists if not authenticated
           @lists = List.where(visibility: 'public')
-                       .includes(:user, :items)
+                       .includes(:user, :items, :list_likes)
                        .order(created_at: :desc)
         end
         
-        render json: @lists, include: [:user, :items]
+        render json: @lists.map { |list| serialize_list(list, include_comments: false) }
       end
       
       # GET /api/v1/lists/:id
@@ -34,7 +34,7 @@ module Api
           return
         end
         
-        render json: @list, include: [:user, :items]
+        render json: serialize_list(@list)
       end
       
       # POST /api/v1/lists
@@ -88,7 +88,7 @@ module Api
           return
         end
 
-        render json: @list, include: [:user, :items]
+        render json: serialize_list(@list)
       end
       
       private
@@ -112,6 +112,58 @@ module Api
       
       def list_params
         params.require(:list).permit(:title, :description, :visibility)
+      end
+
+      def serialize_list(list, include_comments: true)
+        {
+          id: list.id,
+          title: list.title,
+          description: list.description,
+          visibility: list.visibility,
+          share_code: list.share_code,
+          user_id: list.user_id,
+          created_at: list.created_at,
+          updated_at: list.updated_at,
+          likes_count: list.likes_count,
+          liked_by_current_user: list.liked_by?(current_user),
+          user: {
+            id: list.user.id,
+            username: list.user.username,
+            email: list.user.email
+          },
+          items: list.items.order(created_at: :desc).map { |item| serialize_item(item) },
+          comments: include_comments ? list.comments.includes(:user).order(created_at: :desc).map { |comment| serialize_comment(comment) } : []
+        }
+      end
+
+      def serialize_item(item)
+        {
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          notes: item.notes,
+          rating: item.rating,
+          list_id: item.list_id,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          likes_count: item.likes_count,
+          liked_by_current_user: item.liked_by?(current_user)
+        }
+      end
+
+      def serialize_comment(comment)
+        {
+          id: comment.id,
+          body: comment.body,
+          user_id: comment.user_id,
+          list_id: comment.list_id,
+          created_at: comment.created_at,
+          updated_at: comment.updated_at,
+          user: {
+            id: comment.user.id,
+            username: comment.user.username
+          }
+        }
       end
     end
   end

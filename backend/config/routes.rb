@@ -24,8 +24,15 @@ Rails.application.routes.draw do
       resources :lists, only: [:index, :show, :create, :update, :destroy] do
         post 'share', on: :member
         resources :items, only: [:index, :create]
+        resources :comments, only: [:index, :create]
+        post 'like', on: :member, to: 'list_likes#create'
+        delete 'like', on: :member, to: 'list_likes#destroy'
       end
-      resources :items, only: [:show, :update, :destroy]
+      resources :items, only: [:show, :update, :destroy] do
+        post 'like', on: :member, to: 'item_likes#create'
+        delete 'like', on: :member, to: 'item_likes#destroy'
+      end
+      resources :comments, only: [:destroy]
     end
   end
 end

@@ -15,6 +15,12 @@ const itemsService = {
 
   /** DELETE /api/v1/items/:id — delete item (requires ownership of parent list) */
   delete: (id) => api.delete(`/items/${id}`),
+
+  /** POST /api/v1/items/:id/like — like item */
+  like: (id) => api.post(`/items/${id}/like`),
+
+  /** DELETE /api/v1/items/:id/like — unlike item */
+  unlike: (id) => api.delete(`/items/${id}/like`),
 };
 
 export default itemsService;

@@ -1,8 +1,8 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: February 20, 2026
+**Last Updated**: February 25, 2026
 **Current Branch**: `midterm-demo`  
-**Project Status**: Midterm Ready (Frontend 95%)
+**Project Status**: Midterm Complete + Feedback Iteration
 
 ---
 
@@ -10,10 +10,10 @@
 
 ```
 Backend:     ████████████ 100%
-Frontend:    ███████████░  95%
+Frontend:    ████████████ 100%
 Security:    ████████████ 100%
 Deployment:  ░░░░░░░░░░░░   0%
-Overall:     ██████████░░  90%
+Overall:     ███████████░  95%
 ```
 
 ---
@@ -57,20 +57,33 @@ Overall:     ██████████░░  90%
 
 ---
 
-## This Week: Midterm Review (Feb 22-28)
+## This Week: Feedback Sprint (Feb 24-Mar 1)
 
-### Phase 7: Midterm Presentation
-- [ ] Midterm presentation delivery
-- [ ] Live demo walkthrough
-- [ ] Q&A preparation
+### Phase 7: Midterm Wrap-Up
+- [x] Midterm presentation delivery
+- [x] Live demo walkthrough
+- [x] Capture professor feedback + convert to tasks
+
+### Phase 8: Professor Feedback Implementation (Priority)
+- [x] Add comment feature for public and shared lists
+- [x] Add "thumbs up / I like it" reactions for lists
+- [x] Add "thumbs up / I like it" reactions for items
+- [x] Add/update DB models + migrations (comments, reactions)
+- [x] Add API endpoints for comment/reaction CRUD
+- [x] Add frontend UI/UX for comments and reactions
+- [x] Add permissions + moderation guardrails (owner/delete rules, rate limiting)
+- [x] Add tests for backend + frontend happy/error paths
+- [x] Add CI workflow for frontend tests (Vitest + Playwright on PRs)
 
 See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 
 ## Remaining Work
 
 ### After Midterm
-- [ ] Component tests (Vitest + React Testing Library)
+- [x] Component tests (Vitest + React Testing Library)
+- [x] E2E tests (Playwright)
 - [ ] Server-side search/filter API
+- [ ] Comments + reactions analytics (engagement counts in dashboard)
 - [ ] Deployment (Render + Netlify)
 
 See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
@@ -87,10 +100,12 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 - [x] List sharing (unique short codes)
 - [x] API documentation (Swagger)
 - [x] Security (TLS, MFA, XSS, rate limiting, encryption, CORS)
-- [x] 175 tests passing
-- [x] 20 API endpoints (auth 8, lists 7, items 5)
+- [x] Core backend tests passing (requests/models/services)
+- [x] 27 API endpoints (auth, lists, items, comments, likes)
+- [x] Comments API (public/shared lists)
+- [x] Reactions API (likes on lists/items)
 
-### Frontend (95%)
+### Frontend (100%)
 - [x] React + Vite + Tailwind setup
 - [x] Auth UI (login, signup, forgot/reset password)
 - [x] Login with MFA step (TOTP OTP code input)
@@ -103,7 +118,10 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 - [x] Mobile responsive navigation
 - [x] Error boundary
 - [x] Loading skeletons + empty states + toasts
-- [ ] Component tests
+- [x] Comment UI for public/shared list pages
+- [x] Like/Thumbs-up UI for lists and items
+- [x] Component tests
+- [x] E2E tests (Playwright)
 - [ ] Server-side search
 
 ### Deployment (0%)
@@ -126,4 +144,4 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 
 ---
 
-*Last updated: February 20, 2026*
+*Last updated: February 25, 2026*

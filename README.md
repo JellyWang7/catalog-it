@@ -3,8 +3,8 @@
 > A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS 701 -- Special Projects in CS II  
-**Status**: Backend Complete | Frontend 95% | Midterm Ready  
-**Tests**: 175/175 core tests passing | 20 API endpoints  
+**Status**: Backend Complete | Frontend Complete (Comments + Likes) | Demo Ready  
+**Tests**: Backend core specs + Frontend UI/E2E tests passing  
 
 ---
 
@@ -21,11 +21,47 @@
 
 ---
 
+## CI & Test Gates
+
+> PRs are expected to pass all automated checks before merge.
+
+### Status Badges
+
+> Update `OWNER/REPO` in the URLs below once this repository path is finalized on GitHub.
+
+[![Backend CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)  
+[![Frontend Tests](https://github.com/OWNER/REPO/actions/workflows/frontend-tests.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/frontend-tests.yml)
+
+### Enforced Checks on Pull Requests
+
+| Workflow | Scope | Required Gates |
+|----------|-------|----------------|
+| `backend/.github/workflows/ci.yml` | Rails backend | Brakeman scan, bundler-audit, RuboCop |
+| `.github/workflows/frontend-tests.yml` | React frontend | `npm run test` (Vitest UI), `npm run test:e2e` (Playwright E2E) |
+
+### Local Commands (match CI)
+
+```bash
+# Frontend
+cd frontend
+npm run test
+npm run test:e2e
+
+# Backend
+cd backend
+bundle exec rspec
+bundle exec rubocop -f github
+bin/brakeman --no-pager
+bin/bundler-audit
+```
+
+---
+
 ## Tech Stack
 
 | Layer | Technology | Status |
 |-------|-----------|--------|
-| **Frontend** | React 18, Vite 4, Tailwind CSS 3, React Router 6, Axios | 95% |
+| **Frontend** | React 18, Vite 4, Tailwind CSS 3, React Router 6, Axios | 100% |
 | **Backend** | Ruby on Rails 8 (API mode), JWT, TOTP MFA, RSpec | Complete |
 | **Database** | PostgreSQL 15+ (3NF), AES-256 encryption at rest | Complete |
 | **Security** | TLS, MFA, XSS, rate limiting, CORS, IDOR prevention | Complete |
@@ -64,7 +100,7 @@ catalog-it/
 ### Prerequisites
 
 - Ruby 3.x+ / Rails 8+
-- Node.js 16+ / npm 8+
+- Node.js 18+ recommended (Node 16 works with current pinned test tooling)
 - PostgreSQL 15+
 
 ### Backend
@@ -99,7 +135,7 @@ App: **http://localhost:5173**
 
 ---
 
-## API Endpoints (20)
+## API Endpoints (27)
 
 ### Authentication (8)
 
@@ -114,7 +150,7 @@ App: **http://localhost:5173**
 | POST | `/api/v1/auth/mfa/verify` | Yes | Verify code, enable MFA |
 | DELETE | `/api/v1/auth/mfa` | Yes | Disable MFA |
 
-### Lists (7)
+### Lists (9)
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
@@ -125,6 +161,8 @@ App: **http://localhost:5173**
 | DELETE | `/api/v1/lists/:id` | Owner | Delete list |
 | POST | `/api/v1/lists/:id/share` | Owner | Generate share code |
 | GET | `/api/v1/lists/shared/:code` | No | Lookup by share code |
+| POST | `/api/v1/lists/:id/like` | Yes | Like list |
+| DELETE | `/api/v1/lists/:id/like` | Yes | Unlike list |
 
 ### Items (5)
 
@@ -135,6 +173,21 @@ App: **http://localhost:5173**
 | POST | `/api/v1/lists/:list_id/items` | Owner | Add item |
 | PATCH | `/api/v1/items/:id` | Owner | Update item |
 | DELETE | `/api/v1/items/:id` | Owner | Delete item |
+
+### Comments (3)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/lists/:list_id/comments` | Optional | List comments for public/shared list |
+| POST | `/api/v1/lists/:list_id/comments` | Yes | Add comment |
+| DELETE | `/api/v1/comments/:id` | Owner/List Owner | Delete comment |
+
+### Item Reactions (2)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/v1/items/:id/like` | Yes | Like item |
+| DELETE | `/api/v1/items/:id/like` | Yes | Unlike item |
 
 ---
 

@@ -2,15 +2,14 @@
 
 ## Test Coverage Summary
 
-### ✅ All Core Tests Passing: 175/175 (100%)
+### ✅ Core Backend Test Suites Passing
 
-- **Authentication Tests**: 20 tests - covering signup, login, JWT tokens, and /me endpoint
-- **Authorization Tests**: 47 tests - covering lists/items access control and ownership verification
-- **JWT Service Tests**: 17 tests - covering token encoding, decoding, expiration, and edge cases
-- **Model Tests**: 28 tests - covering User, List, and Item models
-- **Request Tests**: 32 tests - covering CRUD operations with authentication
-- **Security Tests**: 23 tests - covering XSS prevention, user status, input validation
-- **User Status Tests**: 11 tests - covering login blocking, token invalidation
+- **Scope**: `spec/models`, `spec/requests`, `spec/services`
+- **Includes**:
+  - authentication + authorization
+  - list/item CRUD
+  - comments and reactions (likes)
+  - security behavior (XSS sanitization, rate limiting helpers, status checks)
 
 ### Test Breakdown by Category
 
@@ -87,14 +86,14 @@
   - Default values
   - Factory validity
 
-- **List Model** (9 tests)
+- **List Model**
   - Validations (title, visibility)
   - Associations (belongs_to user, has_many items)
   - Scopes (public_lists)
   - Dependent destroy
   - Factory validity
 
-- **Item Model** (9 tests)
+- **Item Model**
   - Validations (name, rating range)
   - Associations (belongs_to list)
   - Rating constraints
@@ -166,9 +165,10 @@ create(:item, list: list)        # Item for specific list
 create(:item, rating: 5)         # Item with rating
 ```
 
-## Integration Tests (Swagger)
+## Integration Tests (Swagger / OpenAPI)
 
-**Note:** Integration tests for Swagger documentation (17 tests) require updates to include authentication. These are lower priority as they only affect API documentation generation, not actual functionality.
+**Current status:** Swagger integration specs are not part of the core pass gate.  
+They may fail until OpenAPI examples are refreshed for the latest auth + permission behavior.
 
 To update integration tests:
 1. Add JWT token generation in `spec/integration/api/v1/*_spec.rb`
@@ -178,7 +178,7 @@ To update integration tests:
 ## Continuous Integration
 
 ### Pre-commit Checklist
-- [ ] All core tests passing (175/175)
+- [ ] Core backend suites passing (`spec/models`, `spec/requests`, `spec/services`)
 - [ ] No new linter errors introduced
 - [ ] Authentication headers included in protected endpoint tests
 - [ ] Factories updated if models changed
@@ -261,14 +261,12 @@ RAILS_ENV=test bundle exec rspec
 
 ## Next Steps
 
-1. **Update Swagger Integration Tests** (17 tests pending)
-   - Add authentication to integration specs
-   - Update OpenAPI documentation examples
+1. **Refresh Swagger Integration Specs**
+   - Update authentication and ownership scenarios in `spec/integration/api/v1/*`
+   - Regenerate endpoint examples to match current API responses
 
-2. **Add Feature Tests** (Future)
-   - End-to-end user flows
-   - Multi-user scenarios
-   - Complex authorization chains
+2. **Add More Multi-user Request Specs**
+   - Expanded moderation and reaction edge cases
 
 3. **Performance Tests** (Future)
    - JWT token generation benchmarks

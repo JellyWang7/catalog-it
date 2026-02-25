@@ -2,6 +2,8 @@ class List < ApplicationRecord
   belongs_to :user
   
   has_many :items, dependent: :destroy
+  has_many :comments, dependent: :destroy
+  has_many :list_likes, dependent: :destroy
   
   validates :title, presence: true
   validates :visibility, inclusion: { in: %w[public private shared] }
@@ -19,6 +21,16 @@ class List < ApplicationRecord
     end
     save!
     share_code
+  end
+
+  def likes_count
+    list_likes.count
+  end
+
+  def liked_by?(user)
+    return false unless user
+
+    list_likes.exists?(user_id: user.id)
   end
   
   private

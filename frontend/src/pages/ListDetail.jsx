@@ -19,6 +19,10 @@ export default function ListDetail() {
   const [showAddItem, setShowAddItem] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null); // { type: 'item'|'list', id, name }
   const [sharing, setSharing] = useState(false);
+  const [commentBody, setCommentBody] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [listLikeLoading, setListLikeLoading] = useState(false);
+  const [itemLikeLoading, setItemLikeLoading] = useState({});
 
   const isOwner = isAuthenticated && list && user?.id === list.user_id;
 
@@ -101,6 +105,97 @@ export default function ListDetail() {
     }
   };
 
+  const ensureAuthenticated = () => {
+    if (isAuthenticated) return true;
+    toast.error('Please log in to use this feature');
+    return false;
+  };
+
+  const handleToggleListLike = async () => {
+    if (!ensureAuthenticated()) return;
+
+    setListLikeLoading(true);
+    try {
+      const isLiked = !!list.liked_by_current_user;
+      const res = isLiked ? await listsService.unlike(list.id) : await listsService.like(list.id);
+      setList((prev) => ({
+        ...prev,
+        likes_count: res.data.likes_count,
+        liked_by_current_user: res.data.liked_by_current_user,
+      }));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update list like');
+    } finally {
+      setListLikeLoading(false);
+    }
+  };
+
+  const handleToggleItemLike = async (item) => {
+    if (!ensureAuthenticated()) return;
+
+    setItemLikeLoading((prev) => ({ ...prev, [item.id]: true }));
+    try {
+      const isLiked = !!item.liked_by_current_user;
+      const res = isLiked ? await itemsService.unlike(item.id) : await itemsService.like(item.id);
+
+      setList((prev) => ({
+        ...prev,
+        items: (prev.items || []).map((existingItem) =>
+          existingItem.id === item.id
+            ? {
+                ...existingItem,
+                likes_count: res.data.likes_count,
+                liked_by_current_user: res.data.liked_by_current_user,
+              }
+            : existingItem
+        ),
+      }));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update item like');
+    } finally {
+      setItemLikeLoading((prev) => ({ ...prev, [item.id]: false }));
+    }
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!ensureAuthenticated()) return;
+
+    const body = commentBody.trim();
+    if (!body) {
+      toast.error('Please enter a comment');
+      return;
+    }
+
+    setSubmittingComment(true);
+    try {
+      const res = await listsService.addComment(list.id, body);
+      setList((prev) => ({
+        ...prev,
+        comments: [res.data, ...(prev.comments || [])],
+      }));
+      setCommentBody('');
+      toast.success('Comment posted');
+    } catch (err) {
+      toast.error(err.response?.data?.errors?.join(', ') || err.response?.data?.error || 'Failed to post comment');
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await listsService.deleteComment(commentId);
+      setList((prev) => ({
+        ...prev,
+        comments: (prev.comments || []).filter((comment) => comment.id !== commentId),
+      }));
+      toast.success('Comment deleted');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete comment');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -112,6 +207,7 @@ export default function ListDetail() {
   if (!list) return null;
 
   const items = list.items || [];
+  const comments = list.comments || [];
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -141,6 +237,18 @@ export default function ListDetail() {
               }`}>
                 {items.length} Items | {list.visibility?.toUpperCase()}
               </span>
+              <button
+                onClick={handleToggleListLike}
+                disabled={listLikeLoading}
+                className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors disabled:opacity-60 ${
+                  list.liked_by_current_user
+                    ? 'bg-pink-100 text-pink-700 border-pink-300 hover:bg-pink-200'
+                    : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
+                }`}
+                title="Like this list"
+              >
+                {list.liked_by_current_user ? '👍 Liked' : '👍 I like it'} ({list.likes_count || 0})
+              </button>
             </div>
           </div>
 
@@ -234,12 +342,26 @@ export default function ListDetail() {
                   </div>
 
                   {/* Rating */}
-                  <div className="flex items-center ml-4 flex-shrink-0">
-                    {item.rating ? (
-                      <StarRating rating={item.rating} />
-                    ) : (
-                      <span className="text-sm text-gray-400">No rating</span>
-                    )}
+                  <div className="flex flex-col items-end gap-1 ml-4 flex-shrink-0">
+                    <div className="flex items-center">
+                      {item.rating ? (
+                        <StarRating rating={item.rating} />
+                      ) : (
+                        <span className="text-sm text-gray-400">No rating</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleToggleItemLike(item)}
+                      disabled={itemLikeLoading[item.id]}
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors disabled:opacity-60 ${
+                        item.liked_by_current_user
+                          ? 'bg-pink-100 text-pink-700 border-pink-300 hover:bg-pink-200'
+                          : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
+                      }`}
+                      title="Like this item"
+                    >
+                      {item.liked_by_current_user ? '👍 Liked' : '👍 Like'} ({item.likes_count || 0})
+                    </button>
                   </div>
 
                   {/* Owner actions */}
@@ -267,6 +389,70 @@ export default function ListDetail() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Comments */}
+        <div className="mt-10 border-t pt-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Comments</h2>
+
+          {(list.visibility === 'public' || list.visibility === 'shared') && (
+            <form onSubmit={handleAddComment} className="mb-6">
+              <textarea
+                value={commentBody}
+                onChange={(e) => setCommentBody(e.target.value)}
+                rows={3}
+                maxLength={500}
+                placeholder={isAuthenticated ? 'Share your thoughts about this list...' : 'Log in to leave a comment'}
+                disabled={!isAuthenticated || submittingComment}
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-teal disabled:bg-gray-100 disabled:text-gray-500"
+              />
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-xs text-gray-400">{commentBody.length}/500</span>
+                <button
+                  type="submit"
+                  disabled={!isAuthenticated || submittingComment || !commentBody.trim()}
+                  className="px-4 py-2 bg-deep-blue text-white text-sm font-semibold rounded-lg hover:bg-deep-blue-800 disabled:opacity-60"
+                >
+                  {submittingComment ? 'Posting...' : 'Post Comment'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {comments.length === 0 ? (
+            <p className="text-gray-400">No comments yet. Be the first to comment.</p>
+          ) : (
+            <div className="space-y-3">
+              {comments.map((comment) => {
+                const canDeleteComment =
+                  isAuthenticated && (comment.user_id === user?.id || list.user_id === user?.id);
+
+                return (
+                  <div key={comment.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">
+                          {comment.user?.username || `User #${comment.user_id}`}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {new Date(comment.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      {canDeleteComment && (
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="text-xs text-red-600 hover:text-red-700 font-medium"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">{comment.body}</p>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

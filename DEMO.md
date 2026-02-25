@@ -1,6 +1,6 @@
 # CatalogIt - Demo Guide
 
-**Date**: February 20, 2026
+**Date**: February 25, 2026
 **Branch**: `midterm-demo`
 
 ---
@@ -25,12 +25,6 @@ npm install
 npm run dev
 ```
 
-For SQL queries, open a third tab when needed:
-
-```bash
-psql -d catalogit_development
-```
-
 **URLs**:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3000
@@ -38,28 +32,33 @@ psql -d catalogit_development
 
 ---
 
-## 2. Show the Database (SQL)
+## 2. Show the Database (DBeaver)
 
-### List all tables
+Connect to `catalogit_development` in DBeaver, then run these queries in a SQL Editor tab.
 
-```sql
-\dt
-```
-
-```
- Schema |         Name         | Type  | Owner
---------+----------------------+-------+--------
- public | items                | table | Jelly1
- public | lists                | table | Jelly1
- public | users                | table | Jelly1
-```
-
-### Show table schemas
+### Show all tables
 
 ```sql
-\d users
-\d lists
-\d items
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+ORDER BY table_name;
+```
+
+### Show table columns
+
+```sql
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_name = 'users' ORDER BY ordinal_position;
+
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_name = 'lists' ORDER BY ordinal_position;
+
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_name = 'items' ORDER BY ordinal_position;
 ```
 
 ### Show all users
@@ -98,8 +97,14 @@ SELECT COUNT(*) AS total, COUNT(DISTINCT email) AS unique_emails,
        COUNT(DISTINCT username) AS unique_names FROM users;
 
 -- Foreign keys enforced
-SELECT conname, conrelid::regclass, confrelid::regclass
-FROM pg_constraint WHERE contype = 'f';
+SELECT tc.constraint_name, tc.table_name, kcu.column_name,
+       ccu.table_name AS foreign_table
+FROM information_schema.table_constraints tc
+JOIN information_schema.key_column_usage kcu
+  ON tc.constraint_name = kcu.constraint_name
+JOIN information_schema.constraint_column_usage ccu
+  ON ccu.constraint_name = tc.constraint_name
+WHERE tc.constraint_type = 'FOREIGN KEY';
 ```
 
 ---
@@ -151,12 +156,13 @@ Open **http://localhost:3000/api-docs** in your browser.
    ```
 4. Click **Execute** — show the 200 response with the new list
 
-### Step 5 — Show all 20 endpoints
+### Step 5 — Show all 27 endpoints
 
 Scroll through Swagger to highlight all endpoint groups:
 - **Authentication (8)** — signup, login, me, forgot/reset password, MFA setup/verify/disable
-- **Lists (7)** — CRUD + share + shared lookup
-- **Items (5)** — CRUD nested under lists
+- **Lists (9)** — CRUD + share + shared lookup + list like/unlike
+- **Items (7)** — CRUD + item like/unlike
+- **Comments (3)** — list comments + delete
 
 ---
 
@@ -165,7 +171,14 @@ Scroll through Swagger to highlight all endpoint groups:
 ```bash
 cd backend
 RAILS_ENV=test bundle exec rspec spec/models spec/requests spec/services
-# 175 examples, 0 failures
+# core backend specs
+```
+
+```bash
+cd frontend
+npm run test
+npm run test:e2e
+# frontend UI + E2E checks
 ```
 
 ---
@@ -194,11 +207,12 @@ Open http://localhost:5173 and walk through:
 | 6 | **List Detail** (`/lists/:id`) | Click a list, show items with star ratings |
 | 7 | **Add Item** | Click "+ Add Item", fill name/category/rating/notes |
 | 8 | **Share List** | Click "Share" button, short URL copied to clipboard |
-| 9 | **Explore** (`/explore`) | Public list grid, search, sort dropdown (5 options) |
-| 10 | **Profile** (`/profile`) | Avatar, role badge, status, stats cards, MFA section |
-| 11 | **MFA Setup** | Click "Enable MFA", copy secret, verify with TOTP code |
-| 12 | **Forgot Password** (`/forgot-password`) | Enter email, show reset token (dev mode) |
-| 13 | **Mobile Nav** | Resize browser narrow, show hamburger menu |
+| 9 | **List Interactions** (`/lists/:id`) | Like list, like item, add comment, delete own comment |
+| 10 | **Explore** (`/explore`) | Public list grid, search, sort dropdown (5 options) |
+| 11 | **Profile** (`/profile`) | Avatar, role badge, status, stats cards, MFA section |
+| 12 | **MFA Setup** | Click "Enable MFA", copy secret, verify with TOTP code |
+| 13 | **Forgot Password** (`/forgot-password`) | Enter email, show reset token (dev mode) |
+| 14 | **Mobile Nav** | Resize browser narrow, show hamburger menu |
 
 ### Demo Accounts
 
@@ -223,5 +237,6 @@ Open http://localhost:5173 and walk through:
 - **Admin MFA** — TOTP-based two-factor authentication (setup, verify, disable)
 - **Security** — XSS prevention, rate limiting, user status, CORS, error boundary
 - **Share Lists** — generates short URL (`/s/:code`), clipboard copy
+- **Comments + Likes** — social feedback on public/shared lists and list items
 - **Responsive** — mobile hamburger menu, works on all screen sizes
-- **175 Tests** — models, requests, services, auth, authorization, security
+- **Automated Test Coverage** — backend core specs + frontend UI tests + frontend E2E tests

@@ -21,10 +21,10 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 - **bcrypt** (password hashing)
 - **ROTP** (TOTP-based MFA for admin accounts)
 - **ActiveRecord::Encryption** (AES-256-GCM for sensitive fields)
-- **RSpec** (175 tests passing)
+- **RSpec** (core suites passing; Swagger integration specs tracked separately)
 - **Swagger/OpenAPI** (interactive docs)
 
-## API Endpoints (20 total)
+## API Endpoints (27 total)
 
 ### Authentication (8)
 
@@ -50,6 +50,8 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 | DELETE | `/api/v1/lists/:id` | Delete list (owner) |
 | POST | `/api/v1/lists/:id/share` | Generate share code (owner) |
 | GET | `/api/v1/lists/shared/:code` | Look up list by share code |
+| POST | `/api/v1/lists/:id/like` | Like list (auth) |
+| DELETE | `/api/v1/lists/:id/like` | Unlike list (auth) |
 
 ### Items
 
@@ -60,6 +62,16 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 | POST | `/api/v1/lists/:list_id/items` | Add item (owner) |
 | PATCH | `/api/v1/items/:id` | Update item (owner) |
 | DELETE | `/api/v1/items/:id` | Delete item (owner) |
+| POST | `/api/v1/items/:id/like` | Like item (auth) |
+| DELETE | `/api/v1/items/:id/like` | Unlike item (auth) |
+
+### Comments
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/lists/:list_id/comments` | List comments (public/shared lists) |
+| POST | `/api/v1/lists/:list_id/comments` | Add comment (auth) |
+| DELETE | `/api/v1/comments/:id` | Delete comment (comment owner or list owner) |
 
 ## Security
 
@@ -77,8 +89,8 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 ## Testing
 
 ```bash
-RAILS_ENV=test bundle exec rspec          # all 175 tests
-RAILS_ENV=test bundle exec rspec --format documentation  # verbose
+RAILS_ENV=test bundle exec rspec spec/models spec/requests spec/services
+RAILS_ENV=test bundle exec rspec --format documentation
 ```
 
 ## Documentation

@@ -21,6 +21,21 @@ const listsService = {
 
   /** GET /api/v1/lists/shared/:shareCode — look up list by share code */
   getByShareCode: (shareCode) => api.get(`/lists/shared/${shareCode}`),
+
+  /** GET /api/v1/lists/:listId/comments — list comments */
+  getComments: (listId) => api.get(`/lists/${listId}/comments`),
+
+  /** POST /api/v1/lists/:listId/comments — add comment */
+  addComment: (listId, body) => api.post(`/lists/${listId}/comments`, { comment: { body } }),
+
+  /** DELETE /api/v1/comments/:id — delete comment */
+  deleteComment: (commentId) => api.delete(`/comments/${commentId}`),
+
+  /** POST /api/v1/lists/:id/like — like list */
+  like: (id) => api.post(`/lists/${id}/like`),
+
+  /** DELETE /api/v1/lists/:id/like — unlike list */
+  unlike: (id) => api.delete(`/lists/${id}/like`),
 };
 
 export default listsService;

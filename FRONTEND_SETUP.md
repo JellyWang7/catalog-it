@@ -1,14 +1,14 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: February 20, 2026  
+**Last Updated**: February 25, 2026  
 **Branch**: `midterm-demo`  
-**Status**: 95% -- Midterm Ready
+**Status**: 100% -- Feedback Features + Automated Tests Enabled
 
 ---
 
 ## Prerequisites
 
-- Node.js 16+ (tested on v16.14.0; 18+ recommended)
+- Node.js 18+ recommended (Node 16 currently works with pinned test tooling)
 - npm 8+
 - Backend Rails API running on `http://localhost:3000`
 
@@ -48,17 +48,19 @@ frontend/
 │   │   ├── ResetPassword.jsx    # Set new password
 │   │   ├── Explore.jsx          # Public lists (search + sort)
 │   │   ├── Dashboard.jsx        # User dashboard (search, filter, CRUD, stats)
-│   │   ├── ListDetail.jsx       # List + items + share
+│   │   ├── ListDetail.jsx       # List + items + share + comments + likes
 │   │   ├── SharedList.jsx       # /s/:code redirect
 │   │   ├── Profile.jsx          # User profile + stats
 │   │   └── NotFound.jsx         # 404
 │   ├── services/
 │   │   ├── api.js               # Axios + interceptors
 │   │   ├── auth.js              # Auth API (signup/login/reset/MFA)
-│   │   ├── lists.js             # Lists CRUD + share
-│   │   └── items.js             # Items CRUD
+│   │   ├── lists.js             # Lists CRUD + share + comments + list likes
+│   │   └── items.js             # Items CRUD + item likes
 │   ├── hooks/                   # Custom hooks
 │   ├── utils/                   # Helpers
+│   ├── test/                    # Vitest setup
+│   └── e2e/                     # Playwright tests
 │   ├── App.jsx                  # Router + ErrorBoundary
 │   ├── main.jsx                 # Entry point
 │   └── index.css                # Tailwind + Inter font
@@ -130,6 +132,9 @@ frontend/
 - Items displayed with star ratings
 - Add/edit/delete items via modals
 - Share button generates short URL (`/s/:code`)
+- Comments on public/shared lists
+- "Thumbs up / I like it" reactions for lists and items
+- Comment moderation: comment owner or list owner can delete
 - Owner vs. visitor views
 
 ### Profile
@@ -151,10 +156,29 @@ frontend/
 `signup`, `login`, `me`, `forgotPassword`, `resetPassword`, `mfaSetup`, `mfaVerify`, `mfaDisable`
 
 ### Lists (`services/lists.js`)
-`getAll`, `getById`, `create`, `update`, `delete`, `share`, `getByShareCode`
+`getAll`, `getById`, `create`, `update`, `delete`, `share`, `getByShareCode`, `getComments`, `addComment`, `deleteComment`, `like`, `unlike`
 
 ### Items (`services/items.js`)
-`getByListId`, `getById`, `create`, `update`, `delete`
+`getByListId`, `getById`, `create`, `update`, `delete`, `like`, `unlike`
+
+---
+
+## Testing
+
+### Scripts
+
+```bash
+cd frontend
+npm run test        # Vitest (UI/component tests)
+npm run test:e2e    # Playwright end-to-end tests
+npm run build       # Production build verification
+```
+
+### Coverage Focus
+
+- UI tests: likes, comments, permissions, unauthenticated behavior
+- E2E tests: list/item likes + comment interactions + auth-aware UX
+- CI workflow on PRs: `.github/workflows/frontend-tests.yml`
 
 ---
 
@@ -178,8 +202,8 @@ frontend/
 
 ---
 
-## What's Next (post-midterm)
+## What's Next
 
-- [ ] Component tests (Vitest + React Testing Library)
 - [ ] Server-side search/filter API
+- [ ] Engagement analytics views (comments/reactions counts)
 - [ ] Deployment (Netlify + Render)

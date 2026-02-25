@@ -19,6 +19,8 @@ Runs at **http://localhost:5173** -- requires Rails backend on `:3000`.
 | `npm run dev` | Start dev server with HMR |
 | `npm run build` | Production build to `dist/` |
 | `npm run preview` | Preview production build |
+| `npm run test` | Run Vitest UI/component tests |
+| `npm run test:e2e` | Run Playwright E2E tests |
 
 ## Stack
 
@@ -43,7 +45,7 @@ src/
 |-------|------|-------------|
 | `/` | Home | Landing page |
 | `/explore` | Explore | Public lists with search + sort |
-| `/lists/:id` | ListDetail | List + items + ratings + share |
+| `/lists/:id` | ListDetail | List + items + ratings + share + comments + likes |
 | `/s/:code` | SharedList | Resolve share code |
 | `/login` | Login | Sign in (with MFA step if enabled) |
 | `/signup` | Signup | Register |
