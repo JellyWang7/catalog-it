@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import listsService from '../services/lists';
@@ -22,19 +22,42 @@ export default function Dashboard() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [analytics, setAnalytics] = useState({
+    total_lists: 0,
+    public_lists: 0,
+    total_items: 0,
+    total_comments_received: 0,
+    total_list_likes_received: 0,
+    total_item_likes_received: 0,
+    top_lists: [],
+  });
 
   useEffect(() => {
-    fetchLists();
-  }, []);
+    if (!user?.id) return;
 
-  const fetchLists = async () => {
+    const timeoutId = setTimeout(() => {
+      fetchDashboardData();
+    }, 250);
+
+    return () => clearTimeout(timeoutId);
+  }, [user?.id, search, filter]);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
     try {
-      const res = await listsService.getAll();
-      // Filter to only current user's lists
-      const myLists = res.data.filter((l) => l.user_id === user?.id);
-      setLists(myLists);
+      const [listsRes, analyticsRes] = await Promise.all([
+        listsService.getAll({
+          owner_only: true,
+          search: search.trim() || undefined,
+          visibility: filter === 'all' ? undefined : filter,
+          sort: 'newest',
+        }),
+        listsService.getAnalytics(),
+      ]);
+      setLists(listsRes.data);
+      setAnalytics(analyticsRes.data);
     } catch {
-      toast.error('Failed to load your lists');
+      toast.error('Failed to load your dashboard data');
     } finally {
       setLoading(false);
     }
@@ -45,7 +68,7 @@ export default function Dashboard() {
       await listsService.create(data);
       toast.success('List created!');
       setShowCreate(false);
-      fetchLists();
+      fetchDashboardData();
     } catch (err) {
       toast.error(err.response?.data?.errors?.join(', ') || 'Failed to create list');
     }
@@ -56,7 +79,7 @@ export default function Dashboard() {
       await listsService.update(editingList.id, data);
       toast.success('List updated!');
       setEditingList(null);
-      fetchLists();
+      fetchDashboardData();
     } catch (err) {
       toast.error(err.response?.data?.errors?.join(', ') || 'Failed to update list');
     }
@@ -68,30 +91,15 @@ export default function Dashboard() {
       await listsService.delete(deleteTarget.id);
       toast.success('List deleted');
       setDeleteTarget(null);
-      fetchLists();
+      fetchDashboardData();
     } catch {
       toast.error('Failed to delete list');
     }
   };
 
-  const publicLists = lists.filter((l) => l.visibility === 'public');
-  const totalItems = lists.reduce((sum, l) => sum + (l.items?.length || 0), 0);
-
-  const displayed = useMemo(() => {
-    let out = lists;
-    if (filter !== 'all') {
-      out = out.filter((l) => l.visibility === filter);
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      out = out.filter(
-        (l) =>
-          l.title?.toLowerCase().includes(q) ||
-          l.description?.toLowerCase().includes(q)
-      );
-    }
-    return out;
-  }, [lists, filter, search]);
+  const totalReactions =
+    (analytics.total_list_likes_received || 0) + (analytics.total_item_likes_received || 0);
+  const displayed = lists;
 
   if (loading) {
     return (
@@ -120,23 +128,31 @@ export default function Dashboard() {
       </header>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <div className="bg-white rounded-xl p-5 shadow-md border-l-4 border-deep-blue">
           <p className="text-sm text-gray-500 font-medium">Total Lists</p>
-          <p className="text-3xl font-extrabold text-gray-900">{lists.length}</p>
+          <p className="text-3xl font-extrabold text-gray-900">{analytics.total_lists}</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-md border-l-4 border-teal">
           <p className="text-sm text-gray-500 font-medium">Public Lists</p>
-          <p className="text-3xl font-extrabold text-gray-900">{publicLists.length}</p>
+          <p className="text-3xl font-extrabold text-gray-900">{analytics.public_lists}</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-md border-l-4 border-yellow-500">
           <p className="text-sm text-gray-500 font-medium">Total Items</p>
-          <p className="text-3xl font-extrabold text-gray-900">{totalItems}</p>
+          <p className="text-3xl font-extrabold text-gray-900">{analytics.total_items}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 shadow-md border-l-4 border-purple-500">
+          <p className="text-sm text-gray-500 font-medium">Comments Received</p>
+          <p className="text-3xl font-extrabold text-gray-900">{analytics.total_comments_received}</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 shadow-md border-l-4 border-pink-500">
+          <p className="text-sm text-gray-500 font-medium">Reactions Received</p>
+          <p className="text-3xl font-extrabold text-gray-900">{totalReactions}</p>
         </div>
       </div>
 
       {/* Search & Filter */}
-      {lists.length > 0 && (
+      {(analytics.total_lists || 0) > 0 && (
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
             <input
@@ -166,14 +182,12 @@ export default function Dashboard() {
               </option>
             ))}
           </select>
-          <span className="self-center text-sm text-gray-400 whitespace-nowrap">
-            {displayed.length} of {lists.length} lists
-          </span>
+          <span className="self-center text-sm text-gray-400 whitespace-nowrap">{displayed.length} list results</span>
         </div>
       )}
 
       {/* Lists */}
-      {lists.length === 0 ? (
+      {(analytics.total_lists || 0) === 0 ? (
         <div className="bg-white rounded-2xl shadow-lg p-16 text-center">
           <p className="text-gray-400 text-lg mb-4">You don&apos;t have any lists yet.</p>
           <button

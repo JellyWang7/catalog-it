@@ -25,7 +25,7 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 - **RSpec** (core suites passing; Swagger integration specs tracked separately)
 - **Swagger/OpenAPI** (interactive docs)
 
-## API Endpoints (27 total)
+## API Endpoints (28 total)
 
 ### Authentication (8)
 
@@ -45,6 +45,7 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/v1/lists` | Public lists (+ own if auth'd) |
+| GET | `/api/v1/lists/analytics` | Engagement analytics for current user's lists (auth) |
 | GET | `/api/v1/lists/:id` | List with items |
 | POST | `/api/v1/lists` | Create list (auth) |
 | PATCH | `/api/v1/lists/:id` | Update list (owner) |
@@ -55,6 +56,13 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 | DELETE | `/api/v1/lists/:id/like` | Unlike list (auth) |
 
 > Note: list owners cannot like their own lists.
+>
+> `GET /api/v1/lists` supports query params for server-side filtering:
+> - `search=<text>`
+> - `visibility=public|private|shared|all`
+> - `sort=newest|oldest|name_asc|name_desc|most_items|most_liked`
+> - `owner_only=true` (auth required)
+> - `public_only=true`
 
 ### Items
 

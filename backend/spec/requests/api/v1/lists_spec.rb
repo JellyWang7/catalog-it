@@ -2,10 +2,12 @@ require 'rails_helper'
 
 RSpec.describe "Api::V1::Lists", type: :request do
   let(:user) { create(:user) }
+  let(:other_user) { create(:user) }
   let(:token) { JsonWebToken.encode(user_id: user.id) }
   let(:auth_headers) { { 'Authorization' => "Bearer #{token}" } }
   let!(:public_lists) { create_list(:list, 3, :public, :with_items, user: user) }
   let!(:private_list) { create(:list, visibility: 'private', user: user) }
+  let!(:other_public_list) { create(:list, :public, :with_items, user: other_user) }
 
   describe "GET /api/v1/lists" do
     before { get '/api/v1/lists' }
@@ -20,7 +22,7 @@ RSpec.describe "Api::V1::Lists", type: :request do
 
     it "returns only public lists" do
       json_response = JSON.parse(response.body)
-      expect(json_response.size).to eq(3)
+      expect(json_response.size).to eq(4)
     end
 
     it "includes user and items in response" do
@@ -35,6 +37,52 @@ RSpec.describe "Api::V1::Lists", type: :request do
       json_response = JSON.parse(response.body)
       list_ids = json_response.map { |list| list['id'] }
       expect(list_ids).not_to include(private_list.id)
+    end
+
+    context "with search and sort filters" do
+      it "filters results by search term" do
+        get '/api/v1/lists', params: { search: public_lists.first.title[0..4], public_only: true }
+        json_response = JSON.parse(response.body)
+        expect(json_response).not_to be_empty
+        expect(json_response.all? { |l| l['title'].downcase.include?(public_lists.first.title[0..4].downcase) || l['description'].to_s.downcase.include?(public_lists.first.title[0..4].downcase) }).to be(true)
+      end
+
+      it "returns only owner lists when owner_only is true" do
+        get '/api/v1/lists', params: { owner_only: true }, headers: auth_headers
+        json_response = JSON.parse(response.body)
+        expect(json_response).not_to be_empty
+        expect(json_response.all? { |l| l['user_id'] == user.id }).to be(true)
+      end
+
+      it "returns unauthorized for owner_only without auth" do
+        get '/api/v1/lists', params: { owner_only: true }
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
+  describe "GET /api/v1/lists/analytics" do
+    let!(:engaged_list) { create(:list, :public, user: user) }
+    let!(:engaged_item) { create(:item, list: engaged_list) }
+    let!(:comment) { create(:comment, list: engaged_list, user: other_user) }
+    let!(:list_like) { create(:list_like, list: engaged_list, user: other_user) }
+    let!(:item_like) { create(:item_like, item: engaged_item, user: other_user) }
+
+    it "returns analytics for authenticated owner" do
+      get '/api/v1/lists/analytics', headers: auth_headers
+
+      expect(response).to have_http_status(:success)
+      json_response = JSON.parse(response.body)
+      expect(json_response).to include('total_lists', 'public_lists', 'total_items', 'total_comments_received', 'total_list_likes_received', 'total_item_likes_received', 'top_lists')
+      expect(json_response['total_comments_received']).to be >= 1
+      expect(json_response['total_list_likes_received']).to be >= 1
+      expect(json_response['total_item_likes_received']).to be >= 1
+      expect(json_response['top_lists']).to be_an(Array)
+    end
+
+    it "requires authentication" do
+      get '/api/v1/lists/analytics'
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 

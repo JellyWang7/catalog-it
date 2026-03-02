@@ -3,27 +3,68 @@ module Api
     class ListsController < ApplicationController
       skip_before_action :authenticate_request
       before_action :authenticate_request_optional, only: [:index, :show, :shared]
-      before_action :authenticate_request_required, only: [:create, :update, :destroy, :share]
+      before_action :authenticate_request_required, only: [:create, :update, :destroy, :share, :analytics]
       before_action :set_list, only: [:show, :update, :destroy, :share]
       before_action :authorize_list_owner, only: [:update, :destroy, :share]
+      SORT_OPTIONS = %w[newest oldest name_asc name_desc most_items most_liked].freeze
       
       # GET /api/v1/lists
       # Returns public lists if not authenticated, or user's own lists + public lists if authenticated
       def index
-        if current_user
-          # Show user's own lists (all visibility) + other users' public lists
-          @lists = List.where(user_id: current_user.id)
-                       .or(List.where(visibility: 'public'))
-                       .includes(:user, :items, :list_likes)
-                       .order(created_at: :desc)
-        else
-          # Only show public lists if not authenticated
-          @lists = List.where(visibility: 'public')
-                       .includes(:user, :items, :list_likes)
-                       .order(created_at: :desc)
-        end
-        
-        render json: @lists.map { |list| serialize_list(list, include_comments: false) }
+        lists = base_list_scope
+        return if performed?
+        lists = apply_search_filter(lists)
+        lists = apply_visibility_filter(lists)
+        lists = lists.includes(:user, :items, :list_likes, :comments).to_a
+        lists = sort_lists(lists)
+
+        render json: lists.map { |list| serialize_list(list, include_comments: false) }
+      end
+
+      # GET /api/v1/lists/analytics
+      # Returns dashboard analytics for the authenticated user's lists
+      def analytics
+        user_lists = current_user.lists
+        list_ids = user_lists.ids
+
+        item_scope = Item.where(list_id: list_ids)
+        item_ids = item_scope.ids
+
+        comments_by_list = Comment.where(list_id: list_ids).group(:list_id).count
+        list_likes_by_list = ListLike.where(list_id: list_ids).group(:list_id).count
+        item_likes_by_list = if item_ids.empty?
+                               {}
+                             else
+                               Item.joins(:item_likes).where(list_id: list_ids).group(:list_id).count('item_likes.id')
+                             end
+
+        top_lists = user_lists.map do |list|
+          comments_count = comments_by_list[list.id] || 0
+          list_likes_count = list_likes_by_list[list.id] || 0
+          item_likes_count = item_likes_by_list[list.id] || 0
+          item_count = list.items.count
+
+          {
+            id: list.id,
+            title: list.title,
+            visibility: list.visibility,
+            items_count: item_count,
+            comments_count: comments_count,
+            list_likes_count: list_likes_count,
+            item_likes_count: item_likes_count,
+            engagement_score: comments_count + list_likes_count + item_likes_count
+          }
+        end.sort_by { |entry| -entry[:engagement_score] }.first(5)
+
+        render json: {
+          total_lists: user_lists.count,
+          public_lists: user_lists.where(visibility: 'public').count,
+          total_items: item_scope.count,
+          total_comments_received: Comment.where(list_id: list_ids).count,
+          total_list_likes_received: ListLike.where(list_id: list_ids).count,
+          total_item_likes_received: item_ids.empty? ? 0 : ItemLike.where(item_id: item_ids).count,
+          top_lists: top_lists
+        }
       end
       
       # GET /api/v1/lists/:id
@@ -114,6 +155,62 @@ module Api
         params.require(:list).permit(:title, :description, :visibility)
       end
 
+      def truthy_param?(value)
+        ActiveModel::Type::Boolean.new.cast(value)
+      end
+
+      def base_list_scope
+        if truthy_param?(params[:owner_only])
+          unless current_user
+            render json: { error: 'Unauthorized' }, status: :unauthorized
+            return List.none
+          end
+          List.where(user_id: current_user.id)
+        elsif truthy_param?(params[:public_only])
+          List.where(visibility: 'public')
+        elsif current_user
+          List.where(user_id: current_user.id).or(List.where(visibility: 'public'))
+        else
+          List.where(visibility: 'public')
+        end
+      end
+
+      def apply_search_filter(scope)
+        return scope unless params[:search].present?
+
+        query = "%#{params[:search].strip}%"
+        scope.where('lists.title ILIKE ? OR lists.description ILIKE ?', query, query)
+      end
+
+      def apply_visibility_filter(scope)
+        return scope unless params[:visibility].present?
+
+        visibility = params[:visibility]
+        return scope if visibility == 'all'
+        return scope unless %w[public private shared].include?(visibility)
+
+        scope.where(visibility: visibility)
+      end
+
+      def sort_lists(lists)
+        sort = SORT_OPTIONS.include?(params[:sort]) ? params[:sort] : 'newest'
+
+        case sort
+        when 'oldest'
+          lists.sort_by(&:created_at)
+        when 'name_asc'
+          lists.sort_by { |list| list.title.to_s.downcase }
+        when 'name_desc'
+          lists.sort_by { |list| list.title.to_s.downcase }.reverse
+        when 'most_items'
+          lists.sort_by { |list| -list.items.size }
+        when 'most_liked'
+          lists.sort_by { |list| -list.list_likes.size }
+        else
+          lists.sort_by(&:created_at).reverse
+        end
+      end
+
       def serialize_list(list, include_comments: true)
         {
           id: list.id,
@@ -126,6 +223,7 @@ module Api
           updated_at: list.updated_at,
           likes_count: list.likes_count,
           liked_by_current_user: list.liked_by?(current_user),
+          comments_count: list.comments.size,
           user: {
             id: list.user.id,
             username: list.user.username,

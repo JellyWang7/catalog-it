@@ -1,15 +1,15 @@
 # CatalogIt - Project Status
 
-**Last Updated**: February 25, 2026  
+**Last Updated**: March 2, 2026  
 **Branch**: `midterm-demo`  
-**Overall Progress**: 95% | Feedback Features + Automated Frontend Tests Added
+**Overall Progress**: 97% | Search/Analytics Completed, Deployment Remaining
 
 ---
 
 ## Quick Status
 
 ```
-Backend:     ████████████ 100%  (core specs passing, 27 endpoints)
+Backend:     ████████████ 100%  (core specs passing, 28 endpoints)
 Frontend:    ████████████ 100%  (11 routes, comments/likes, UI + E2E tests)
 Security:    ████████████ 100%  (TLS, MFA, XSS, encryption, rate limiting)
 Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
@@ -45,9 +45,13 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 - [x] E2E tests for list/item likes, comments, and auth-aware UI behavior
 
 ### Remaining (post-midterm)
-- [ ] Server-side search/filter API
-- [ ] Comments/reactions analytics in dashboard
 - [ ] Deployment (Render + Netlify)
+
+### Newly Completed
+- [x] Server-side search/filter API (`GET /api/v1/lists` query params for `search`, `visibility`, `sort`)
+- [x] Explore now uses backend filtering/sorting (`public_only=true`)
+- [x] Dashboard now uses backend filtering (`owner_only=true`) and analytics endpoint
+- [x] Comments/reactions analytics in dashboard (`GET /api/v1/lists/analytics`)
 
 ---
 
@@ -127,6 +131,6 @@ cd frontend && npm run build
 
 ---
 
-*Last updated: February 25, 2026*  
-*Backend: 27 endpoints, core specs passing*  
-*Frontend: comments/likes complete, UI + E2E tests passing, production build passing*
+*Last updated: March 2, 2026*  
+*Backend: 28 endpoints, core specs passing (requests/models/services)*  
+*Frontend: comments/likes/search/analytics complete, UI + E2E tests passing*

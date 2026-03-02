@@ -1,6 +1,6 @@
 # CatalogIt - Demo Guide
 
-**Date**: February 25, 2026
+**Date**: March 2, 2026
 **Branch**: `midterm-demo`
 
 ---
@@ -156,11 +156,11 @@ Open **http://localhost:3000/api-docs** in your browser.
    ```
 4. Click **Execute** — show the 200 response with the new list
 
-### Step 5 — Show all 27 endpoints
+### Step 5 — Show all 28 endpoints
 
 Scroll through Swagger to highlight all endpoint groups:
 - **Authentication (8)** — signup, login, me, forgot/reset password, MFA setup/verify/disable
-- **Lists (9)** — CRUD + share + shared lookup + list like/unlike
+- **Lists (10)** — CRUD + share + shared lookup + list like/unlike + analytics
 - **Items (7)** — CRUD + item like/unlike
 - **Comments (3)** — list comments + delete
 
