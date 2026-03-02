@@ -15,7 +15,7 @@ module Api
         return if performed?
         lists = apply_search_filter(lists)
         lists = apply_visibility_filter(lists)
-        lists = lists.includes(:user, :items, :list_likes, :comments).to_a
+        lists = lists.includes(:user, :items, :list_likes, :comments, :attachments).to_a
         lists = sort_lists(lists)
 
         render json: lists.map { |list| serialize_list(list, include_comments: false) }
@@ -224,6 +224,7 @@ module Api
           likes_count: list.likes_count,
           liked_by_current_user: list.liked_by?(current_user),
           comments_count: list.comments.size,
+          attachments: list.attachments.order(created_at: :desc).map { |attachment| serialize_attachment(attachment) },
           user: {
             id: list.user.id,
             username: list.user.username,
@@ -261,6 +262,19 @@ module Api
             id: comment.user.id,
             username: comment.user.username
           }
+        }
+      end
+
+      def serialize_attachment(attachment)
+        {
+          id: attachment.id,
+          kind: attachment.kind,
+          title: attachment.title,
+          url: attachment.link? ? attachment.url : (attachment.asset.attached? ? rails_blob_url(attachment.asset, host: request.base_url) : nil),
+          mime_type: attachment.mime_type,
+          size_bytes: attachment.size_bytes,
+          created_at: attachment.created_at,
+          updated_at: attachment.updated_at
         }
       end
     end

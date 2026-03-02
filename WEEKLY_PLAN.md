@@ -2,7 +2,7 @@
 
 **Last Updated**: March 2, 2026
 **Current Branch**: `midterm-demo`  
-**Project Status**: Midterm Complete + Feedback Iteration
+**Project Status**: Midterm Complete + Feedback Iteration + Attachments v1
 
 ---
 
@@ -13,7 +13,7 @@ Backend:     ████████████ 100%
 Frontend:    ████████████ 100%
 Security:    ████████████ 100%
 Deployment:  ░░░░░░░░░░░░   0%
-Overall:     ███████████░  97%
+Overall:     ████████████  99%
 ```
 
 ---
@@ -86,6 +86,36 @@ See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 - [x] Comments + reactions analytics (engagement counts in dashboard)
 - [ ] Deployment (Render + Netlify)
 
+## New Feature Plan: Attachments (Mar 2-Mar 8)
+
+### Phase 1: Backend Schema + Endpoints
+- [x] Create `attachments` data model (polymorphic: `List`/`Item`, uploader, metadata)
+- [x] Decide storage strategy (ActiveStorage + cloud bucket in production)
+- [x] Add attachment validations (kind, URL for links, MIME allowlist, size limits)
+- [x] Add attachment API endpoints (list/item index + create, attachment delete)
+- [x] Add authorization rules (owner-only upload/delete, visibility-based read)
+- [x] Add security guardrails (dangerous type blocking, size limits, https links)
+
+### Phase 2: Frontend List/Item UI
+- [x] Add attachments service methods (fetch/upload/create-link/delete)
+- [x] Add list-level Attachments section in `ListDetail` (upload + link + render cards)
+- [ ] Add item-level attachments UI (if enabled in scope)
+- [x] Add UX states (loading/empty/permission-disabled/failure toasts)
+- [x] Add attachment previews (link cards + uploaded file/image links)
+
+### Phase 3: Tests + Polish + Docs
+- [x] Backend model/request tests for attachments (happy path + auth + validation)
+- [x] Frontend unit tests for attachment interactions and permission behavior
+- [x] Frontend E2E tests for upload/link/view/delete flows
+- [ ] Swagger docs for attachment endpoints and request/response schemas
+- [x] Update docs (`PROJECT_STATUS.md`, backend/frontend `README.md`, `DEMO.md`)
+
+### Initial Scope Constraints (v1)
+- [x] Start with list-level attachments first; expand to item-level after v1 is stable
+- [x] Allowed upload MIME types: jpeg/png/webp/pdf/txt
+- [x] Max upload size: 10MB
+- [x] Links must be `https://`
+
 See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 
 ---
@@ -101,7 +131,7 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 - [x] API documentation (Swagger)
 - [x] Security (TLS, MFA, XSS, rate limiting, encryption, CORS)
 - [x] Core backend tests passing (requests/models/services)
-- [x] 28 API endpoints (auth, lists, items, comments, likes, analytics)
+- [x] 33 API endpoints (auth, lists, items, comments, likes, analytics, attachments)
 - [x] Comments API (public/shared lists)
 - [x] Reactions API (likes on lists/items)
 
@@ -120,6 +150,7 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 - [x] Loading skeletons + empty states + toasts
 - [x] Comment UI for public/shared list pages
 - [x] Like/Thumbs-up UI for lists and items
+- [x] List-level attachment uploads (files/images/links)
 - [x] Component tests
 - [x] E2E tests (Playwright)
 - [x] Server-side search/filter (`/api/v1/lists` query params: `search`, `visibility`, `sort`, `owner_only`, `public_only`)

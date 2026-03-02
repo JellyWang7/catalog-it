@@ -21,11 +21,12 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 - **bcrypt** (password hashing)
 - **ROTP** (TOTP-based MFA for admin accounts)
 - **ActiveRecord::Encryption** (AES-256-GCM for sensitive fields)
+- **ActiveStorage** (file/image upload support)
 - **Obscenity + custom moderation service** (strict profanity/slur filtering)
 - **RSpec** (core suites passing; Swagger integration specs tracked separately)
 - **Swagger/OpenAPI** (interactive docs)
 
-## API Endpoints (28 total)
+## API Endpoints (33 total)
 
 ### Authentication (8)
 
@@ -75,6 +76,22 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 | DELETE | `/api/v1/items/:id` | Delete item (owner) |
 | POST | `/api/v1/items/:id/like` | Like item (auth) |
 | DELETE | `/api/v1/items/:id/like` | Unlike item (auth) |
+
+### Attachments
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/lists/:list_id/attachments` | List attachments for a list |
+| POST | `/api/v1/lists/:list_id/attachments` | Create list attachment (owner) |
+| GET | `/api/v1/items/:item_id/attachments` | List attachments for an item |
+| POST | `/api/v1/items/:item_id/attachments` | Create item attachment (list owner) |
+| DELETE | `/api/v1/attachments/:id` | Delete attachment (list owner) |
+
+> Attachment rules (v1):
+> - kinds: `link`, `image`, `file`
+> - links must be valid `https://` URLs
+> - allowed upload types: `image/jpeg`, `image/png`, `image/webp`, `application/pdf`, `text/plain`
+> - max upload size: 10MB
 
 ### Comments
 

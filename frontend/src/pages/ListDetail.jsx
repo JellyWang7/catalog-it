@@ -23,6 +23,10 @@ export default function ListDetail() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [listLikeLoading, setListLikeLoading] = useState(false);
   const [itemLikeLoading, setItemLikeLoading] = useState({});
+  const [attachmentTitle, setAttachmentTitle] = useState('');
+  const [attachmentUrl, setAttachmentUrl] = useState('');
+  const [attachmentFile, setAttachmentFile] = useState(null);
+  const [submittingAttachment, setSubmittingAttachment] = useState(false);
 
   const isOwner = isAuthenticated && list && user?.id === list.user_id;
 
@@ -228,6 +232,98 @@ export default function ListDetail() {
     }
   };
 
+  const handleAddLinkAttachment = async (e) => {
+    e.preventDefault();
+    if (!ensureAuthenticated()) return;
+    if (!isOwner) {
+      toast.error('Only the list owner can add attachments');
+      return;
+    }
+
+    const title = attachmentTitle.trim();
+    const url = attachmentUrl.trim();
+    if (!title || !url) {
+      toast.error('Please provide both title and https link');
+      return;
+    }
+
+    setSubmittingAttachment(true);
+    try {
+      const res = await listsService.createAttachment(list.id, {
+        kind: 'link',
+        title,
+        url,
+      });
+      setList((prev) => ({
+        ...prev,
+        attachments: [res.data, ...(prev.attachments || [])],
+      }));
+      setAttachmentTitle('');
+      setAttachmentUrl('');
+      toast.success('Link added');
+    } catch (err) {
+      toast.error(err.response?.data?.errors?.join(', ') || 'Failed to add link');
+    } finally {
+      setSubmittingAttachment(false);
+    }
+  };
+
+  const handleUploadAttachment = async (e) => {
+    e.preventDefault();
+    if (!ensureAuthenticated()) return;
+    if (!isOwner) {
+      toast.error('Only the list owner can add attachments');
+      return;
+    }
+
+    const title = attachmentTitle.trim();
+    if (!title || !attachmentFile) {
+      toast.error('Please provide title and select a file');
+      return;
+    }
+
+    const isImage = attachmentFile.type?.startsWith('image/');
+
+    setSubmittingAttachment(true);
+    try {
+      const res = await listsService.createAttachment(list.id, {
+        kind: isImage ? 'image' : 'file',
+        title,
+        asset: attachmentFile,
+      });
+      setList((prev) => ({
+        ...prev,
+        attachments: [res.data, ...(prev.attachments || [])],
+      }));
+      setAttachmentTitle('');
+      setAttachmentFile(null);
+      toast.success('File uploaded');
+    } catch (err) {
+      toast.error(err.response?.data?.errors?.join(', ') || 'Failed to upload file');
+    } finally {
+      setSubmittingAttachment(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId) => {
+    if (!ensureAuthenticated()) return;
+    if (!isOwner) {
+      toast.error('Only the list owner can delete attachments');
+      return;
+    }
+
+    try {
+      await listsService.deleteAttachment(attachmentId);
+      setList((prev) => ({
+        ...prev,
+        attachments: (prev.attachments || []).filter((attachment) => attachment.id !== attachmentId),
+      }));
+      toast.success('Attachment deleted');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete attachment');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -240,6 +336,7 @@ export default function ListDetail() {
 
   const items = list.items || [];
   const comments = list.comments || [];
+  const attachments = list.attachments || [];
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -424,6 +521,100 @@ export default function ListDetail() {
                         </svg>
                       </button>
                     </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Attachments */}
+        <div className="mt-10 border-t pt-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Attachments</h2>
+
+          {isOwner && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+              <form onSubmit={handleAddLinkAttachment} className="border border-gray-200 rounded-xl p-4 space-y-3">
+                <p className="text-sm font-semibold text-gray-700">Add Link</p>
+                <input
+                  type="text"
+                  placeholder="Attachment title"
+                  value={attachmentTitle}
+                  onChange={(e) => setAttachmentTitle(e.target.value)}
+                  maxLength={120}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
+                />
+                <input
+                  type="url"
+                  placeholder="https://example.com/resource"
+                  value={attachmentUrl}
+                  onChange={(e) => setAttachmentUrl(e.target.value)}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
+                />
+                <button
+                  type="submit"
+                  disabled={submittingAttachment}
+                  className="px-4 py-2 bg-deep-blue text-white text-sm font-semibold rounded-lg hover:bg-deep-blue-800 disabled:opacity-60"
+                >
+                  Add Link
+                </button>
+              </form>
+
+              <form onSubmit={handleUploadAttachment} className="border border-gray-200 rounded-xl p-4 space-y-3">
+                <p className="text-sm font-semibold text-gray-700">Upload File/Image</p>
+                <input
+                  type="text"
+                  placeholder="Attachment title"
+                  value={attachmentTitle}
+                  onChange={(e) => setAttachmentTitle(e.target.value)}
+                  maxLength={120}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
+                />
+                <input
+                  type="file"
+                  onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
+                  className="w-full text-sm text-gray-700"
+                />
+                <button
+                  type="submit"
+                  disabled={submittingAttachment}
+                  className="px-4 py-2 bg-teal text-white text-sm font-semibold rounded-lg hover:opacity-90 disabled:opacity-60"
+                >
+                  Upload File
+                </button>
+              </form>
+            </div>
+          )}
+
+          {!isOwner && (
+            <p className="text-sm text-gray-500 mb-4">Attachments are managed by the list owner.</p>
+          )}
+
+          {attachments.length === 0 ? (
+            <p className="text-gray-400">No attachments yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {attachments.map((attachment) => (
+                <div key={attachment.id} className="border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-800 truncate">{attachment.title}</p>
+                    <a
+                      href={attachment.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm text-blue-600 hover:underline break-all"
+                    >
+                      {attachment.url}
+                    </a>
+                    <p className="text-xs text-gray-400 mt-1">{attachment.kind?.toUpperCase()}</p>
+                  </div>
+                  {isOwner && (
+                    <button
+                      onClick={() => handleDeleteAttachment(attachment.id)}
+                      className="text-xs text-red-600 hover:text-red-700 font-medium"
+                    >
+                      Delete
+                    </button>
                   )}
                 </div>
               ))}

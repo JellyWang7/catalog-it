@@ -28,6 +28,25 @@ const listsService = {
   /** GET /api/v1/lists/:listId/comments — list comments */
   getComments: (listId) => api.get(`/lists/${listId}/comments`),
 
+  /** GET /api/v1/lists/:listId/attachments — list attachments */
+  getAttachments: (listId) => api.get(`/lists/${listId}/attachments`),
+
+  /** POST /api/v1/lists/:listId/attachments — create attachment (link/file/image) */
+  createAttachment: (listId, data) => {
+    const formData = new FormData();
+    formData.append('attachment[kind]', data.kind);
+    formData.append('attachment[title]', data.title);
+    if (data.url) formData.append('attachment[url]', data.url);
+    if (data.asset) formData.append('attachment[asset]', data.asset);
+
+    return api.post(`/lists/${listId}/attachments`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  /** DELETE /api/v1/attachments/:id — delete attachment */
+  deleteAttachment: (attachmentId) => api.delete(`/attachments/${attachmentId}`),
+
   /** POST /api/v1/lists/:listId/comments — add comment */
   addComment: (listId, body) => api.post(`/lists/${listId}/comments`, { comment: { body } }),
 

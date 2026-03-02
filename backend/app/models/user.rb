@@ -5,6 +5,7 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_many :list_likes, dependent: :destroy
   has_many :item_likes, dependent: :destroy
+  has_many :attachments, dependent: :destroy
   
   validates :username, presence: true, uniqueness: true
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }

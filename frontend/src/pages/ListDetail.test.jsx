@@ -11,6 +11,9 @@ vi.mock('../services/lists', () => ({
     getById: vi.fn(),
     delete: vi.fn(),
     share: vi.fn(),
+    getAttachments: vi.fn(),
+    createAttachment: vi.fn(),
+    deleteAttachment: vi.fn(),
     like: vi.fn(),
     unlike: vi.fn(),
     addComment: vi.fn(),
@@ -91,6 +94,15 @@ const listPayload = {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       user: { id: 2, username: 'tester' },
+    },
+  ],
+  attachments: [
+    {
+      id: 900,
+      kind: 'link',
+      title: 'Reference Docs',
+      url: 'https://example.com/docs',
+      created_at: new Date().toISOString(),
     },
   ],
 };
@@ -233,6 +245,40 @@ describe('ListDetail', () => {
       expect(toast.error).toHaveBeenCalledWith(
         'Content contains inappropriate language. Please keep comments clean and age-friendly.'
       );
+    });
+  });
+
+  it('creates a link attachment from the attachments section', async () => {
+    authState.user = { id: 1, username: 'owner' };
+    authState.isAuthenticated = true;
+    listsService.createAttachment.mockResolvedValue({
+      data: {
+        id: 901,
+        kind: 'link',
+        title: 'API Guide',
+        url: 'https://example.com/api-guide',
+        created_at: new Date().toISOString(),
+      },
+    });
+
+    renderListDetail();
+    await screen.findByText('Attachments');
+
+    fireEvent.change(screen.getAllByPlaceholderText(/attachment title/i)[0], {
+      target: { value: 'API Guide' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/https:\/\/example.com\/resource/i), {
+      target: { value: 'https://example.com/api-guide' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /add link/i }));
+
+    await waitFor(() => {
+      expect(listsService.createAttachment).toHaveBeenCalledWith(1, {
+        kind: 'link',
+        title: 'API Guide',
+        url: 'https://example.com/api-guide',
+      });
+      expect(screen.getByText('API Guide')).toBeInTheDocument();
     });
   });
 });

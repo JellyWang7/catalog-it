@@ -95,7 +95,21 @@ module Api
           created_at: item.created_at,
           updated_at: item.updated_at,
           likes_count: item.likes_count,
-          liked_by_current_user: item.liked_by?(current_user)
+          liked_by_current_user: item.liked_by?(current_user),
+          attachments: item.attachments.order(created_at: :desc).map { |attachment| serialize_attachment(attachment) }
+        }
+      end
+
+      def serialize_attachment(attachment)
+        {
+          id: attachment.id,
+          kind: attachment.kind,
+          title: attachment.title,
+          url: attachment.link? ? attachment.url : (attachment.asset.attached? ? rails_blob_url(attachment.asset, host: request.base_url) : nil),
+          mime_type: attachment.mime_type,
+          size_bytes: attachment.size_bytes,
+          created_at: attachment.created_at,
+          updated_at: attachment.updated_at
         }
       end
     end
