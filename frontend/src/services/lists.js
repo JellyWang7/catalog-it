@@ -2,7 +2,7 @@ import api from './api';
 
 const listsService = {
   /** GET /api/v1/lists — all public lists (or user's lists when authenticated) */
-  getAll: () => api.get('/lists'),
+  getAll: (params = {}) => api.get('/lists', { params }),
 
   /** GET /api/v1/lists/:id — single list with items */
   getById: (id) => api.get(`/lists/${id}`),
@@ -15,6 +15,9 @@ const listsService = {
 
   /** DELETE /api/v1/lists/:id — delete list (requires ownership) */
   delete: (id) => api.delete(`/lists/${id}`),
+
+  /** GET /api/v1/lists/analytics — engagement analytics for owner's dashboard */
+  getAnalytics: () => api.get('/lists/analytics'),
 
   /** POST /api/v1/lists/:id/share — generate share code */
   share: (id) => api.post(`/lists/${id}/share`),

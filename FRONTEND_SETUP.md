@@ -1,6 +1,6 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: February 25, 2026  
+**Last Updated**: March 2, 2026  
 **Branch**: `midterm-demo`  
 **Status**: 100% -- Feedback Features + Automated Tests Enabled
 
@@ -79,14 +79,14 @@ frontend/
 | Path | Component | Auth | Description |
 |------|-----------|------|-------------|
 | `/` | Home | No | Landing page |
-| `/explore` | Explore | No | Public lists with search + sort |
+| `/explore` | Explore | No | Public lists with server-side search + sort |
 | `/lists/:id` | ListDetail | No | List + items + ratings + share |
 | `/s/:code` | SharedList | No | Resolve share code |
 | `/login` | Login | No | Sign in |
 | `/signup` | Signup | No | Register |
 | `/forgot-password` | ForgotPassword | No | Request reset |
 | `/reset-password` | ResetPassword | No | New password |
-| `/dashboard` | Dashboard | Yes | Search, filter, list CRUD + stats |
+| `/dashboard` | Dashboard | Yes | Server-side search/filter, list CRUD + engagement stats |
 | `/profile` | Profile | Yes | User info + stats |
 | `*` | NotFound | No | 404 |
 
@@ -117,14 +117,13 @@ frontend/
 - Forgot password -> email -> reset token -> new password
 
 ### Dashboard
-- Stats cards (total lists, public lists, total items)
-- Search bar to filter lists by title/description
-- Visibility dropdown filter (all/public/shared/private)
+- Stats cards (total lists, public lists, total items, comments received, reactions received)
+- Server-side search/filter via API (`owner_only=true`, `search`, `visibility`)
 - Create, edit, delete lists via modals
 - Color-coded cards by visibility
 
 ### Explore
-- Public list grid with search
+- Public list grid with server-side search + sorting via API (`public_only=true`)
 - Sort by newest, oldest, A-Z, Z-A, most items
 - Loading skeletons, empty state, count badge
 
@@ -158,7 +157,7 @@ frontend/
 `signup`, `login`, `me`, `forgotPassword`, `resetPassword`, `mfaSetup`, `mfaVerify`, `mfaDisable`
 
 ### Lists (`services/lists.js`)
-`getAll`, `getById`, `create`, `update`, `delete`, `share`, `getByShareCode`, `getComments`, `addComment`, `deleteComment`, `like`, `unlike`
+`getAll`, `getAnalytics`, `getById`, `create`, `update`, `delete`, `share`, `getByShareCode`, `getComments`, `addComment`, `deleteComment`, `like`, `unlike`
 
 ### Items (`services/items.js`)
 `getByListId`, `getById`, `create`, `update`, `delete`, `like`, `unlike`
@@ -206,6 +205,6 @@ npm run build       # Production build verification
 
 ## What's Next
 
-- [ ] Server-side search/filter API
-- [ ] Engagement analytics views (comments/reactions counts)
+- [x] Server-side search/filter API
+- [x] Engagement analytics views (comments/reactions counts)
 - [ ] Deployment (Netlify + Render)

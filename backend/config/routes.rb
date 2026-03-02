@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       # Resource routes
       resources :lists, only: [:index, :show, :create, :update, :destroy] do
         post 'share', on: :member
+        get 'analytics', on: :collection
         resources :items, only: [:index, :create]
         resources :comments, only: [:index, :create]
         post 'like', on: :member, to: 'list_likes#create'

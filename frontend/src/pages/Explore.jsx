@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import listsService from '../services/lists';
 import toast from 'react-hot-toast';
@@ -19,48 +19,26 @@ export default function Explore() {
   const [sort, setSort] = useState('newest');
 
   useEffect(() => {
-    const fetchLists = async () => {
+    const timeoutId = setTimeout(async () => {
+      setLoading(true);
       try {
-        const res = await listsService.getAll();
+        const res = await listsService.getAll({
+          public_only: true,
+          search: search.trim() || undefined,
+          sort,
+        });
         setLists(res.data);
       } catch {
         toast.error('Failed to load public lists');
       } finally {
         setLoading(false);
       }
-    };
-    fetchLists();
-  }, []);
+    }, 250);
 
-  const results = useMemo(() => {
-    let out = lists.filter(
-      (list) =>
-        list.title?.toLowerCase().includes(search.toLowerCase()) ||
-        list.description?.toLowerCase().includes(search.toLowerCase())
-    );
+    return () => clearTimeout(timeoutId);
+  }, [search, sort]);
 
-    switch (sort) {
-      case 'oldest':
-        out = [...out].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-        break;
-      case 'newest':
-        out = [...out].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        break;
-      case 'name_asc':
-        out = [...out].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-        break;
-      case 'name_desc':
-        out = [...out].sort((a, b) => (b.title || '').localeCompare(a.title || ''));
-        break;
-      case 'most_items':
-        out = [...out].sort((a, b) => (b.items?.length || 0) - (a.items?.length || 0));
-        break;
-      default:
-        break;
-    }
-
-    return out;
-  }, [lists, search, sort]);
+  const results = lists;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

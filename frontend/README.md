@@ -44,14 +44,14 @@ src/
 | Route | Page | Description |
 |-------|------|-------------|
 | `/` | Home | Landing page |
-| `/explore` | Explore | Public lists with search + sort |
+| `/explore` | Explore | Public lists with server-side search + sort |
 | `/lists/:id` | ListDetail | List + items + ratings + share + comments + likes |
 | `/s/:code` | SharedList | Resolve share code |
 | `/login` | Login | Sign in (with MFA step if enabled) |
 | `/signup` | Signup | Register |
 | `/forgot-password` | ForgotPassword | Request password reset |
 | `/reset-password` | ResetPassword | Set new password |
-| `/dashboard` | Dashboard | Search, filter, list CRUD + stats |
+| `/dashboard` | Dashboard | Server-side search/filter, list CRUD + engagement stats |
 | `/profile` | Profile | User info, stats, MFA setup |
 | `*` | NotFound | 404 |
 

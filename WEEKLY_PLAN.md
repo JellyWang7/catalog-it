@@ -1,6 +1,6 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: February 25, 2026
+**Last Updated**: March 2, 2026
 **Current Branch**: `midterm-demo`  
 **Project Status**: Midterm Complete + Feedback Iteration
 
@@ -13,7 +13,7 @@ Backend:     ████████████ 100%
 Frontend:    ████████████ 100%
 Security:    ████████████ 100%
 Deployment:  ░░░░░░░░░░░░   0%
-Overall:     ███████████░  95%
+Overall:     ███████████░  97%
 ```
 
 ---
@@ -82,8 +82,8 @@ See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 ### After Midterm
 - [x] Component tests (Vitest + React Testing Library)
 - [x] E2E tests (Playwright)
-- [ ] Server-side search/filter API
-- [ ] Comments + reactions analytics (engagement counts in dashboard)
+- [x] Server-side search/filter API
+- [x] Comments + reactions analytics (engagement counts in dashboard)
 - [ ] Deployment (Render + Netlify)
 
 See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
@@ -101,7 +101,7 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 - [x] API documentation (Swagger)
 - [x] Security (TLS, MFA, XSS, rate limiting, encryption, CORS)
 - [x] Core backend tests passing (requests/models/services)
-- [x] 27 API endpoints (auth, lists, items, comments, likes)
+- [x] 28 API endpoints (auth, lists, items, comments, likes, analytics)
 - [x] Comments API (public/shared lists)
 - [x] Reactions API (likes on lists/items)
 
@@ -122,7 +122,8 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 - [x] Like/Thumbs-up UI for lists and items
 - [x] Component tests
 - [x] E2E tests (Playwright)
-- [ ] Server-side search
+- [x] Server-side search/filter (`/api/v1/lists` query params: `search`, `visibility`, `sort`, `owner_only`, `public_only`)
+- [x] Dashboard analytics endpoint (`/api/v1/lists/analytics`) + frontend engagement cards
 
 ### Deployment (0%)
 - [ ] Backend on Render
@@ -144,4 +145,4 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 
 ---
 
-*Last updated: February 25, 2026*
+*Last updated: March 2, 2026*
