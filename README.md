@@ -55,6 +55,14 @@ bin/brakeman --no-pager
 bin/bundler-audit
 ```
 
+### npm ci lockfile rule
+
+`npm ci` requires `frontend/package.json` and `frontend/package-lock.json` to be fully in sync.
+
+- If dependencies change, run `npm install` in `frontend/` to refresh `package-lock.json`.
+- Commit both `package.json` and `package-lock.json` together in the same PR.
+- Verify locally with `npm ci` before pushing to avoid CI install failures.
+
 ---
 
 ## Tech Stack
