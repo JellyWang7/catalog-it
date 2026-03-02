@@ -246,4 +246,26 @@ RSpec.describe "Api::V1::Lists", type: :request do
       }.to change(Item, :count).by(-3)
     end
   end
+
+  describe "POST /api/v1/lists/:id/share" do
+    it "creates share code for non-private owner list" do
+      shared_list = create(:list, :shared, user: user, share_code: nil)
+
+      post "/api/v1/lists/#{shared_list.id}/share", headers: auth_headers
+
+      expect(response).to have_http_status(:ok)
+      json_response = JSON.parse(response.body)
+      expect(json_response['share_code']).to be_present
+      expect(json_response['share_url']).to include("/s/")
+    end
+
+    it "forbids sharing private list" do
+      private_owned_list = create(:list, visibility: 'private', user: user, share_code: nil)
+
+      post "/api/v1/lists/#{private_owned_list.id}/share", headers: auth_headers
+
+      expect(response).to have_http_status(:forbidden)
+      expect(JSON.parse(response.body)['error']).to eq('Private lists cannot be shared')
+    end
+  end
 end

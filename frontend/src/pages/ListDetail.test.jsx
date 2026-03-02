@@ -102,6 +102,7 @@ const listPayload = {
       kind: 'link',
       title: 'Reference Docs',
       url: 'https://example.com/docs',
+      mime_type: null,
       created_at: new Date().toISOString(),
     },
   ],
@@ -278,7 +279,86 @@ describe('ListDetail', () => {
         title: 'API Guide',
         url: 'https://example.com/api-guide',
       });
+      expect(toast.success).toHaveBeenCalledWith('Link added');
       expect(screen.getByText('API Guide')).toBeInTheDocument();
+    });
+  });
+
+  it('hides share button for private owner list', async () => {
+    authState.user = { id: 1, username: 'owner' };
+    authState.isAuthenticated = true;
+    listsService.getById.mockResolvedValue({
+      data: {
+        ...listPayload,
+        visibility: 'private',
+      },
+    });
+
+    renderListDetail();
+    await screen.findByText('Test List');
+
+    expect(screen.queryByRole('button', { name: /^share$/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/private list cannot be shared/i)).toBeInTheDocument();
+  });
+
+  it('renders attachment previews for image and audio types', async () => {
+    listsService.getById.mockResolvedValue({
+      data: {
+        ...listPayload,
+        attachments: [
+          {
+            id: 910,
+            kind: 'image',
+            title: 'Cover Art',
+            url: 'https://example.com/cover.jpg',
+            mime_type: 'image/jpeg',
+            created_at: new Date().toISOString(),
+          },
+          {
+            id: 911,
+            kind: 'file',
+            title: 'Theme Song',
+            url: 'https://example.com/theme.mp3',
+            mime_type: 'audio/mpeg',
+            created_at: new Date().toISOString(),
+          },
+        ],
+      },
+    });
+
+    renderListDetail();
+    await screen.findByText('Attachments');
+
+    expect(screen.getByAltText('Cover Art')).toBeInTheDocument();
+    expect(screen.getByText('Theme Song')).toBeInTheDocument();
+    expect(screen.getByText('AUDIO')).toBeInTheDocument();
+  });
+
+  it('shows friendly file rules when upload type/size is invalid', async () => {
+    authState.user = { id: 1, username: 'owner' };
+    authState.isAuthenticated = true;
+    listsService.createAttachment.mockRejectedValue({
+      response: {
+        status: 422,
+        data: { errors: ['Asset type is not allowed'] },
+      },
+    });
+
+    renderListDetail();
+    await screen.findByText('Attachments');
+
+    fireEvent.change(screen.getAllByPlaceholderText(/attachment title/i)[1], {
+      target: { value: 'Bad Upload' },
+    });
+    const fileInput = document.querySelector('input[type="file"]');
+    const invalidFile = new File(['x'], 'bad.exe', { type: 'application/x-msdownload' });
+    fireEvent.change(fileInput, { target: { files: [invalidFile] } });
+    fireEvent.click(screen.getByRole('button', { name: /upload file/i }));
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        'Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP. Max size: 5MB.'
+      );
     });
   });
 });

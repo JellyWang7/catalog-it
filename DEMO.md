@@ -1,7 +1,7 @@
 # CatalogIt - Demo Guide
 
 **Date**: March 2, 2026
-**Branch**: `midterm-demo`
+**Branch**: `feature/mar-2-search-analytics`
 
 ---
 

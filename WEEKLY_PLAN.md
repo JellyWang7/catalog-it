@@ -1,7 +1,7 @@
 # CatalogIt - Weekly Plan & Progress
 
 **Last Updated**: March 2, 2026
-**Current Branch**: `midterm-demo`  
+**Current Branch**: `feature/mar-2-search-analytics`  
 **Project Status**: Midterm Complete + Feedback Iteration + Attachments v1
 
 ---
@@ -24,7 +24,7 @@ Overall:     ████████████  99%
 - [x] Database schema (Users, Lists, Items) -- 3NF, PostgreSQL
 - [x] JWT authentication + password reset (20 API endpoints)
 - [x] Security hardening (TLS, MFA, XSS, rate limiting, CORS, encryption)
-- [x] 175 RSpec tests passing (100%)
+- [x] Backend RSpec suite passing (currently 234 examples, 0 failures)
 - [x] Swagger/OpenAPI docs at `/api-docs`
 
 ### Week 3: Frontend Core (Feb 8-9)
@@ -112,8 +112,8 @@ See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 
 ### Initial Scope Constraints (v1)
 - [x] Start with list-level attachments first; expand to item-level after v1 is stable
-- [x] Allowed upload MIME types: jpeg/png/webp/pdf/txt
-- [x] Max upload size: 10MB
+- [x] Allowed upload MIME types: jpeg/png/webp/pdf/txt/zip
+- [x] Max upload size: 5MB
 - [x] Links must be `https://`
 
 See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.

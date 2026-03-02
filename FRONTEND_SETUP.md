@@ -1,7 +1,7 @@
 # CatalogIt Frontend Setup Guide
 
 **Last Updated**: March 2, 2026  
-**Branch**: `midterm-demo`  
+**Branch**: `feature/mar-2-search-analytics`  
 **Status**: 100% -- Feedback Features + Attachments + Automated Tests Enabled
 
 ---
@@ -48,14 +48,14 @@ frontend/
 │   │   ├── ResetPassword.jsx    # Set new password
 │   │   ├── Explore.jsx          # Public lists (search + sort)
 │   │   ├── Dashboard.jsx        # User dashboard (search, filter, CRUD, stats)
-│   │   ├── ListDetail.jsx       # List + items + share + comments + likes
+│   │   ├── ListDetail.jsx       # List + items + share + comments + likes + attachments
 │   │   ├── SharedList.jsx       # /s/:code redirect
 │   │   ├── Profile.jsx          # User profile + stats
 │   │   └── NotFound.jsx         # 404
 │   ├── services/
 │   │   ├── api.js               # Axios + interceptors
 │   │   ├── auth.js              # Auth API (signup/login/reset/MFA)
-│   │   ├── lists.js             # Lists CRUD + share + comments + list likes
+│   │   ├── lists.js             # Lists CRUD + share + comments + likes + attachments
 │   │   └── items.js             # Items CRUD + item likes
 │   ├── hooks/                   # Custom hooks
 │   ├── utils/                   # Helpers
@@ -113,7 +113,7 @@ frontend/
 - Login / Signup with form validation
 - Login with MFA step (TOTP OTP code input when MFA enabled)
 - JWT stored in localStorage, attached via Axios interceptor
-- 401 responses auto-clear auth and redirect to login
+- 401 responses clear auth only when needed; public routes remain accessible for guests
 - Forgot password -> email -> reset token -> new password
 
 ### Dashboard
@@ -130,10 +130,10 @@ frontend/
 ### List Detail
 - Items displayed with star ratings
 - Add/edit/delete items via modals
-- Share button generates short URL (`/s/:code`)
+- Share button generates short URL (`/s/:code`) for non-private lists
 - Comments on public/shared lists
 - "Thumbs up / I like it" reactions for lists and items
-- List-level attachments (links + file/image uploads)
+- List-level attachments (links + file/image uploads, including ZIP up to 5MB)
 - Comment moderation: comment owner or list owner can delete
 - List owners cannot like or comment on their own lists
 - 422 moderation errors are surfaced with clean, user-friendly warnings

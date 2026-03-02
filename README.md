@@ -3,8 +3,8 @@
 > A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS 701 -- Special Projects in CS II  
-**Status**: Backend Complete | Frontend Complete (Comments + Likes) | Demo Ready  
-**Tests**: Backend core specs + Frontend UI/E2E tests passing  
+**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments) | Demo Ready  
+**Tests**: Full backend RSpec + Frontend UI/E2E tests passing  
 
 ---
 
@@ -17,7 +17,7 @@
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Detailed status & compliance |
 | [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (Render + Netlify) |
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
-| [backend/TESTING.md](backend/TESTING.md) | Testing guide (175 tests) |
+| [backend/TESTING.md](backend/TESTING.md) | Testing guide (current backend suite details) |
 
 ---
 
@@ -78,7 +78,7 @@ catalog-it/
 │   │   ├── controllers/  # Auth, Lists, Items controllers
 │   │   ├── models/       # User, List, Item
 │   │   └── services/     # JWT encoder/decoder
-│   ├── spec/             # RSpec tests (175 passing)
+│   ├── spec/             # RSpec tests (full suite passing)
 │   └── swagger/          # OpenAPI spec
 ├── frontend/             # React + Vite app
 │   ├── src/
@@ -135,7 +135,7 @@ App: **http://localhost:5173**
 
 ---
 
-## API Endpoints (27)
+## API Endpoints (33)
 
 ### Authentication (8)
 
@@ -150,11 +150,12 @@ App: **http://localhost:5173**
 | POST | `/api/v1/auth/mfa/verify` | Yes | Verify code, enable MFA |
 | DELETE | `/api/v1/auth/mfa` | Yes | Disable MFA |
 
-### Lists (9)
+### Lists (10)
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/api/v1/lists` | Optional | Public lists (+ own) |
+| GET | `/api/v1/lists/analytics` | Yes | Owner engagement analytics |
 | GET | `/api/v1/lists/:id` | Optional | List with items |
 | POST | `/api/v1/lists` | Yes | Create list |
 | PATCH | `/api/v1/lists/:id` | Owner | Update list |
@@ -191,6 +192,21 @@ App: **http://localhost:5173**
 | POST | `/api/v1/items/:id/like` | Yes | Like item |
 | DELETE | `/api/v1/items/:id/like` | Yes | Unlike item |
 
+### Attachments (5)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/lists/:list_id/attachments` | Optional | List attachments for a list |
+| POST | `/api/v1/lists/:list_id/attachments` | Owner | Add list attachment |
+| GET | `/api/v1/items/:item_id/attachments` | Optional | List attachments for an item |
+| POST | `/api/v1/items/:item_id/attachments` | Owner | Add item attachment |
+| DELETE | `/api/v1/attachments/:id` | Owner | Delete attachment |
+
+> Additional rules:
+> - private lists cannot be shared
+> - attachment links must use `https://`
+> - attachment uploads support JPG/PNG/WEBP/PDF/TXT/ZIP up to 5MB
+
 ---
 
 ## Security
@@ -219,12 +235,13 @@ App: **http://localhost:5173**
 4. **Dashboard** -- View stats, search/filter lists, CRUD operations
 5. **Create List** -- Modal form with title, description, visibility
 6. **List Detail** -- Add/edit/delete items with ratings (1-5 stars)
-7. **Share List** -- Generate short URL, copy to clipboard
-8. **Explore** -- Browse public lists with search + sort
-9. **Profile** -- View user info, role, status, stats, MFA setup
-10. **MFA** -- Enable TOTP two-factor auth from Profile page
-11. **Forgot Password** -- Request reset, receive token
-12. **Mobile** -- Responsive hamburger menu
+7. **Attachments** -- Add link/file/image attachments with previews and limits
+8. **Share List** -- Generate short URL, copy to clipboard (non-private lists)
+9. **Explore** -- Browse public lists with search + sort
+10. **Profile** -- View user info, role, status, stats, MFA setup
+11. **MFA** -- Enable TOTP two-factor auth from Profile page
+12. **Forgot Password** -- Request reset, receive token
+13. **Mobile** -- Responsive hamburger menu
 
 ---
 
@@ -234,7 +251,7 @@ App: **http://localhost:5173**
 |--------|---------|
 | `main` | Stable releases |
 | `feature/frontend-init` | Frontend development |
-| `midterm-demo` | Midterm demo (current) |
+| `feature/mar-2-search-analytics` | Current feature branch |
 
 Never commit `docs/`, `.env`, or credentials.
 

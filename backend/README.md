@@ -90,8 +90,8 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 > Attachment rules (v1):
 > - kinds: `link`, `image`, `file`
 > - links must be valid `https://` URLs
-> - allowed upload types: `image/jpeg`, `image/png`, `image/webp`, `application/pdf`, `text/plain`
-> - max upload size: 10MB
+> - allowed upload types: `image/jpeg`, `image/png`, `image/webp`, `application/pdf`, `text/plain`, `application/zip`
+> - max upload size: 5MB
 
 ### Comments
 

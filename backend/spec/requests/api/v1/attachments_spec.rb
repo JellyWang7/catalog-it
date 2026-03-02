@@ -78,6 +78,27 @@ RSpec.describe 'Api::V1::Attachments', type: :request do
       expect(json['mime_type']).to eq('text/plain')
       expect(json['url']).to include('/rails/active_storage/blobs/')
     end
+
+    it 'accepts zip file uploads for owner' do
+      file = fixture_file_upload('sample.zip', 'application/zip')
+
+      expect do
+        post "/api/v1/lists/#{list.id}/attachments",
+             params: {
+               attachment: {
+                 kind: 'file',
+                 title: 'Archive',
+                 asset: file
+               }
+             },
+             headers: owner_headers
+      end.to change(Attachment, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)
+      expect(json['kind']).to eq('file')
+      expect(json['mime_type']).to eq('application/zip')
+    end
   end
 
   describe 'DELETE /api/v1/attachments/:id' do

@@ -1,7 +1,7 @@
 # CatalogIt - Project Status
 
 **Last Updated**: March 2, 2026  
-**Branch**: `midterm-demo`  
+**Branch**: `feature/mar-2-search-analytics`  
 **Overall Progress**: 99% | Attachments v1 Added, Deployment Remaining
 
 ---

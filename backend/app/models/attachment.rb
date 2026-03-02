@@ -5,9 +5,11 @@ class Attachment < ApplicationRecord
     image/webp
     application/pdf
     text/plain
+    application/zip
+    application/x-zip-compressed
   ].freeze
 
-  MAX_FILE_SIZE_BYTES = 10.megabytes
+  MAX_FILE_SIZE_BYTES = 5.megabytes
 
   belongs_to :user
   belongs_to :attachable, polymorphic: true
@@ -56,14 +58,14 @@ class Attachment < ApplicationRecord
     return unless asset.attached?
     return if ALLOWED_MIME_TYPES.include?(asset.blob.content_type)
 
-    errors.add(:asset, 'type is not allowed')
+    errors.add(:asset, 'type is not allowed. Allowed: JPG, PNG, WEBP, PDF, TXT, ZIP')
   end
 
   def asset_size_allowed
     return unless asset.attached?
     return if asset.blob.byte_size <= MAX_FILE_SIZE_BYTES
 
-    errors.add(:asset, 'size exceeds 10MB limit')
+    errors.add(:asset, 'size exceeds 5MB limit')
   end
 
   def assign_asset_metadata

@@ -23,7 +23,8 @@ export default function ListDetail() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [listLikeLoading, setListLikeLoading] = useState(false);
   const [itemLikeLoading, setItemLikeLoading] = useState({});
-  const [attachmentTitle, setAttachmentTitle] = useState('');
+  const [linkAttachmentTitle, setLinkAttachmentTitle] = useState('');
+  const [fileAttachmentTitle, setFileAttachmentTitle] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
   const [attachmentFile, setAttachmentFile] = useState(null);
   const [submittingAttachment, setSubmittingAttachment] = useState(false);
@@ -240,7 +241,7 @@ export default function ListDetail() {
       return;
     }
 
-    const title = attachmentTitle.trim();
+    const title = linkAttachmentTitle.trim();
     const url = attachmentUrl.trim();
     if (!title || !url) {
       toast.error('Please provide both title and https link');
@@ -258,11 +259,18 @@ export default function ListDetail() {
         ...prev,
         attachments: [res.data, ...(prev.attachments || [])],
       }));
-      setAttachmentTitle('');
+      setLinkAttachmentTitle('');
       setAttachmentUrl('');
       toast.success('Link added');
+      navigate(`/lists/${list.id}`);
     } catch (err) {
-      toast.error(err.response?.data?.errors?.join(', ') || 'Failed to add link');
+      const errors = err.response?.data?.errors || [];
+      const invalidLink = errors.some((message) => message.toLowerCase().includes('https link'));
+      toast.error(
+        invalidLink
+          ? 'Invalid link. Please use a full https:// URL.'
+          : errors.join(', ') || 'Failed to add link'
+      );
     } finally {
       setSubmittingAttachment(false);
     }
@@ -276,7 +284,7 @@ export default function ListDetail() {
       return;
     }
 
-    const title = attachmentTitle.trim();
+    const title = fileAttachmentTitle.trim();
     if (!title || !attachmentFile) {
       toast.error('Please provide title and select a file');
       return;
@@ -295,11 +303,20 @@ export default function ListDetail() {
         ...prev,
         attachments: [res.data, ...(prev.attachments || [])],
       }));
-      setAttachmentTitle('');
+      setFileAttachmentTitle('');
       setAttachmentFile(null);
       toast.success('File uploaded');
+      navigate(`/lists/${list.id}`);
     } catch (err) {
-      toast.error(err.response?.data?.errors?.join(', ') || 'Failed to upload file');
+      const errors = err.response?.data?.errors || [];
+      const typeError = errors.some((message) => message.toLowerCase().includes('type is not allowed'));
+      const sizeError = errors.some((message) => message.toLowerCase().includes('5mb'));
+
+      if (typeError || sizeError) {
+        toast.error('Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP. Max size: 5MB.');
+      } else {
+        toast.error(errors.join(', ') || 'Failed to upload file');
+      }
     } finally {
       setSubmittingAttachment(false);
     }
@@ -337,6 +354,17 @@ export default function ListDetail() {
   const items = list.items || [];
   const comments = list.comments || [];
   const attachments = list.attachments || [];
+  const isShareable = isOwner && list.visibility !== 'private';
+
+  const resolveAttachmentType = (attachment) => {
+    const mime = attachment?.mime_type?.toLowerCase() || '';
+    const url = attachment?.url?.toLowerCase() || '';
+
+    if (attachment.kind === 'link') return 'link';
+    if (attachment.kind === 'image' || mime.startsWith('image/')) return 'image';
+    if (mime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac)$/i.test(url)) return 'audio';
+    return 'file';
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -404,7 +432,7 @@ export default function ListDetail() {
                 </button>
               </>
             )}
-            {isOwner && (
+            {isShareable && (
               <button
                 onClick={handleShare}
                 disabled={sharing}
@@ -415,6 +443,11 @@ export default function ListDetail() {
                 </svg>
                 {sharing ? 'Sharing...' : 'Share'}
               </button>
+            )}
+            {isOwner && list.visibility === 'private' && (
+              <span className="px-4 py-2 text-gray-500 border border-gray-300 font-semibold rounded-xl text-sm">
+                Private list cannot be shared
+              </span>
             )}
           </div>
         </div>
@@ -539,8 +572,8 @@ export default function ListDetail() {
                 <input
                   type="text"
                   placeholder="Attachment title"
-                  value={attachmentTitle}
-                  onChange={(e) => setAttachmentTitle(e.target.value)}
+                  value={linkAttachmentTitle}
+                  onChange={(e) => setLinkAttachmentTitle(e.target.value)}
                   maxLength={120}
                   className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
                 />
@@ -558,6 +591,7 @@ export default function ListDetail() {
                 >
                   Add Link
                 </button>
+                <p className="text-xs text-gray-500">Allowed links: must start with https://</p>
               </form>
 
               <form onSubmit={handleUploadAttachment} className="border border-gray-200 rounded-xl p-4 space-y-3">
@@ -565,8 +599,8 @@ export default function ListDetail() {
                 <input
                   type="text"
                   placeholder="Attachment title"
-                  value={attachmentTitle}
-                  onChange={(e) => setAttachmentTitle(e.target.value)}
+                  value={fileAttachmentTitle}
+                  onChange={(e) => setFileAttachmentTitle(e.target.value)}
                   maxLength={120}
                   className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
                 />
@@ -582,6 +616,9 @@ export default function ListDetail() {
                 >
                   Upload File
                 </button>
+                <p className="text-xs text-gray-500">
+                  Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP (max 5MB)
+                </p>
               </form>
             </div>
           )}
@@ -595,18 +632,41 @@ export default function ListDetail() {
           ) : (
             <div className="space-y-3">
               {attachments.map((attachment) => (
-                <div key={attachment.id} className="border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-gray-800 truncate">{attachment.title}</p>
-                    <a
-                      href={attachment.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm text-blue-600 hover:underline break-all"
-                    >
-                      {attachment.url}
-                    </a>
-                    <p className="text-xs text-gray-400 mt-1">{attachment.kind?.toUpperCase()}</p>
+                <div key={attachment.id} className="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-3 bg-gray-50">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-gray-800 truncate mb-2">{attachment.title}</p>
+                    {resolveAttachmentType(attachment) === 'image' && (
+                      <img
+                        src={attachment.url}
+                        alt={attachment.title}
+                        className="w-full max-w-sm max-h-48 object-cover rounded-lg border border-gray-200"
+                      />
+                    )}
+                    {resolveAttachmentType(attachment) === 'audio' && (
+                      <audio controls src={attachment.url} className="w-full max-w-sm" />
+                    )}
+                    {resolveAttachmentType(attachment) === 'link' && (
+                      <a
+                        href={attachment.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-blue-600 hover:underline break-all"
+                      >
+                        {attachment.url}
+                      </a>
+                    )}
+                    {resolveAttachmentType(attachment) === 'file' && (
+                      <a
+                        href={attachment.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                      >
+                        <span>📎</span>
+                        <span>Open file</span>
+                      </a>
+                    )}
+                    <p className="text-xs text-gray-400 mt-2">{resolveAttachmentType(attachment).toUpperCase()}</p>
                   </div>
                   {isOwner && (
                     <button

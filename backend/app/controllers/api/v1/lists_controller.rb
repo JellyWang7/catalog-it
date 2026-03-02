@@ -6,6 +6,7 @@ module Api
       before_action :authenticate_request_required, only: [:create, :update, :destroy, :share, :analytics]
       before_action :set_list, only: [:show, :update, :destroy, :share]
       before_action :authorize_list_owner, only: [:update, :destroy, :share]
+      before_action :authorize_shareable_visibility, only: [:share]
       SORT_OPTIONS = %w[newest oldest name_asc name_desc most_items most_liked].freeze
       
       # GET /api/v1/lists
@@ -149,6 +150,12 @@ module Api
         unless @list.user_id == current_user.id
           render json: { error: 'Not authorized to modify this list' }, status: :forbidden
         end
+      end
+
+      def authorize_shareable_visibility
+        return unless @list.visibility == 'private'
+
+        render json: { error: 'Private lists cannot be shared' }, status: :forbidden
       end
       
       def list_params
