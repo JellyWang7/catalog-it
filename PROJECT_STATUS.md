@@ -1,16 +1,16 @@
 # CatalogIt - Project Status
 
 **Last Updated**: March 2, 2026  
-**Branch**: `midterm-demo`  
-**Overall Progress**: 97% | Search/Analytics Completed, Deployment Remaining
+**Branch**: `feature/mar-2-search-analytics`  
+**Overall Progress**: 99% | Attachments v1 Added, Deployment Remaining
 
 ---
 
 ## Quick Status
 
 ```
-Backend:     ████████████ 100%  (core specs passing, 28 endpoints)
-Frontend:    ████████████ 100%  (11 routes, comments/likes, UI + E2E tests)
+Backend:     ████████████ 100%  (core specs passing, 33 endpoints)
+Frontend:    ████████████ 100%  (11 routes, comments/likes/attachments, UI + E2E tests)
 Security:    ████████████ 100%  (TLS, MFA, XSS, encryption, rate limiting)
 Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 ```
@@ -19,11 +19,12 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 
 ## Backend: 100%
 
-- 27 API endpoints (auth, lists, items, comments, reactions)
+- 33 API endpoints (auth, lists, items, comments, reactions, analytics, attachments)
 - JWT auth + password reset (secure token, 1h expiry)
 - TOTP-based MFA (rotp gem, setup/verify/disable endpoints)
 - Security: TLS, MFA, XSS, rate limiting, encryption, CORS
 - New social features: comments on public/shared lists, likes on lists/items
+- New attachment features: list/item attachments (links, files, images) via ActiveStorage
 - Core spec suites passing (`spec/models`, `spec/requests`, `spec/services`)
 
 ## Frontend: 100%
@@ -34,7 +35,7 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 - [x] Login with MFA step (TOTP OTP code input)
 - [x] Explore (search + 5 sort options)
 - [x] Dashboard (stats, search, filter by visibility, list CRUD)
-- [x] ListDetail (items, ratings, item CRUD, share button, comments, likes)
+- [x] ListDetail (items, ratings, item CRUD, share button, comments, likes, attachments)
 - [x] Profile page (user info, role, status, stats, MFA setup/disable)
 - [x] Mobile responsive nav (hamburger menu)
 - [x] ErrorBoundary (React crash recovery)
@@ -43,6 +44,7 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 - [x] Frontend automated tests configured (Vitest + Playwright)
 - [x] UI tests for list/item likes, comment posting/deletion permissions, unauthenticated behavior
 - [x] E2E tests for list/item likes, comments, and auth-aware UI behavior
+- [x] Attachment tests: backend model/request + frontend unit + frontend E2E
 
 ### Remaining (post-midterm)
 - [ ] Deployment (Render + Netlify)
@@ -132,5 +134,5 @@ cd frontend && npm run build
 ---
 
 *Last updated: March 2, 2026*  
-*Backend: 28 endpoints, core specs passing (requests/models/services)*  
-*Frontend: comments/likes/search/analytics complete, UI + E2E tests passing*
+*Backend: 33 endpoints, core specs passing (requests/models/services)*  
+*Frontend: comments/likes/search/analytics/attachments complete, UI + E2E tests passing*

@@ -26,14 +26,17 @@ Rails.application.routes.draw do
         get 'analytics', on: :collection
         resources :items, only: [:index, :create]
         resources :comments, only: [:index, :create]
+        resources :attachments, only: [:index, :create]
         post 'like', on: :member, to: 'list_likes#create'
         delete 'like', on: :member, to: 'list_likes#destroy'
       end
       resources :items, only: [:show, :update, :destroy] do
+        resources :attachments, only: [:index, :create]
         post 'like', on: :member, to: 'item_likes#create'
         delete 'like', on: :member, to: 'item_likes#destroy'
       end
       resources :comments, only: [:destroy]
+      resources :attachments, only: [:destroy]
     end
   end
 end

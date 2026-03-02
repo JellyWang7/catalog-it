@@ -4,6 +4,7 @@ class List < ApplicationRecord
   has_many :items, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :list_likes, dependent: :destroy
+  has_many :attachments, as: :attachable, dependent: :destroy
   
   validates :title, presence: true
   validates :visibility, inclusion: { in: %w[public private shared] }

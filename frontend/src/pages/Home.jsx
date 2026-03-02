@@ -21,12 +21,20 @@ export default function Home() {
             you the control to list, enrich, rate, and share every item that
             matters.
           </p>
-          <Link
-            to={isAuthenticated ? '/dashboard' : '/signup'}
-            className="inline-block px-10 py-4 bg-deep-blue text-white font-extrabold text-lg rounded-xl hover:bg-deep-blue-800 transition-colors shadow-xl shadow-blue-500/50"
-          >
-            Start Cataloging Now &rarr;
-          </Link>
+          <div className="flex flex-col items-center gap-4">
+            <Link
+              to="/explore"
+              className="inline-block px-10 py-4 bg-deep-blue text-white font-extrabold text-lg rounded-xl hover:bg-deep-blue-800 transition-colors shadow-xl shadow-blue-500/50"
+            >
+              Explore Public Lists &rarr;
+            </Link>
+            <Link
+              to={isAuthenticated ? '/dashboard' : '/signup'}
+              className="inline-block px-10 py-4 border-2 border-deep-blue text-deep-blue font-extrabold text-lg rounded-xl hover:bg-blue-50 transition-colors"
+            >
+              Start Cataloging Now &rarr;
+            </Link>
+          </div>
         </div>
       </header>
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import listsService from '../services/lists';
-import toast from 'react-hot-toast';
 import ListCardSkeleton from '../components/ListCardSkeleton';
 
 const SORT_OPTIONS = [
@@ -13,23 +12,57 @@ const SORT_OPTIONS = [
 ];
 
 export default function Explore() {
+  const CACHE_KEY = 'explore_public_lists_cache_v1';
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest');
 
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (!cached) return;
+
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setLists(parsed);
+      }
+    } catch {
+      // Ignore bad cache values.
+    }
+  }, []);
+
+  useEffect(() => {
     const timeoutId = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await listsService.getAll({
+        const fetchParams = {
           public_only: true,
           search: search.trim() || undefined,
           sort,
-        });
+        };
+
+        let res;
+        let lastError;
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          try {
+            res = await listsService.getAll(fetchParams);
+            break;
+          } catch (error) {
+            lastError = error;
+            if (attempt < 2) {
+              await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)));
+            }
+          }
+        }
+
+        if (!res) throw lastError;
         setLists(res.data);
+        if (!search.trim()) {
+          localStorage.setItem(CACHE_KEY, JSON.stringify(res.data));
+        }
       } catch {
-        toast.error('Failed to load public lists');
+        // Keep previous results visible silently; avoid noisy recurring error banners.
       } finally {
         setLoading(false);
       }

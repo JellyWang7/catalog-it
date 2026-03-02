@@ -1,6 +1,7 @@
 class Item < ApplicationRecord
   belongs_to :list
   has_many :item_likes, dependent: :destroy
+  has_many :attachments, as: :attachable, dependent: :destroy
   
   validates :name, presence: true
   validates :rating, numericality: { 

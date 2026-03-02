@@ -45,7 +45,7 @@ src/
 |-------|------|-------------|
 | `/` | Home | Landing page |
 | `/explore` | Explore | Public lists with server-side search + sort |
-| `/lists/:id` | ListDetail | List + items + ratings + share + comments + likes |
+| `/lists/:id` | ListDetail | List + items + ratings + share + comments + likes + attachments |
 | `/s/:code` | SharedList | Resolve share code |
 | `/login` | Login | Sign in (with MFA step if enabled) |
 | `/signup` | Signup | Register |

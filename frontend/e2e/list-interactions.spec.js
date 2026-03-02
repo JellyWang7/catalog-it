@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-async function mockListApi(page, { authenticated = true } = {}) {
+async function mockListApi(page, { authenticated = true, currentUserId = 2, currentUsername = 'tester' } = {}) {
   let likedByUser = false;
   let likesCount = 0;
   let itemLikedByUser = false;
@@ -25,11 +25,21 @@ async function mockListApi(page, { authenticated = true } = {}) {
       user: { id: 9, username: 'guest' },
     },
   ];
+  const attachments = [
+    {
+      id: 950,
+      kind: 'link',
+      title: 'Reference Docs',
+      url: 'https://example.com/docs',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ];
 
   if (authenticated) {
     await page.addInitScript(() => {
       localStorage.setItem('token', 'fake-jwt');
-      localStorage.setItem('user', JSON.stringify({ id: 2, username: 'tester' }));
+      localStorage.setItem('user', JSON.stringify({ id: currentUserId, username: currentUsername }));
     });
   } else {
     await page.addInitScript(() => {
@@ -52,7 +62,7 @@ async function mockListApi(page, { authenticated = true } = {}) {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        user: { id: 2, username: 'tester', email: 'tester@example.com' },
+        user: { id: currentUserId, username: currentUsername, email: 'tester@example.com' },
       }),
     });
   });
@@ -82,6 +92,7 @@ async function mockListApi(page, { authenticated = true } = {}) {
           },
         ],
         comments,
+        attachments,
       }),
     });
   });
@@ -204,6 +215,40 @@ async function mockListApi(page, { authenticated = true } = {}) {
       body: JSON.stringify({ error: 'Comment not found' }),
     });
   });
+
+  await page.route('**/api/v1/lists/1/attachments', async (route) => {
+    if (!authenticated) {
+      await route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Unauthorized' }),
+      });
+      return;
+    }
+
+    if (route.request().method() === 'POST') {
+      attachments.unshift({
+        id: 951,
+        kind: 'link',
+        title: 'API Guide',
+        url: 'https://example.com/api-guide',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(attachments[0]),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(attachments),
+    });
+  });
 }
 
 test('user can like list/item and comment on list', async ({ page }) => {
@@ -264,4 +309,17 @@ test('shows clean moderation warning when comment is rejected with 422', async (
   await expect(
     page.getByText('Content contains inappropriate language. Please keep comments clean and age-friendly.')
   ).toBeVisible();
+});
+
+test('list owner can add a link attachment', async ({ page }) => {
+  await mockListApi(page, { authenticated: true, currentUserId: 1, currentUsername: 'owner' });
+
+  await page.goto('/lists/1');
+  await expect(page.getByText('Attachments')).toBeVisible();
+
+  await page.getByPlaceholder('Attachment title').first().fill('API Guide');
+  await page.getByPlaceholder('https://example.com/resource').fill('https://example.com/api-guide');
+  await page.getByRole('button', { name: 'Add Link' }).click();
+
+  await expect(page.getByText('API Guide')).toBeVisible();
 });

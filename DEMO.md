@@ -1,7 +1,7 @@
 # CatalogIt - Demo Guide
 
 **Date**: March 2, 2026
-**Branch**: `midterm-demo`
+**Branch**: `feature/mar-2-search-analytics`
 
 ---
 
@@ -156,13 +156,14 @@ Open **http://localhost:3000/api-docs** in your browser.
    ```
 4. Click **Execute** — show the 200 response with the new list
 
-### Step 5 — Show all 28 endpoints
+### Step 5 — Show all 33 endpoints
 
 Scroll through Swagger to highlight all endpoint groups:
 - **Authentication (8)** — signup, login, me, forgot/reset password, MFA setup/verify/disable
 - **Lists (10)** — CRUD + share + shared lookup + list like/unlike + analytics
 - **Items (7)** — CRUD + item like/unlike
 - **Comments (3)** — list comments + delete
+- **Attachments (5)** — list/item attachment list + create + delete
 
 ---
 
@@ -209,11 +210,12 @@ Open http://localhost:5173 and walk through:
 | 8 | **Share List** | Click "Share" button, short URL copied to clipboard |
 | 9 | **List Interactions** (`/lists/:id`) | Like list, like item, add comment, delete own comment |
 | 9a | **Moderation** (`/lists/:id`) | Try profanity/slur text in comment or item notes and show 422 clean warning |
-| 10 | **Explore** (`/explore`) | Public list grid, search, sort dropdown (5 options) |
-| 11 | **Profile** (`/profile`) | Avatar, role badge, status, stats cards, MFA section |
-| 12 | **MFA Setup** | Click "Enable MFA", copy secret, verify with TOTP code |
-| 13 | **Forgot Password** (`/forgot-password`) | Enter email, show reset token (dev mode) |
-| 14 | **Mobile Nav** | Resize browser narrow, show hamburger menu |
+| 10 | **Attachments** (`/lists/:id`) | Add `https` link attachment, upload file/image, open attachment URL |
+| 11 | **Explore** (`/explore`) | Public list grid, search, sort dropdown (5 options) |
+| 12 | **Profile** (`/profile`) | Avatar, role badge, status, stats cards, MFA section |
+| 13 | **MFA Setup** | Click "Enable MFA", copy secret, verify with TOTP code |
+| 14 | **Forgot Password** (`/forgot-password`) | Enter email, show reset token (dev mode) |
+| 15 | **Mobile Nav** | Resize browser narrow, show hamburger menu |
 
 ### Demo Accounts
 
@@ -239,6 +241,7 @@ Open http://localhost:5173 and walk through:
 - **Security** — XSS prevention, rate limiting, user status, CORS, error boundary
 - **Share Lists** — generates short URL (`/s/:code`), clipboard copy
 - **Comments + Likes** — social feedback on public/shared lists and list items
+- **Attachments** — list-level file/image/link uploads with owner permissions and validation
 - **Strict content moderation** — profanity/slur filtering blocks inappropriate comments and item notes with clear 422 messaging
 - **Responsive** — mobile hamburger menu, works on all screen sizes
 - **Automated Test Coverage** — backend core specs + frontend UI tests + frontend E2E tests
