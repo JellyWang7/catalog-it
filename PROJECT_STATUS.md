@@ -1,8 +1,8 @@
 # CatalogIt - Project Status
 
-**Last Updated**: March 2, 2026  
-**Branch**: `feature/mar-2-search-analytics`  
-**Overall Progress**: 99% | Attachments v1 Added, Deployment Remaining
+**Last Updated**: March 9, 2026  
+**Branch**: `feature/mar-2-full-tests-doc-refresh`  
+**Overall Progress**: 99% | Attachments v1.1 Complete, Deployment Remaining
 
 ---
 
@@ -45,6 +45,8 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 - [x] UI tests for list/item likes, comment posting/deletion permissions, unauthenticated behavior
 - [x] E2E tests for list/item likes, comments, and auth-aware UI behavior
 - [x] Attachment tests: backend model/request + frontend unit + frontend E2E
+- [x] Item-level attachment management UI in `ListDetail`
+- [x] Attachment endpoint documentation refreshed in Swagger
 
 ### Remaining (post-midterm)
 - [ ] Deployment (Render + Netlify)
@@ -54,6 +56,8 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 - [x] Explore now uses backend filtering/sorting (`public_only=true`)
 - [x] Dashboard now uses backend filtering (`owner_only=true`) and analytics endpoint
 - [x] Comments/reactions analytics in dashboard (`GET /api/v1/lists/analytics`)
+- [x] Item-level attachments now included in list payload item serialization
+- [x] Attachment request specs expanded for item-level create flow
 
 ---
 
@@ -133,6 +137,6 @@ cd frontend && npm run build
 
 ---
 
-*Last updated: March 2, 2026*  
+*Last updated: March 9, 2026*  
 *Backend: 33 endpoints, core specs passing (requests/models/services)*  
 *Frontend: comments/likes/search/analytics/attachments complete, UI + E2E tests passing*

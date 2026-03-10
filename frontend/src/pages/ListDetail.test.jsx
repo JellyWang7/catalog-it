@@ -26,6 +26,7 @@ vi.mock('../services/items', () => ({
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    createAttachment: vi.fn(),
     like: vi.fn(),
     unlike: vi.fn(),
   },
@@ -74,6 +75,7 @@ const listPayload = {
       rating: 4,
       likes_count: 0,
       liked_by_current_user: false,
+      attachments: [],
     },
   ],
   comments: [
@@ -168,7 +170,7 @@ describe('ListDetail', () => {
 
     renderListDetail();
 
-    await screen.findByText('Item One');
+    await screen.findByTitle('Like this item');
     fireEvent.click(screen.getByTitle('Like this item'));
 
     await waitFor(() => {
@@ -334,6 +336,41 @@ describe('ListDetail', () => {
     expect(screen.getByText('AUDIO')).toBeInTheDocument();
   });
 
+  it('creates an item-level link attachment for owner', async () => {
+    authState.user = { id: 1, username: 'owner' };
+    authState.isAuthenticated = true;
+    itemsService.createAttachment.mockResolvedValue({
+      data: {
+        id: 990,
+        kind: 'link',
+        title: 'Item Source',
+        url: 'https://example.com/item-source',
+        created_at: new Date().toISOString(),
+      },
+    });
+
+    renderListDetail();
+    await screen.findByText('Item Attachments');
+
+    fireEvent.change(screen.getByPlaceholderText(/item link title/i), {
+      target: { value: 'Item Source' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/https:\/\/example.com\/item-resource/i), {
+      target: { value: 'https://example.com/item-source' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /add item link/i }));
+
+    await waitFor(() => {
+      expect(itemsService.createAttachment).toHaveBeenCalledWith(100, {
+        kind: 'link',
+        title: 'Item Source',
+        url: 'https://example.com/item-source',
+      });
+      expect(toast.success).toHaveBeenCalledWith('Item link added');
+      expect(screen.getByText('Item Source')).toBeInTheDocument();
+    });
+  });
+
   it('shows friendly file rules when upload type/size is invalid', async () => {
     authState.user = { id: 1, username: 'owner' };
     authState.isAuthenticated = true;
@@ -350,10 +387,11 @@ describe('ListDetail', () => {
     fireEvent.change(screen.getAllByPlaceholderText(/attachment title/i)[1], {
       target: { value: 'Bad Upload' },
     });
-    const fileInput = document.querySelector('input[type="file"]');
+    const uploadForm = screen.getByText(/upload file\/image/i).closest('form');
+    const fileInput = uploadForm.querySelector('input[type="file"]');
     const invalidFile = new File(['x'], 'bad.exe', { type: 'application/x-msdownload' });
     fireEvent.change(fileInput, { target: { files: [invalidFile] } });
-    fireEvent.click(screen.getByRole('button', { name: /upload file/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^upload file$/i }));
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(

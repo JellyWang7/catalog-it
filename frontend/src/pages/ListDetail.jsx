@@ -28,6 +28,8 @@ export default function ListDetail() {
   const [attachmentUrl, setAttachmentUrl] = useState('');
   const [attachmentFile, setAttachmentFile] = useState(null);
   const [submittingAttachment, setSubmittingAttachment] = useState(false);
+  const [itemAttachmentInputs, setItemAttachmentInputs] = useState({});
+  const [itemAttachmentSubmitting, setItemAttachmentSubmitting] = useState({});
 
   const isOwner = isAuthenticated && list && user?.id === list.user_id;
 
@@ -322,7 +324,110 @@ export default function ListDetail() {
     }
   };
 
-  const handleDeleteAttachment = async (attachmentId) => {
+  const getItemAttachmentInput = (itemId) =>
+    itemAttachmentInputs[itemId] || { linkTitle: '', linkUrl: '', fileTitle: '', file: null };
+
+  const updateItemAttachmentInput = (itemId, updates) => {
+    setItemAttachmentInputs((prev) => ({
+      ...prev,
+      [itemId]: {
+        ...getItemAttachmentInput(itemId),
+        ...updates,
+      },
+    }));
+  };
+
+  const handleAddItemLinkAttachment = async (e, itemId) => {
+    e.preventDefault();
+    if (!ensureAuthenticated()) return;
+    if (!isOwner) {
+      toast.error('Only the list owner can add item attachments');
+      return;
+    }
+
+    const input = getItemAttachmentInput(itemId);
+    const title = input.linkTitle.trim();
+    const url = input.linkUrl.trim();
+    if (!title || !url) {
+      toast.error('Please provide both title and https link');
+      return;
+    }
+
+    setItemAttachmentSubmitting((prev) => ({ ...prev, [itemId]: true }));
+    try {
+      const res = await itemsService.createAttachment(itemId, { kind: 'link', title, url });
+      setList((prev) => ({
+        ...prev,
+        items: (prev.items || []).map((item) =>
+          item.id === itemId
+            ? { ...item, attachments: [res.data, ...(item.attachments || [])] }
+            : item
+        ),
+      }));
+      updateItemAttachmentInput(itemId, { linkTitle: '', linkUrl: '' });
+      toast.success('Item link added');
+    } catch (err) {
+      const errors = err.response?.data?.errors || [];
+      const invalidLink = errors.some((message) => message.toLowerCase().includes('https link'));
+      toast.error(
+        invalidLink ? 'Invalid link. Please use a full https:// URL.' : errors.join(', ') || 'Failed to add item link'
+      );
+    } finally {
+      setItemAttachmentSubmitting((prev) => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  const handleUploadItemAttachment = async (e, itemId) => {
+    e.preventDefault();
+    if (!ensureAuthenticated()) return;
+    if (!isOwner) {
+      toast.error('Only the list owner can add item attachments');
+      return;
+    }
+
+    const input = getItemAttachmentInput(itemId);
+    const title = input.fileTitle.trim();
+    const file = input.file;
+    if (!title || !file) {
+      toast.error('Please provide title and select a file');
+      return;
+    }
+
+    const isImage = file.type?.startsWith('image/');
+
+    setItemAttachmentSubmitting((prev) => ({ ...prev, [itemId]: true }));
+    try {
+      const res = await itemsService.createAttachment(itemId, {
+        kind: isImage ? 'image' : 'file',
+        title,
+        asset: file,
+      });
+      setList((prev) => ({
+        ...prev,
+        items: (prev.items || []).map((item) =>
+          item.id === itemId
+            ? { ...item, attachments: [res.data, ...(item.attachments || [])] }
+            : item
+        ),
+      }));
+      updateItemAttachmentInput(itemId, { fileTitle: '', file: null });
+      toast.success('Item file uploaded');
+    } catch (err) {
+      const errors = err.response?.data?.errors || [];
+      const typeError = errors.some((message) => message.toLowerCase().includes('type is not allowed'));
+      const sizeError = errors.some((message) => message.toLowerCase().includes('5mb'));
+
+      if (typeError || sizeError) {
+        toast.error('Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP. Max size: 5MB.');
+      } else {
+        toast.error(errors.join(', ') || 'Failed to upload item file');
+      }
+    } finally {
+      setItemAttachmentSubmitting((prev) => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId, itemId = null) => {
     if (!ensureAuthenticated()) return;
     if (!isOwner) {
       toast.error('Only the list owner can delete attachments');
@@ -331,10 +436,26 @@ export default function ListDetail() {
 
     try {
       await listsService.deleteAttachment(attachmentId);
-      setList((prev) => ({
-        ...prev,
-        attachments: (prev.attachments || []).filter((attachment) => attachment.id !== attachmentId),
-      }));
+      setList((prev) => {
+        if (itemId) {
+          return {
+            ...prev,
+            items: (prev.items || []).map((item) =>
+              item.id === itemId
+                ? {
+                    ...item,
+                    attachments: (item.attachments || []).filter((attachment) => attachment.id !== attachmentId),
+                  }
+                : item
+            ),
+          };
+        }
+
+        return {
+          ...prev,
+          attachments: (prev.attachments || []).filter((attachment) => attachment.id !== attachmentId),
+        };
+      });
       toast.success('Attachment deleted');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to delete attachment');
@@ -557,6 +678,123 @@ export default function ListDetail() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Item-Level Attachments */}
+        <div className="mt-10 border-t pt-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Item Attachments</h2>
+          {items.length === 0 ? (
+            <p className="text-gray-400">Add items to manage item-level attachments.</p>
+          ) : (
+            <div className="space-y-4">
+              {items.map((item) => {
+                const itemAttachments = item.attachments || [];
+                const input = getItemAttachmentInput(item.id);
+
+                return (
+                  <div key={`item-attachments-${item.id}`} className="border border-gray-200 rounded-xl p-4 bg-white">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <p className="font-semibold text-gray-800">{item.name}</p>
+                      <span className="text-xs text-gray-500">{itemAttachments.length} attachments</span>
+                    </div>
+
+                    {isOwner && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+                        <form onSubmit={(e) => handleAddItemLinkAttachment(e, item.id)} className="space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Item link title"
+                            value={input.linkTitle}
+                            onChange={(e) => updateItemAttachmentInput(item.id, { linkTitle: e.target.value })}
+                            maxLength={120}
+                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
+                          />
+                          <input
+                            type="url"
+                            placeholder="https://example.com/item-resource"
+                            value={input.linkUrl}
+                            onChange={(e) => updateItemAttachmentInput(item.id, { linkUrl: e.target.value })}
+                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
+                          />
+                          <button
+                            type="submit"
+                            disabled={itemAttachmentSubmitting[item.id]}
+                            className="px-3 py-2 bg-deep-blue text-white text-xs font-semibold rounded-lg hover:bg-deep-blue-800 disabled:opacity-60"
+                          >
+                            Add Item Link
+                          </button>
+                        </form>
+
+                        <form onSubmit={(e) => handleUploadItemAttachment(e, item.id)} className="space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Item file title"
+                            value={input.fileTitle}
+                            onChange={(e) => updateItemAttachmentInput(item.id, { fileTitle: e.target.value })}
+                            maxLength={120}
+                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
+                          />
+                          <input
+                            type="file"
+                            onChange={(e) => updateItemAttachmentInput(item.id, { file: e.target.files?.[0] || null })}
+                            className="w-full text-sm text-gray-700"
+                          />
+                          <button
+                            type="submit"
+                            disabled={itemAttachmentSubmitting[item.id]}
+                            className="px-3 py-2 bg-teal text-white text-xs font-semibold rounded-lg hover:opacity-90 disabled:opacity-60"
+                          >
+                            Upload Item File
+                          </button>
+                        </form>
+                      </div>
+                    )}
+
+                    {itemAttachments.length === 0 ? (
+                      <p className="text-sm text-gray-400">No item attachments yet.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {itemAttachments.map((attachment) => (
+                          <div key={attachment.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                            <p className="text-sm font-semibold text-gray-800 mb-1">{attachment.title}</p>
+                            {resolveAttachmentType(attachment) === 'image' && (
+                              <img
+                                src={attachment.url}
+                                alt={attachment.title}
+                                className="w-full max-w-sm max-h-44 object-cover rounded-lg border border-gray-200"
+                              />
+                            )}
+                            {resolveAttachmentType(attachment) === 'audio' && (
+                              <audio controls src={attachment.url} className="w-full max-w-sm" />
+                            )}
+                            {resolveAttachmentType(attachment) === 'link' && (
+                              <a href={attachment.url} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline break-all">
+                                {attachment.url}
+                              </a>
+                            )}
+                            {resolveAttachmentType(attachment) === 'file' && (
+                              <a href={attachment.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                                <span>📎</span>
+                                <span>Open file</span>
+                              </a>
+                            )}
+                            {isOwner && (
+                              <button
+                                onClick={() => handleDeleteAttachment(attachment.id, item.id)}
+                                className="mt-2 text-xs text-red-600 hover:text-red-700 font-medium"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
