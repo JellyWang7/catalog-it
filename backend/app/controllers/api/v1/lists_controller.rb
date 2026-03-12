@@ -253,7 +253,8 @@ module Api
           created_at: item.created_at,
           updated_at: item.updated_at,
           likes_count: item.likes_count,
-          liked_by_current_user: item.liked_by?(current_user)
+          liked_by_current_user: item.liked_by?(current_user),
+          attachments: item.attachments.order(created_at: :desc).map { |attachment| serialize_attachment(attachment) }
         }
       end
 

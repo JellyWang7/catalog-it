@@ -1,8 +1,8 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: March 2, 2026
-**Current Branch**: `feature/mar-2-search-analytics`  
-**Project Status**: Midterm Complete + Feedback Iteration + Attachments v1
+**Last Updated**: March 9, 2026
+**Current Branch**: `feature/mar-2-full-tests-doc-refresh`  
+**Project Status**: Midterm Complete + Feedback Iteration + Attachments v1.1
 
 ---
 
@@ -99,7 +99,7 @@ See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 ### Phase 2: Frontend List/Item UI
 - [x] Add attachments service methods (fetch/upload/create-link/delete)
 - [x] Add list-level Attachments section in `ListDetail` (upload + link + render cards)
-- [ ] Add item-level attachments UI (if enabled in scope)
+- [x] Add item-level attachments UI (owner add/delete + preview support)
 - [x] Add UX states (loading/empty/permission-disabled/failure toasts)
 - [x] Add attachment previews (link cards + uploaded file/image links)
 
@@ -107,8 +107,23 @@ See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 - [x] Backend model/request tests for attachments (happy path + auth + validation)
 - [x] Frontend unit tests for attachment interactions and permission behavior
 - [x] Frontend E2E tests for upload/link/view/delete flows
-- [ ] Swagger docs for attachment endpoints and request/response schemas
+- [x] Swagger docs for attachment endpoints and request/response schemas
 - [x] Update docs (`PROJECT_STATUS.md`, backend/frontend `README.md`, `DEMO.md`)
+## This Week: Integration Sprint (Mar 9-Mar 15)
+
+### Focus
+- [x] Complete remaining attachment scope gaps from last sprint
+- [x] Add item-level attachment UI in `ListDetail` with owner actions
+- [x] Add/refresh Swagger coverage for attachment endpoints
+- [x] Run full regression suite and fix failures
+- [ ] Deployment execution (Render + Netlify)
+
+### Validation Snapshot (Mar 9)
+- [x] Backend full suite: `235 examples, 0 failures`
+- [x] Frontend unit tests: `13 passed`
+- [x] Frontend E2E: `5 passed`
+- [x] Frontend production build passes
+
 
 ### Initial Scope Constraints (v1)
 - [x] Start with list-level attachments first; expand to item-level after v1 is stable
@@ -176,4 +191,4 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 
 ---
 
-*Last updated: March 2, 2026*
+*Last updated: March 9, 2026*

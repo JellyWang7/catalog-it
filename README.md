@@ -3,7 +3,7 @@
 > A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS 701 -- Special Projects in CS II  
-**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments) | Demo Ready  
+**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments v1.1) | Demo Ready  
 **Tests**: Full backend RSpec + Frontend UI/E2E tests passing  
 
 ---
@@ -214,6 +214,7 @@ App: **http://localhost:5173**
 > - private lists cannot be shared
 > - attachment links must use `https://`
 > - attachment uploads support JPG/PNG/WEBP/PDF/TXT/ZIP up to 5MB
+> - item-level attachments are supported in `ListDetail` (owner add/delete, preview rendering)
 
 ---
 
@@ -243,7 +244,7 @@ App: **http://localhost:5173**
 4. **Dashboard** -- View stats, search/filter lists, CRUD operations
 5. **Create List** -- Modal form with title, description, visibility
 6. **List Detail** -- Add/edit/delete items with ratings (1-5 stars)
-7. **Attachments** -- Add link/file/image attachments with previews and limits
+7. **Attachments** -- Add list and item-level link/file/image attachments with previews and limits
 8. **Share List** -- Generate short URL, copy to clipboard (non-private lists)
 9. **Explore** -- Browse public lists with search + sort
 10. **Profile** -- View user info, role, status, stats, MFA setup
@@ -259,7 +260,7 @@ App: **http://localhost:5173**
 |--------|---------|
 | `main` | Stable releases |
 | `feature/frontend-init` | Frontend development |
-| `feature/mar-2-search-analytics` | Current feature branch |
+| `feature/mar-2-full-tests-doc-refresh` | Current feature branch |
 
 Never commit `docs/`, `.env`, or credentials.
 

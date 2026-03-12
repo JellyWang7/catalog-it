@@ -1,6 +1,6 @@
 # CatalogIt - Demo Guide
 
-**Date**: March 2, 2026
+**Date**: March 9, 2026
 **Branch**: `feature/mar-2-search-analytics`
 
 ---
@@ -241,7 +241,7 @@ Open http://localhost:5173 and walk through:
 - **Security** — XSS prevention, rate limiting, user status, CORS, error boundary
 - **Share Lists** — generates short URL (`/s/:code`), clipboard copy
 - **Comments + Likes** — social feedback on public/shared lists and list items
-- **Attachments** — list-level file/image/link uploads with owner permissions and validation
+- **Attachments** — list and item-level file/image/link uploads with owner permissions and validation
 - **Strict content moderation** — profanity/slur filtering blocks inappropriate comments and item notes with clear 422 messaging
 - **Responsive** — mobile hamburger menu, works on all screen sizes
 - **Automated Test Coverage** — backend core specs + frontend UI tests + frontend E2E tests
