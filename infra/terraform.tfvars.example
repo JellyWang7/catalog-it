@@ -1,0 +1,33 @@
+aws_region         = "us-east-1"
+project_name       = "catalogit"
+environment        = "prod"
+owner              = "jelly1"
+
+# Restrict this to your current public IP/CIDR for SSH.
+ssh_allowed_cidr   = "0.0.0.0/0"
+
+# Optional: set existing key pair name if you need SSH.
+ec2_key_pair_name  = null
+
+# Keep micro defaults for free-tier style usage.
+ec2_instance_type  = "t3.micro"
+db_instance_class  = "db.t3.micro"
+db_allocated_storage = 20
+
+db_name            = "catalogit_production"
+db_username        = "catalogit"
+db_password        = "REPLACE_ME_WITH_STRONG_PASSWORD"
+
+# If your Rails container listens on 3000 directly, set this to 3000.
+# If Nginx/Caddy proxies to Rails and listens on 80, keep 80.
+api_port           = 80
+
+# Daily runtime window (1-2 hours).
+enable_schedules   = true
+schedule_timezone  = "America/New_York"
+daily_start_cron   = "cron(0 18 * * ? *)"
+daily_stop_cron    = "cron(0 20 * * ? *)"
+
+# Cost guardrail
+budget_limit_usd   = 5
+budget_alert_email = "you@example.com"

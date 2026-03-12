@@ -36,9 +36,6 @@ module Backend
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
     
-    # Autoload services directory
-    config.autoload_paths << Rails.root.join("app", "services")
-
     # Enable Rack::Attack for rate limiting
     config.middleware.use Rack::Attack
 
