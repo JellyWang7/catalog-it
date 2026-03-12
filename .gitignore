@@ -13,6 +13,21 @@ vendor/bundle/
 .env
 .env.*
 !.env.example
+!**/.env.example
+
+# Deployment/runtime secrets
+/backend/.env.production
+/backend/.kamal/secrets*
+/infra/terraform.tfvars
+/infra/*.tfstate
+/infra/*.tfstate.*
+/infra/.terraform/
+/infra/crash.log
+/infra/*.tfplan
+
+# Private key/cert material
+*.pem
+*.key
 
 # Ignore bundler config.
 /.bundle

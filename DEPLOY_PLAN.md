@@ -1,358 +1,259 @@
-# CatalogIt - Deployment Plan
+# CatalogIt - AWS Deployment Plan (Free-First, Scale-Ready)
 
-**Last Updated**: March 2, 2026  
-**Target**: Week 5 (Mar 1-7) or earlier if ready  
-**Strategy**: Render (backend + database) + Netlify (frontend)
-
----
-
-## Architecture Overview
-
-```
-┌─────────────┐       HTTPS        ┌──────────────────┐
-│   Browser   │ ──────────────────> │  Netlify (CDN)   │
-│  (React)    │ <────────────────── │  Static SPA      │
-└─────────────┘                     └──────────────────┘
-      │                                    
-      │ API calls (HTTPS)                  
-      ▼                                    
-┌──────────────────┐     Internal    ┌──────────────────┐
-│  Render.com      │ ──────────────> │  Render.com      │
-│  Rails API       │ <────────────── │  PostgreSQL      │
-│  (Web Service)   │                 │  (Managed DB)    │
-└──────────────────┘                 └──────────────────┘
-```
-
-**Why this stack?**
-- Free tier available on both platforms
-- Zero DevOps overhead (no Docker/AWS needed for MVP)
-- Auto-deploy from GitHub
-- SSL included free
-- Good enough for a class project demo
+**Last Updated**: March 11, 2026  
+**Target**: Lowest-cost AWS deployment now, with smooth upgrade path later  
+**Strategy**: S3 + CloudFront (frontend), EC2 (Rails), RDS PostgreSQL (database), EventBridge schedules
 
 ---
 
-## Phase 1: Pre-Deployment Prep (1-2 hours)
+## Decision: Should You Use Terraform?
 
-### 1.1 Backend Production Config
+Yes. Use Terraform for this project.
 
-```bash
-cd backend
-```
+Why:
+- Reproducible environment (you can tear down and recreate safely).
+- Easy upgrade path from free-tier to paid/high-availability later.
+- Cost controls and schedules can be versioned in code.
+- Better for class/demo handoff and future portfolio proof.
 
-**a) Add production gems to Gemfile (if not present):**
+When to skip Terraform:
+- One-time demo only and you need to deploy in under 30 minutes.
 
-```ruby
-group :production do
-  gem "pg"   # already included
-end
-```
+Recommended:
+- Use Terraform for AWS infrastructure.
+- Keep app deploy commands simple (Docker image on EC2 + `docker run`).
 
-**b) Create `Procfile` in `backend/`:**
+---
 
-```
-web: bundle exec puma -C config/puma.rb
-release: bundle exec rails db:migrate
-```
-
-**c) Update `config/puma.rb` for production:**
-
-```ruby
-max_threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }
-min_threads_count = ENV.fetch("RAILS_MIN_THREADS") { max_threads_count }
-threads min_threads_count, max_threads_count
-
-port ENV.fetch("PORT") { 3000 }
-
-environment ENV.fetch("RAILS_ENV") { "development" }
-
-workers ENV.fetch("WEB_CONCURRENCY") { 2 }
-preload_app!
-```
-
-**d) Update `config/environments/production.rb`:**
-
-```ruby
-config.force_ssl = true
-config.assume_ssl = true
-```
-
-**e) Update CORS for production (`config/initializers/cors.rb`):**
-
-```ruby
-Rails.application.config.middleware.insert_before 0, Rack::Cors do
-  allow do
-    if Rails.env.production?
-      origins ENV.fetch('FRONTEND_URL', 'https://catalogit.netlify.app')
-    else
-      origins 'http://localhost:5173', 'http://localhost:3000'
-    end
-    resource '*',
-      headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head]
-  end
-end
-```
-
-### 1.2 Frontend Production Config
-
-**a) Create `frontend/netlify.toml`:**
-
-```toml
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-```
-
-**b) Create `frontend/public/_redirects`:**
+## Architecture Overview (Current Goal)
 
 ```
-/*    /index.html   200
+Browser
+  -> CloudFront (HTTPS + CDN)
+  -> S3 bucket (React static build)
+  -> API calls to EC2 public URL (Rails API)
+  -> EC2 talks to RDS PostgreSQL in private subnet/security group
 ```
 
-**c) Verify production build works:**
+Free-first profile:
+- Frontend: S3 + CloudFront (very low cost, often near $0 for low traffic).
+- Backend: EC2 t2.micro/t3.micro.
+- Database: RDS db.t3.micro.
+- Daily schedule: start stack for 1-2 hours, then auto-stop.
+
+Scale path later:
+- Move EC2 -> ECS/Fargate or ASG.
+- Move RDS -> Multi-AZ + larger class.
+- Add ALB + Route53 custom domain + ACM cert.
+
+---
+
+## Important Project Readiness Items
+
+Current state:
+- Done: frontend deployment env uses `VITE_API_URL`.
+- Done: production `database.yml` includes `primary`, `cache`, `queue`, and `cable`.
+- Done: production Active Storage is set for S3 (`ACTIVE_STORAGE_SERVICE=amazon` default).
+- Done: backend deploy scripts include preflight env validation (`check_prod_env.sh`).
+- Done: optional local fallback path exists via `--skip-s3-check`.
+- Pending: validate Ruby image/version compatibility in your target EC2 build environment.
+- Pending: finalize TLS termination setup for your chosen endpoint (CloudFront/ALB/reverse proxy).
+
+TLS/SSL requirement:
+   - `config.force_ssl = true` is enabled.
+   - Ensure HTTPS termination is correctly configured (CloudFront + HTTPS origin strategy, or ALB with ACM).
+
+---
+
+## Phase 1 - AWS Foundation (Terraform)
+
+Create Terraform stack with:
+- VPC (or default VPC for faster start)
+- Security groups:
+  - EC2: inbound 22 (restricted to your IP), 80/443 as needed
+  - RDS: inbound 5432 from EC2 SG only
+- EC2 instance (t2.micro or t3.micro)
+- RDS PostgreSQL (db.t3.micro, single-AZ, minimal storage)
+- S3 bucket for frontend
+- CloudFront distribution for S3 origin
+- IAM roles/policies for:
+  - EC2 SSM access (optional but recommended)
+  - Scheduler/Lambda start-stop automation
+- AWS Budgets + alerts
+
+Suggested Terraform structure:
+
+```
+infra/
+  main.tf
+  variables.tf
+  outputs.tf
+  modules/
+    network/
+    ec2/
+    rds/
+    s3_frontend/
+    cloudfront/
+    schedule/
+```
+
+---
+
+## Phase 2 - Backend Deploy (EC2 + Docker)
+
+On EC2:
+1. Install Docker.
+2. Pull/build backend image.
+3. Set environment variables (systemd env file or `.env`).
+4. Run container with restart policy.
+
+Required backend env vars:
+- `RAILS_ENV=production`
+- `SECRET_KEY_BASE=<generated>`
+- `RAILS_MASTER_KEY=<from config/master.key>`
+- `DATABASE_HOST=<rds-endpoint>`
+- `DATABASE_USERNAME=<db_user>`
+- `CATALOGIT_DATABASE_PASSWORD=<db_pass>`
+- `FRONTEND_URL=https://<cloudfront-domain>`
+- `RAILS_LOG_LEVEL=info`
+
+Recommended:
+- Add reverse proxy (Nginx or Caddy) on EC2 for stable SSL/origin behavior.
+
+---
+
+## Phase 3 - Frontend Deploy (S3 + CloudFront)
+
+Build frontend:
 
 ```bash
 cd frontend
-npm run build
-npm run preview
+VITE_API_URL="https://<api-domain-or-ec2-endpoint>/api/v1" npm run build
 ```
 
----
+Upload `dist/` to S3 bucket.
 
-## Phase 2: Deploy Database (15 min)
+CloudFront:
+- Origin: S3 bucket
+- Default root object: `index.html`
+- SPA fallback: map 403/404 to `/index.html` (HTTP 200)
+- Enable compression
 
-### 2.1 Create Render PostgreSQL
-
-1. Go to [render.com](https://render.com) and sign up / log in
-2. Click **New** > **PostgreSQL**
-3. Configure:
-   - **Name**: `catalogit-db`
-   - **Region**: Oregon (US West) or closest to you
-   - **PostgreSQL Version**: 16
-   - **Plan**: Free
-4. Click **Create Database**
-5. Copy the **Internal Database URL** (starts with `postgres://...`)
-
-> Free tier: 256MB storage, auto-expires after 90 days. Sufficient for demo.
+If using private S3 bucket:
+- Use Origin Access Control (OAC) and bucket policy for CloudFront only.
 
 ---
 
-## Phase 3: Deploy Backend (20 min)
+## Phase 4 - Strict Daily Runtime Schedule (1-2 Hours)
 
-### 3.1 Create Render Web Service
+Goal: backend/database only available during a fixed daily window.
 
-1. On Render dashboard, click **New** > **Web Service**
-2. Connect your GitHub repo (`catalog-it`)
-3. Configure:
-   - **Name**: `catalogit-api`
-   - **Region**: Same as database
-   - **Branch**: `feature/frontend-init` (or `main` after merge)
-   - **Root Directory**: `backend`
-   - **Runtime**: Ruby
-   - **Build Command**: `bundle install`
-   - **Start Command**: `bundle exec puma -C config/puma.rb`
-   - **Plan**: Free
+### Recommended schedule model
+- Start daily at `18:00` local time
+- Stop daily at `20:00` local time
 
-### 3.2 Set Environment Variables
+Use EventBridge Scheduler (or EventBridge Rules) to automate:
+- EC2 start: `aws ec2 start-instances --instance-ids <id>`
+- EC2 stop: `aws ec2 stop-instances --instance-ids <id>`
+- RDS start: `aws rds start-db-instance --db-instance-identifier <id>`
+- RDS stop: `aws rds stop-db-instance --db-instance-identifier <id>`
 
-On the Render service settings, add:
+Implementation options:
+- Terraform-managed `aws_scheduler_schedule` + IAM target role.
+- Or Lambda functions invoked by schedule.
 
-| Key | Value |
-|-----|-------|
-| `DATABASE_URL` | *(paste Internal Database URL from Phase 2)* |
-| `RAILS_ENV` | `production` |
-| `RAILS_MASTER_KEY` | *(contents of `backend/config/master.key`)* |
-| `SECRET_KEY_BASE` | *(run `rails secret` to generate)* |
-| `FRONTEND_URL` | `https://catalogit.netlify.app` |
-| `RAILS_LOG_TO_STDOUT` | `true` |
-
-### 3.3 Seed Production Data
-
-After the first deploy succeeds:
-
-```bash
-# Using Render Shell (available in dashboard)
-bundle exec rails db:seed
-```
-
-Or use the Render **Shell** tab on the web service page.
-
-### 3.4 Verify Backend
-
-```bash
-curl https://catalogit-api.onrender.com/api/v1/lists
-# Should return JSON array of public lists
-```
+Important notes:
+- RDS can remain stopped for up to 7 days; daily start/stop is valid.
+- S3/CloudFront remain always on (very low idle cost).
+- If backend is stopped, frontend loads but API features will be unavailable.
 
 ---
 
-## Phase 4: Deploy Frontend (15 min)
+## Cost Strategy
 
-### 4.1 Create Netlify Site
+### Free-first mode (first 12 months free tier, low traffic)
+- EC2 micro + RDS micro + small storage + S3/CloudFront small usage.
+- Keep everything in one region.
+- Use daily start/stop window.
 
-1. Go to [netlify.com](https://netlify.com) and sign up / log in
-2. Click **Add new site** > **Import from Git**
-3. Connect your GitHub repo
-4. Configure:
-   - **Branch**: `feature/frontend-init` (or `main`)
-   - **Base directory**: `frontend`
-   - **Build command**: `npm run build`
-   - **Publish directory**: `frontend/dist`
+### Near-zero beyond free tier
+- Keep S3 + CloudFront only.
+- Stop EC2/RDS except during demos/use windows.
 
-### 4.2 Set Environment Variables
-
-In Netlify site settings > **Environment variables**:
-
-| Key | Value |
-|-----|-------|
-| `VITE_API_URL` | `https://catalogit-api.onrender.com/api/v1` |
-
-### 4.3 Trigger Deploy
-
-Click **Deploy site** or push a commit to trigger auto-deploy.
-
-### 4.4 Verify Frontend
-
-Visit `https://catalogit.netlify.app` (or whatever URL Netlify assigns).
+### Paid upgrade path (later)
+- Longer schedule or always-on runtime.
+- Larger EC2/RDS classes.
+- Add ALB + Route53 + ACM + WAF.
 
 ---
 
-## Phase 5: Post-Deploy Verification (30 min)
+## Hard Cost Guardrails (Must Do)
 
-### Checklist
-
-| Test | Expected Result |
-|------|----------------|
-| Visit homepage | Hero section loads, no console errors |
-| Browse `/explore` | Public lists displayed |
-| Click a list | List detail with items and ratings |
-| Sign up new account | Success, redirected to dashboard |
-| Login with seed account | `movies@example.com` / `password123` works |
-| Create a list | List appears in dashboard |
-| Add item to list | Item appears with rating |
-| Edit item | Changes saved |
-| Delete item | Item removed with confirmation |
-| Delete list | List removed from dashboard |
-| Logout | Redirected to home |
-| Visit `/dashboard` logged out | Redirected to `/login` |
-| API docs | `https://catalogit-api.onrender.com/api-docs` loads |
-
-### Common Issues
-
-| Problem | Fix |
-|---------|-----|
-| CORS errors | Check `FRONTEND_URL` env var matches Netlify URL exactly |
-| 404 on page refresh | Verify `_redirects` file or `netlify.toml` redirect rule |
-| DB connection failed | Check `DATABASE_URL` is the Internal URL |
-| Assets not loading | Verify `npm run build` passes locally first |
-| API returns 500 | Check Render logs for missing env vars |
-| Free tier cold start | First request after 15min idle takes ~30s on Render free tier |
+1. Create AWS Budget alarms:
+   - `$1`, `$5`, `$10` monthly thresholds.
+2. Enable Cost Anomaly Detection.
+3. Tag every resource with:
+   - `Project=CatalogIt`
+   - `Environment=prod`
+   - `Owner=<your-name>`
+4. Add Terraform variable guardrails:
+   - instance classes restricted to micro by default.
+   - prevent accidental multi-AZ RDS in free mode.
+5. Keep snapshots/backup retention minimal for free mode.
 
 ---
 
-## Environment Variables Summary
+## Deployment Runbook (Ordered)
 
-### Backend (Render)
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `RAILS_ENV` | Yes | `production` |
-| `SECRET_KEY_BASE` | Yes | Rails secret (run `rails secret`) |
-| `RAILS_MASTER_KEY` | Yes | From `config/master.key` |
-| `FRONTEND_URL` | Yes | Netlify site URL for CORS |
-| `RAILS_LOG_TO_STDOUT` | Yes | `true` |
-
-### Frontend (Netlify)
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_API_URL` | Yes | Render API URL + `/api/v1` |
-
----
-
-## Cost
-
-| Service | Tier | Cost | Limits |
-|---------|------|------|--------|
-| Render Web Service | Free | $0 | 750 hrs/mo, spins down after 15min idle |
-| Render PostgreSQL | Free | $0 | 256MB, expires after 90 days |
-| Netlify | Free | $0 | 100GB bandwidth/mo, 300 build min/mo |
-| **Total** | | **$0** | |
-
-> **Note**: Render free tier spins down after 15 minutes of inactivity. First request after idle takes ~30 seconds (cold start). This is fine for a class demo -- just visit the site a minute before presenting.
+1. Fix app readiness items listed above.
+2. Provision AWS infra with Terraform.
+3. Build and deploy Rails backend to EC2.
+4. Run:
+   - `rails db:prepare`
+   - `rails db:migrate`
+   - `rails db:seed` (optional)
+5. Build frontend with production `VITE_API_URL`.
+6. Upload frontend `dist/` to S3.
+7. Invalidate CloudFront cache.
+8. Verify:
+   - Frontend loads
+   - `/api/v1/lists` reachable
+   - Auth flow works
+9. Enable daily start/stop schedules.
+10. Confirm budget alerts by setting very low thresholds.
 
 ---
 
-## Alternative: Docker + AWS (if needed later)
+## Validation Checklist
 
-If the project needs to move to AWS (per project charter), the steps are:
-
-1. **Dockerize** both apps (add `Dockerfile` to `backend/` and `frontend/`)
-2. **Push to ECR** (Elastic Container Registry)
-3. **Deploy on ECS Fargate** or **EC2 Free Tier**
-4. **RDS** for PostgreSQL
-5. **CloudFront** for frontend CDN
-6. **Route 53** for DNS
-
-This is significantly more complex and not needed for MVP/demo. Start with Render + Netlify, migrate later if required.
+- Frontend URL responds over HTTPS.
+- API health endpoint `/up` responds when schedule window is active.
+- CORS allows only CloudFront domain.
+- Login/signup/list CRUD work during active window.
+- After stop schedule, API is unreachable (expected).
+- Next day start schedule restores service automatically.
 
 ---
 
-## Timeline
+## Known Tradeoffs in Free-First Mode
 
-| Day | Task | Time |
-|-----|------|------|
-| Day 1 | Pre-deploy prep (Procfile, configs) | 1-2 hrs |
-| Day 1 | Deploy database + backend on Render | 30 min |
-| Day 1 | Deploy frontend on Netlify | 15 min |
-| Day 1 | Post-deploy verification | 30 min |
-| Day 2 | Fix any issues, seed production data | 1 hr |
-| Day 2 | Share URL with instructor/classmates | 5 min |
-
-**Total estimated time: 3-4 hours**
+- App is unavailable outside scheduled runtime.
+- Cold-start delays after start event.
+- Local Active Storage is not ideal for persistent uploads unless switched to S3.
+- Free tier is limited and can change; always watch billing.
 
 ---
 
-## Security Architecture (Production)
+## Next Step (Immediate)
 
-### Network Defense
-- **AWS WAF & CloudFront** (future): Blocks SQL injection and absorbs DDoS at the edge
-- **Subnet Isolation**: Render managed PostgreSQL runs in a private subnet; API server is in a DMZ
-- Netlify CDN serves frontend with built-in DDoS protection
-
-### Data Encryption
-- **In-Transit**: TLS 1.3 enforced (`config.force_ssl = true`, Render + Netlify provide free SSL)
-- **At-Rest**: PostgreSQL data encrypted at rest via Render managed encryption (AES-256)
-- **Credentials**: Passwords hashed with bcrypt + salt (never stored in plain text)
-- **OTP Secrets**: Encrypted via Rails ActiveRecord::Encryption (AES-256-GCM)
-
-### Access & Threat Prevention
-- **Admin MFA**: TOTP-based two-factor authentication for admin/business admin accounts
-- **XSS Prevention**: Input sanitization via `sanitize` gem
-- **IDOR Prevention**: Object-level ownership checks on all CRUD endpoints
-- **Rate Limiting**: Rack::Attack throttles login attempts and API abuse
-- **User Status**: Active/suspended/deleted status blocks compromised accounts
-- **Error Boundary**: React ErrorBoundary prevents UI crashes from exposing internals
-
-### Environment Variables (Security-Sensitive)
-
-| Variable | Purpose |
-|----------|---------|
-| `SECRET_KEY_BASE` | Rails session/encryption master key |
-| `JWT_SECRET_KEY` | JWT signing key |
-| `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY` | AES-256 encryption key |
-| `ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY` | Deterministic encryption key |
-| `ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT` | Key derivation salt |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `FRONTEND_URL` | CORS allowed origin |
+1. Provision infrastructure with Terraform (`infra/`).
+2. Fill and source `backend/.env.production`.
+3. Run deploy preflight and deploy scripts:
+   - `./scripts/check_prod_env.sh`
+   - `./scripts/deploy_ec2_backend.sh`
+4. Upload frontend build to S3 and invalidate CloudFront.
+5. Enable and verify daily start/stop schedules.
 
 ---
 
-*Last updated: March 2, 2026*
+*Last updated: March 11, 2026*

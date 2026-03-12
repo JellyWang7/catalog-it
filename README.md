@@ -3,7 +3,7 @@
 > A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS 701 -- Special Projects in CS II  
-**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments) | Demo Ready  
+**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments v1.1)  
 **Tests**: Full backend RSpec + Frontend UI/E2E tests passing  
 
 ---
@@ -15,8 +15,9 @@
 | [FRONTEND_SETUP.md](FRONTEND_SETUP.md) | Frontend architecture & component guide |
 | [WEEKLY_PLAN.md](WEEKLY_PLAN.md) | Week-by-week roadmap & progress |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Detailed status & compliance |
-| [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (Render + Netlify) |
+| [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (AWS free-first + scale-ready) |
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
+| [backend/SWAGGER_SETUP.md](backend/SWAGGER_SETUP.md) | Swagger/OpenAPI setup and generation |
 | [backend/TESTING.md](backend/TESTING.md) | Testing guide (current backend suite details) |
 
 ---
@@ -24,13 +25,6 @@
 ## CI & Test Gates
 
 > PRs are expected to pass all automated checks before merge.
-
-### Status Badges
-
-> Update `OWNER/REPO` in the URLs below once this repository path is finalized on GitHub.
-
-[![Backend CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)  
-[![Frontend Tests](https://github.com/OWNER/REPO/actions/workflows/frontend-tests.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/frontend-tests.yml)
 
 ### Enforced Checks on Pull Requests
 
@@ -132,14 +126,16 @@ npm run dev
 
 App: **http://localhost:5173**
 
-### Demo Accounts (after seeding)
+---
 
-| Email | Password | Role |
-|-------|----------|------|
-| admin@catalogit.com | password123 | admin |
-| movies@example.com | password123 | user |
-| books@example.com | password123 | user |
-| collector@example.com | password123 | user |
+## API Documentation (Swagger)
+
+- Swagger UI (local): `http://localhost:3000/api-docs`
+- OpenAPI spec (local): `http://localhost:3000/api-docs/v1/swagger.yaml`
+- Setup and regeneration guide: `backend/SWAGGER_SETUP.md`
+
+For production, expose `/api-docs` on your API host:
+- Example: `https://<your-api-domain>/api-docs`
 
 ---
 
@@ -235,31 +231,13 @@ App: **http://localhost:5173**
 
 ---
 
-## Demo Walkthrough
-
-1. **Home page** -- Hero section with feature cards
-2. **Sign Up** -- Create a new account
-3. **Login** -- Sign in with credentials
-4. **Dashboard** -- View stats, search/filter lists, CRUD operations
-5. **Create List** -- Modal form with title, description, visibility
-6. **List Detail** -- Add/edit/delete items with ratings (1-5 stars)
-7. **Attachments** -- Add link/file/image attachments with previews and limits
-8. **Share List** -- Generate short URL, copy to clipboard (non-private lists)
-9. **Explore** -- Browse public lists with search + sort
-10. **Profile** -- View user info, role, status, stats, MFA setup
-11. **MFA** -- Enable TOTP two-factor auth from Profile page
-12. **Forgot Password** -- Request reset, receive token
-13. **Mobile** -- Responsive hamburger menu
-
----
-
 ## Git Workflow
 
 | Branch | Purpose |
 |--------|---------|
 | `main` | Stable releases |
 | `feature/frontend-init` | Frontend development |
-| `feature/mar-2-search-analytics` | Current feature branch |
+| `deployment` | AWS deployment hardening branch |
 
 Never commit `docs/`, `.env`, or credentials.
 
