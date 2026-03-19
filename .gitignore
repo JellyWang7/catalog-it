@@ -102,6 +102,7 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 *.code-workspace
+/catalog-it.code-workspace
 
 # Coverage
 /backend/coverage/
@@ -111,6 +112,7 @@ Thumbs.db
 /backend/test/version_tmp/
 /frontend/test-results/
 /backend/tmp/cache/bootsnap/
+/backend/tmp/cache/bootsnap/**
 
 # Yarn
 yarn-error.log
