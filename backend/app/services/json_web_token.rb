@@ -1,7 +1,7 @@
 class JsonWebToken
   # Secret key for encoding/decoding tokens
   # In production, use ENV variable or Rails credentials
-  SECRET_KEY = Rails.application.credentials.secret_key_base || Rails.application.secret_key_base
+  SECRET_KEY = Rails.application.secret_key_base || Rails.application.credentials.secret_key_base
 
   # Encode a payload with expiration time
   def self.encode(payload, exp = 24.hours.from_now)

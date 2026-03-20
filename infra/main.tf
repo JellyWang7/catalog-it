@@ -66,12 +66,15 @@ resource "aws_security_group" "ec2_api" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description = "Custom API port"
-    from_port   = var.api_port
-    to_port     = var.api_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  dynamic "ingress" {
+    for_each = contains([80, 443], var.api_port) ? [] : [var.api_port]
+    content {
+      description = "Custom API port"
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
   }
 
   egress {

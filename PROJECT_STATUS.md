@@ -1,8 +1,8 @@
 # CatalogIt - Project Status
 
-**Last Updated**: March 9, 2026  
-**Branch**: `feature/mar-2-full-tests-doc-refresh`  
-**Overall Progress**: 99% | Attachments v1.1 Complete, Deployment Remaining
+**Last Updated**: March 20, 2026  
+**Branch**: `deployment`  
+**Overall Progress**: 99% | Attachments v1.1 Complete, AWS Deployment In Progress
 
 ---
 
@@ -12,7 +12,7 @@
 Backend:     ████████████ 100%  (core specs passing, 33 endpoints)
 Frontend:    ████████████ 100%  (11 routes, comments/likes/attachments, UI + E2E tests)
 Security:    ████████████ 100%  (TLS, MFA, XSS, encryption, rate limiting)
-Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
+Deployment:  ███████░░░░░  60%  Infra provisioned, backend runtime cutover in progress
 ```
 
 ---
@@ -49,7 +49,7 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 - [x] Attachment endpoint documentation refreshed in Swagger
 
 ### Remaining (post-midterm)
-- [ ] Deployment (Render + Netlify)
+- [ ] Deployment (AWS: Terraform + EC2 + RDS + S3 + CloudFront)
 
 ### Newly Completed
 - [x] Server-side search/filter API (`GET /api/v1/lists` query params for `search`, `visibility`, `sort`)
@@ -58,6 +58,32 @@ Deployment:  ░░░░░░░░░░░░   0%  Post-midterm
 - [x] Comments/reactions analytics in dashboard (`GET /api/v1/lists/analytics`)
 - [x] Item-level attachments now included in list payload item serialization
 - [x] Attachment request specs expanded for item-level create flow
+
+---
+
+## This Week (Mar 19) - AWS Deployment Execution
+
+### In scope this week
+- [x] Validate Ruby image/version compatibility in EC2 target environment
+- [ ] Finalize TLS termination strategy for `force_ssl` (CloudFront/ALB/reverse proxy)
+- [x] Prepare `backend/.env.production` and run preflight checks
+- [~] Deploy backend to EC2 and run DB setup/migration commands (in progress)
+- [ ] Build frontend with `VITE_API_URL`, upload to S3, invalidate CloudFront
+- [ ] Run deployment validation checklist (`/up`, `/api/v1/lists`, auth, CRUD, CORS, HTTPS)
+
+### Confirmed progress today (Mar 20)
+- [x] Terraform apply completed; outputs captured for EC2/RDS/S3/CloudFront
+- [x] ECR flow validated (local buildx push, EC2 pull)
+- [x] EC2 IAM runtime role permissions corrected for ECR/S3 path
+- [x] Deployment debugging retrospective documented in `root_cause_deplpyment_lessons.md`
+
+### Deferred to next week
+- [ ] EventBridge start/stop scheduling automation
+- [ ] AWS Budgets and Cost Anomaly Detection hard guardrails
+- [ ] Terraform guardrail refinement and post-deploy cleanup
+- [ ] See `next_week.md`
+
+If backend health and DB prepare are not completed tonight, remaining deploy execution rolls to next week with no additional feature scope.
 
 ---
 
@@ -137,6 +163,6 @@ cd frontend && npm run build
 
 ---
 
-*Last updated: March 9, 2026*  
+*Last updated: March 20, 2026*  
 *Backend: 33 endpoints, core specs passing (requests/models/services)*  
 *Frontend: comments/likes/search/analytics/attachments complete, UI + E2E tests passing*

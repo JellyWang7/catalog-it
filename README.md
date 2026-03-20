@@ -3,7 +3,7 @@
 > A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS 701 -- Special Projects in CS II  
-**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments v1.1)  
+**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments v1.1) | AWS Deployment In Progress  
 **Tests**: Full backend RSpec + Frontend UI/E2E tests passing  
 
 ---
@@ -16,6 +16,8 @@
 | [WEEKLY_PLAN.md](WEEKLY_PLAN.md) | Week-by-week roadmap & progress |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Detailed status & compliance |
 | [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (AWS free-first + scale-ready) |
+| [root_cause_deplpyment_lessons.md](root_cause_deplpyment_lessons.md) | Deployment debugging timeline, root causes, and lessons |
+| [next_week.md](next_week.md) | Deferred post-deploy tasks |
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
 | [backend/SWAGGER_SETUP.md](backend/SWAGGER_SETUP.md) | Swagger/OpenAPI setup and generation |
 | [backend/TESTING.md](backend/TESTING.md) | Testing guide (current backend suite details) |
@@ -67,7 +69,7 @@ bin/bundler-audit
 | **Backend** | Ruby on Rails 8 (API mode), JWT, TOTP MFA, RSpec | Complete |
 | **Database** | PostgreSQL 15+ (3NF), AES-256 encryption at rest | Complete |
 | **Security** | TLS, MFA, XSS, rate limiting, CORS, IDOR prevention | Complete |
-| **Deployment** | Render + Netlify (planned) | 0% |
+| **Deployment** | AWS (Terraform + EC2 + RDS + S3 + CloudFront) | In Progress |
 
 ---
 
@@ -125,6 +127,25 @@ npm run dev
 ```
 
 App: **http://localhost:5173**
+
+---
+
+## Current Deployment Track (AWS)
+
+CatalogIt is now committed to the AWS deployment path in `DEPLOY_PLAN.md`.
+
+### This Week (Mar 19 focus)
+
+1. Validate readiness blockers:
+   - Ruby image/version compatibility on EC2 target environment
+   - TLS termination strategy with `config.force_ssl = true`
+2. Prepare production env file and run preflight checks.
+3. Deploy backend to EC2 and run DB commands.
+4. Build frontend with production `VITE_API_URL`, upload to S3, and invalidate CloudFront cache.
+5. Run validation checklist (`/up`, `/api/v1/lists`, auth, CRUD, CORS, HTTPS).
+
+See `deploy_todo.md` for command-level execution steps.
+Deferred work is tracked in `next_week.md`.
 
 ---
 
@@ -238,7 +259,7 @@ For production, expose `/api-docs` on your API host:
 |--------|---------|
 | `main` | Stable releases |
 | `feature/frontend-init` | Frontend development |
-| `feature/mar-2-full-tests-doc-refresh` | Current feature branch |
+| `deployment` | AWS deployment hardening and execution |
 
 Never commit `docs/`, `.env`, or credentials.
 

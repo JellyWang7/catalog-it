@@ -1,8 +1,8 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: March 9, 2026
-**Current Branch**: `feature/mar-2-full-tests-doc-refresh`  
-**Project Status**: Midterm Complete + Feedback Iteration + Attachments v1.1
+**Last Updated**: March 20, 2026
+**Current Branch**: `deployment`  
+**Project Status**: Midterm Complete + Attachments v1.1 + AWS Deployment Execution
 
 ---
 
@@ -12,7 +12,7 @@
 Backend:     ████████████ 100%
 Frontend:    ████████████ 100%
 Security:    ████████████ 100%
-Deployment:  ░░░░░░░░░░░░   0%
+Deployment:  ███████░░░░░  60%
 Overall:     ████████████  99%
 ```
 
@@ -84,7 +84,7 @@ See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 - [x] E2E tests (Playwright)
 - [x] Server-side search/filter API
 - [x] Comments + reactions analytics (engagement counts in dashboard)
-- [ ] Deployment (Render + Netlify)
+- [ ] Deployment (AWS: Terraform + EC2 + RDS + S3 + CloudFront)
 
 ## New Feature Plan: Attachments (Mar 2-Mar 8)
 
@@ -109,18 +109,50 @@ See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 - [x] Frontend E2E tests for upload/link/view/delete flows
 - [x] Swagger docs for attachment endpoints and request/response schemas
 - [x] Update docs (`PROJECT_STATUS.md`, backend/frontend `README.md`, `DEMO.md`)
-## This Week: Integration Sprint (Mar 9-Mar 15)
+## This Week: AWS Deployment Execution Sprint (Mar 16-Mar 22)
 
 ### Focus
-- [x] Complete remaining attachment scope gaps from last sprint
-- [x] Add item-level attachment UI in `ListDetail` with owner actions
-- [x] Add/refresh Swagger coverage for attachment endpoints
-- [x] Run full regression suite and fix failures
-- [ ] Deployment execution (Render + Netlify)
+- [x] Commit to AWS deployment path from `DEPLOY_PLAN.md`
+- [x] Validate Ruby image/version compatibility in EC2 target environment
+- [ ] Finalize TLS termination strategy for `force_ssl` behavior
+- [x] Prepare `backend/.env.production` and run preflight script
+- [~] Deploy backend to EC2 and run DB commands (`db:prepare`, `db:migrate`) - in progress
+- [x] Build backend image locally and push to ECR (fallback from EC2 local build)
+- [x] Configure EC2 runtime IAM role permissions for ECR/S3 access
+- [ ] Build frontend with production `VITE_API_URL`, upload to S3, invalidate CloudFront
+- [ ] Run full deployment validation checklist (`/up`, `/api/v1/lists`, auth, CRUD, CORS, HTTPS)
 
-### Validation Snapshot (Mar 9)
-- [x] Backend full suite: `235 examples, 0 failures`
-- [x] Frontend unit tests: `13 passed`
+### This Week Actual Progress (Mar 20)
+- [x] Terraform apply completed successfully with EC2/RDS/S3/CloudFront outputs
+- [x] ECR repository created and image push/pull path validated
+- [x] EC2 access path stabilized (public IP update + instance-connect/role workflow)
+- [x] Root-cause documentation created: `root_cause_deplpyment_lessons.md`
+- [ ] Backend container stable boot and database prepare still pending final validation
+
+### Carryover Rule (Tonight vs Next Week)
+- If backend is not stable (`docker ps` stays up + `/up` returns 200) by end of tonight, move remaining deploy execution to next week.
+- Carryover items:
+  - backend stable boot + `db:prepare`/`db:migrate`
+  - frontend S3 upload + CloudFront invalidation
+  - end-to-end HTTPS/CORS/auth/CRUD validation
+
+### End-of-day checkpoint (Go / No-Go)
+
+Use this before ending the session tonight:
+
+- [ ] `catalogit_backend` is running continuously (no restart loop for at least 5 minutes)
+- [ ] `curl -I http://localhost/up` returns success on EC2
+- [ ] `docker exec catalogit_backend ./bin/rails db:prepare` succeeds
+- [ ] Frontend `dist/` uploaded to S3 and CloudFront invalidated
+- [ ] Public app/API smoke tests pass (`/api/v1/lists`, login, list CRUD)
+
+Decision:
+- **Go (finish tonight):** all 5 checks are complete.
+- **No-Go (move to next week):** any check is incomplete; move remaining steps to `next_week.md`.
+
+### Validation Snapshot (Mar 19 local baseline)
+- [x] Backend full suite: `234 examples, 0 failures`
+- [x] Frontend unit tests: `12 passed`
 - [x] Frontend E2E: `5 passed`
 - [x] Frontend production build passes
 
@@ -131,7 +163,7 @@ See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 - [x] Max upload size: 5MB
 - [x] Links must be `https://`
 
-See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
+See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions, `deploy_todo.md` for command-by-command execution, and `next_week.md` for deferred work.
 
 ---
 
@@ -171,9 +203,11 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 - [x] Server-side search/filter (`/api/v1/lists` query params: `search`, `visibility`, `sort`, `owner_only`, `public_only`)
 - [x] Dashboard analytics endpoint (`/api/v1/lists/analytics`) + frontend engagement cards
 
-### Deployment (0%)
-- [ ] Backend on Render
-- [ ] Frontend on Netlify
+### Deployment (In Progress)
+- [ ] Infrastructure provisioned with Terraform
+- [ ] Backend deployed to EC2 with production env
+- [ ] Frontend deployed to S3 + CloudFront
+- [ ] Validation checklist completed
 
 ---
 
@@ -191,4 +225,4 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions.
 
 ---
 
-*Last updated: March 9, 2026*
+*Last updated: March 20, 2026*
