@@ -44,14 +44,42 @@ Collect outputs:
 terraform output
 ```
 
+### CloudFront → EC2 API (same domain)
+
+The distribution has **two origins**:
+
+- **S3** — default behavior: static React app (`/*` except below).
+- **EC2** — path patterns: `/api/*`, `/up`, `/api-docs*`, `/rails/*` (HTTP to instance port `api_port`, viewer uses HTTPS).
+
+Build the frontend with the **CloudFront** URL so the browser calls the API on the same host (no mixed content):
+
+```bash
+# After terraform output cloudfront_domain_name is available:
+VITE_API_URL="https://$(terraform output -raw cloudfront_domain_name)/api/v1"
+```
+
+If `terraform apply` fails because EC2 has no `public_dns` (instance stopped), set in `terraform.tfvars`:
+
+```hcl
+cloudfront_api_origin_domain = "ec2-1-2-3-4.compute-1.amazonaws.com"
+```
+
+(use your instance’s public DNS from the EC2 console)
+
+**Deploy note:** CloudFront updates can take **10–20 minutes**. After `apply`, invalidate `/*` once before testing.
+
+**SPA errors:** Only **403** from S3 is mapped to `index.html` (OAC missing object). **404** is not rewritten globally so Rails can return real **404 JSON** for `/api/*`.
+
 ## 4) Deploy Frontend to S3
 
-Build frontend with the backend API URL:
+Build frontend with the **CloudFront** API base (recommended):
 
 ```bash
 cd ../frontend
-VITE_API_URL="http://<ec2-public-ip>/api/v1" npm run build
+VITE_API_URL="https://$(terraform output -raw cloudfront_domain_name)/api/v1" npm run build
 ```
+
+(Legacy direct-to-EC2: `VITE_API_URL="http://<ec2-public-ip>/api/v1"` — often blocked as mixed content when the site is served over HTTPS.)
 
 Upload:
 

@@ -111,3 +111,9 @@ variable "budget_alert_email" {
   type        = string
   default     = ""
 }
+
+variable "cloudfront_api_origin_domain" {
+  description = "Hostname CloudFront uses to reach the Rails API (EC2). Leave empty to use aws_instance.backend.public_dns (requires instance running at apply time). Set explicitly if using Elastic IP DNS, e.g. ec2-52-22-20-36.compute-1.amazonaws.com"
+  type        = string
+  default     = ""
+}

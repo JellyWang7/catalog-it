@@ -50,6 +50,7 @@ aws sts get-caller-identity  # should fail or prompt until you log in again
 - **CloudFront (frontend + API path):** `https://d2cvnbu2jarn1q.cloudfront.net`
 - **API base:** `https://d2cvnbu2jarn1q.cloudfront.net/api/v1`
 - **EC2 Elastic IP:** `52.22.20.36` (if schedules **stop** the instance, expect **504** on `/api/*` until it’s started again).
+- **Infra:** `infra/main.tf` routes `/api/*`, `/up`, `/api-docs*`, `/rails/*` to EC2. Run **`terraform apply`** in `infra/` after pulling latest, wait for deploy, then **`aws cloudfront create-invalidation … --paths "/*"`**. Rebuild frontend with `VITE_API_URL=https://<cloudfront-domain>/api/v1`.
 
 ---
 
