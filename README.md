@@ -18,6 +18,7 @@
 | [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (AWS free-first + scale-ready) |
 | [root_cause_deplpyment_lessons.md](root_cause_deplpyment_lessons.md) | Deployment debugging timeline, root causes, and lessons |
 | [pickup.md](pickup.md) | **Next session handoff** (AWS logout, S3 deploy, smoke tests) |
+| [memory.md](memory.md) | Minimal-cost defaults, idle shutdown / reminders |
 | [next_week.md](next_week.md) | Deferred post-deploy tasks |
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
 | [backend/SWAGGER_SETUP.md](backend/SWAGGER_SETUP.md) | Swagger/OpenAPI setup and generation |
