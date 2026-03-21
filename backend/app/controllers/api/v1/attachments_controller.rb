@@ -82,7 +82,7 @@ module Api
       end
 
       def attachment_params
-        params.require(:attachment).permit(:kind, :title, :url, :asset)
+        params.require(:attachment).permit(:kind, :title, :body, :url, :asset)
       end
 
       def serialize_attachment(attachment)
@@ -90,6 +90,7 @@ module Api
           id: attachment.id,
           kind: attachment.kind,
           title: attachment.title,
+          body: attachment.body,
           url: attachment.link? ? attachment.url : attachment_url(attachment),
           mime_type: attachment.mime_type,
           size_bytes: attachment.size_bytes,
@@ -102,6 +103,7 @@ module Api
       end
 
       def attachment_url(attachment)
+        return nil if attachment.note?
         return nil unless attachment.asset.attached?
 
         rails_blob_url(attachment.asset, host: request.base_url)

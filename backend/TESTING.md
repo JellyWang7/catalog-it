@@ -1,5 +1,7 @@
 # Testing Guide for CatalogIt API
 
+*Last reviewed: March 21, 2026 — attachment kinds include `note`; run full suite after DB migrations.*
+
 ## Test Coverage Summary
 
 ### ✅ Core Backend Test Suites Passing

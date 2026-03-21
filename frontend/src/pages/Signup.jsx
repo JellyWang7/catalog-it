@@ -32,10 +32,20 @@ export default function Signup() {
       toast.success('Account created! Welcome to CatalogIt!');
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      const msg =
-        err.response?.data?.errors?.join(', ') ||
-        err.response?.data?.error ||
-        'Signup failed. Please try again.';
+      const status = err.response?.status;
+      const body = err.response?.data;
+      const serverMsg =
+        Array.isArray(body?.errors) ? body.errors.join(', ') : body?.error;
+      const isOffline =
+        !err.response ||
+        status === 504 ||
+        status === 502 ||
+        status === 503 ||
+        err.code === 'ECONNABORTED' ||
+        err.message === 'Network Error';
+      const msg = isOffline
+        ? 'Cannot reach the API (backend may be stopped or still starting). Wait a minute and try again, or check EC2 is running.'
+        : serverMsg || 'Signup failed. Please try again.';
       toast.error(msg);
     } finally {
       setLoading(false);

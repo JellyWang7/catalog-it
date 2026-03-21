@@ -21,7 +21,7 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 - **bcrypt** (password hashing)
 - **ROTP** (TOTP-based MFA for admin accounts)
 - **ActiveRecord::Encryption** (AES-256-GCM for sensitive fields)
-- **ActiveStorage** (file/image upload support)
+- **ActiveStorage** (file/image uploads; **S3** in production via `ACTIVE_STORAGE_SERVICE=amazon` + `aws-sdk-s3`)
 - **Obscenity + custom moderation service** (strict profanity/slur filtering)
 - **RSpec** (core suites passing; Swagger integration specs tracked separately)
 - **Swagger/OpenAPI** (interactive docs)

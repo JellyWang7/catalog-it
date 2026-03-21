@@ -1,6 +1,8 @@
 # Deploy TODO (AWS Path)
 
-This checklist follows `DEPLOY_PLAN.md` and covers this week's execution scope.
+**Last updated:** March 21, 2026  
+
+This checklist follows `DEPLOY_PLAN.md` and covers execution scope. **Next-session handoff:** [`pickup.md`](pickup.md).
 
 ## A) Readiness blockers
 
@@ -54,12 +56,12 @@ chmod +x scripts/check_prod_env.sh
 Required vars to verify:
 - `RAILS_ENV=production`
 - `SECRET_KEY_BASE`
-- `RAILS_MASTER_KEY`
 - `DATABASE_HOST`
 - `DATABASE_USERNAME`
 - `CATALOGIT_DATABASE_PASSWORD`
 - `FRONTEND_URL`
 - `RAILS_LOG_LEVEL`
+- **`ACTIVE_STORAGE_SERVICE`** — use **`amazon`** in production for real uploads (requires **`aws-sdk-s3`** in image + S3 env vars). Do **not** set `RAILS_MASTER_KEY` unless it matches the key that encrypted `credentials.yml.enc` (this project prefers ENV-only secrets; see `root_cause_deplpyment_lessons.md`).
 
 ## C) Deploy backend once to EC2 + DB commands
 
@@ -99,6 +101,21 @@ Then:
 - Login/signup/list CRUD flows work
 - CORS allows only CloudFront domain
 - App behavior after stop window is expected (frontend up, API down)
+- **Attachments:** add a **note-only**, **link-only**, and **file** attachment (list + item); file upload should succeed when S3 + `ACTIVE_STORAGE_SERVICE=amazon` are configured
+
+### Troubleshooting: CloudFront 504 on `/api/*` or signup/login failures
+
+If you see **504 Gateway Timeout** or a generic **“Signup failed”** with no server message:
+
+1. **Check EC2 is running** (EventBridge may have stopped it overnight):
+   ```bash
+   aws ec2 describe-instance-status --region us-east-1 --instance-ids i-0b2c25f255d32b9a1 --include-all-instances
+   ```
+2. If `stopped`, start it and wait ~1–2 minutes for Docker:
+   ```bash
+   aws ec2 start-instances --region us-east-1 --instance-ids i-0b2c25f255d32b9a1
+   ```
+3. Optional: disable stop/start schedules while testing: `terraform apply -var="enable_schedules=false"` in `infra/` (no new AWS services).
 
 ## Optional: auto-start backend on instance boot
 
@@ -108,4 +125,4 @@ chmod +x scripts/install_systemd_service.sh
 sudo APP_DIR=/opt/catalogit/backend ./scripts/install_systemd_service.sh
 ```
 
-Deferred work is tracked in `next_week.md`.
+Deferred work is tracked in `next_week.md` and **`pickup.md`**.

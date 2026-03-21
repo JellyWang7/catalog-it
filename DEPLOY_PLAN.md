@@ -1,6 +1,6 @@
 # CatalogIt - AWS Deployment Plan (Free-First, Scale-Ready)
 
-**Last Updated**: March 11, 2026  
+**Last Updated**: March 21, 2026  
 **Target**: Lowest-cost AWS deployment now, with smooth upgrade path later  
 **Strategy**: S3 + CloudFront (frontend), EC2 (Rails), RDS PostgreSQL (database), EventBridge schedules
 
@@ -53,11 +53,12 @@ Scale path later:
 Current state:
 - Done: frontend deployment env uses `VITE_API_URL`.
 - Done: production `database.yml` includes `primary`, `cache`, `queue`, and `cable`.
-- Done: production Active Storage is set for S3 (`ACTIVE_STORAGE_SERVICE=amazon` default).
+- Done: **`aws-sdk-s3`** in Gemfile so `ACTIVE_STORAGE_SERVICE=amazon` can load the S3 adapter.
 - Done: backend deploy scripts include preflight env validation (`check_prod_env.sh`).
 - Done: optional local fallback path exists via `--skip-s3-check`.
 - Pending: validate Ruby image/version compatibility in your target EC2 build environment.
 - Pending: finalize TLS termination setup for your chosen endpoint (CloudFront/ALB/reverse proxy).
+- Pending: production **must** run migrations for attachment `body` / nullable `title` after pulling latest code; see **`pickup.md`**.
 
 TLS/SSL requirement:
    - `config.force_ssl = true` is enabled.
@@ -110,12 +111,13 @@ On EC2:
 Required backend env vars:
 - `RAILS_ENV=production`
 - `SECRET_KEY_BASE=<generated>`
-- `RAILS_MASTER_KEY=<from config/master.key>`
 - `DATABASE_HOST=<rds-endpoint>`
 - `DATABASE_USERNAME=<db_user>`
 - `CATALOGIT_DATABASE_PASSWORD=<db_pass>`
 - `FRONTEND_URL=https://<cloudfront-domain>`
 - `RAILS_LOG_LEVEL=info`
+- `ACTIVE_STORAGE_SERVICE=amazon` (production uploads) + **`AWS_REGION`**, **`AWS_S3_BUCKET`**, and credentials (or instance role) — see `check_prod_env.sh`
+- **`RAILS_MASTER_KEY`**: only if you use encrypted `credentials.yml.enc` with a matching key; this project’s production path is **ENV-only** (do not pass a bogus `RAILS_MASTER_KEY`).
 
 Recommended:
 - Add reverse proxy (Nginx or Caddy) on EC2 for stable SSL/origin behavior.
@@ -239,7 +241,7 @@ Important notes:
 
 - App is unavailable outside scheduled runtime.
 - Cold-start delays after start event.
-- Local Active Storage is not ideal for persistent uploads unless switched to S3.
+- Local Active Storage in Docker is not durable; use **S3** (`ACTIVE_STORAGE_SERVICE=amazon`) for production file attachments.
 - Free tier is limited and can change; always watch billing.
 
 ---
@@ -256,4 +258,4 @@ Important notes:
 
 ---
 
-*Last updated: March 11, 2026*
+*Last updated: March 21, 2026*

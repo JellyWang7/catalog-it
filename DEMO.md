@@ -1,7 +1,7 @@
 # CatalogIt - Demo Guide
 
-**Date**: March 9, 2026
-**Branch**: `feature/mar-2-search-analytics`
+**Date**: March 9, 2026 (doc refresh March 21, 2026)  
+**Branch**: `deployment` (or your feature branch)
 
 ---
 
@@ -210,7 +210,7 @@ Open http://localhost:5173 and walk through:
 | 8 | **Share List** | Click "Share" button, short URL copied to clipboard |
 | 9 | **List Interactions** (`/lists/:id`) | Like list, like item, add comment, delete own comment |
 | 9a | **Moderation** (`/lists/:id`) | Try profanity/slur text in comment or item notes and show 422 clean warning |
-| 10 | **Attachments** (`/lists/:id`) | Add `https` link attachment, upload file/image, open attachment URL |
+| 10 | **Attachments** (`/lists/:id`) | Optional **text note**, **https link**, or **file** (list + per-item); open link/file |
 | 11 | **Explore** (`/explore`) | Public list grid, search, sort dropdown (5 options) |
 | 12 | **Profile** (`/profile`) | Avatar, role badge, status, stats cards, MFA section |
 | 13 | **MFA Setup** | Click "Enable MFA", copy secret, verify with TOTP code |
@@ -241,7 +241,7 @@ Open http://localhost:5173 and walk through:
 - **Security** — XSS prevention, rate limiting, user status, CORS, error boundary
 - **Share Lists** — generates short URL (`/s/:code`), clipboard copy
 - **Comments + Likes** — social feedback on public/shared lists and list items
-- **Attachments** — list and item-level file/image/link uploads with owner permissions and validation
+- **Attachments** — list and item-level notes, `https` links, and file/image uploads (Active Storage; S3 in production)
 - **Strict content moderation** — profanity/slur filtering blocks inappropriate comments and item notes with clear 422 messaging
 - **Responsive** — mobile hamburger menu, works on all screen sizes
 - **Automated Test Coverage** — backend core specs + frontend UI tests + frontend E2E tests

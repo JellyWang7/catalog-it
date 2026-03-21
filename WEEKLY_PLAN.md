@@ -1,8 +1,8 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: March 20, 2026
+**Last Updated**: March 21, 2026  
 **Current Branch**: `deployment`  
-**Project Status**: Midterm Complete + Attachments v1.1 + AWS Deployment Execution
+**Project Status**: Midterm Complete + Attachments (note/link/file) + AWS deployment / S3 cutover
 
 ---
 
@@ -12,7 +12,7 @@
 Backend:     ████████████ 100%
 Frontend:    ████████████ 100%
 Security:    ████████████ 100%
-Deployment:  ███████░░░░░  60%
+Deployment:  ████████░░░░  65%
 Overall:     ████████████  99%
 ```
 
@@ -163,7 +163,7 @@ Decision:
 - [x] Max upload size: 5MB
 - [x] Links must be `https://`
 
-See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions, `deploy_todo.md` for command-by-command execution, and `next_week.md` for deferred work.
+See [DEPLOY_PLAN.md](DEPLOY_PLAN.md), `deploy_todo.md`, [pickup.md](pickup.md) (next-session handoff), and `next_week.md` (longer defer list).
 
 ---
 
@@ -204,10 +204,10 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions, `deploy_todo.m
 - [x] Dashboard analytics endpoint (`/api/v1/lists/analytics`) + frontend engagement cards
 
 ### Deployment (In Progress)
-- [ ] Infrastructure provisioned with Terraform
-- [ ] Backend deployed to EC2 with production env
-- [ ] Frontend deployed to S3 + CloudFront
-- [ ] Validation checklist completed
+- [x] Infrastructure provisioned with Terraform (baseline)
+- [~] Backend deployed to EC2; **S3 Active Storage + migrate** — see `pickup.md`
+- [~] Frontend deployed to S3 + CloudFront (rebuild when API URL or attachment UI changes)
+- [ ] Full validation checklist (attachments + `/up` + auth)
 
 ---
 
@@ -225,4 +225,4 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for deployment instructions, `deploy_todo.m
 
 ---
 
-*Last updated: March 20, 2026*
+*Last updated: March 21, 2026*

@@ -17,6 +17,7 @@
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Detailed status & compliance |
 | [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (AWS free-first + scale-ready) |
 | [root_cause_deplpyment_lessons.md](root_cause_deplpyment_lessons.md) | Deployment debugging timeline, root causes, and lessons |
+| [pickup.md](pickup.md) | **Next session handoff** (AWS logout, S3 deploy, smoke tests) |
 | [next_week.md](next_week.md) | Deferred post-deploy tasks |
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
 | [backend/SWAGGER_SETUP.md](backend/SWAGGER_SETUP.md) | Swagger/OpenAPI setup and generation |
@@ -144,8 +145,8 @@ CatalogIt is now committed to the AWS deployment path in `DEPLOY_PLAN.md`.
 4. Build frontend with production `VITE_API_URL`, upload to S3, and invalidate CloudFront cache.
 5. Run validation checklist (`/up`, `/api/v1/lists`, auth, CRUD, CORS, HTTPS).
 
-See `deploy_todo.md` for command-level execution steps.
-Deferred work is tracked in `next_week.md`.
+See `deploy_todo.md` for command-level execution steps.  
+**After a break:** `pickup.md`. Deferred work: `next_week.md`.
 
 ---
 
@@ -230,8 +231,9 @@ For production, expose `/api-docs` on your API host:
 > Additional rules:
 > - private lists cannot be shared
 > - attachment links must use `https://`
+> - **note** attachments store sanitized text in `body`; **link** / **file** / **image** as before
 > - attachment uploads support JPG/PNG/WEBP/PDF/TXT/ZIP up to 5MB
-> - item-level attachments are supported in `ListDetail` (owner add/delete, preview rendering)
+> - list/item UI: optional note **or** link **or** file (single form per list/item)
 
 ---
 

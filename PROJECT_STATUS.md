@@ -1,8 +1,8 @@
 # CatalogIt - Project Status
 
-**Last Updated**: March 20, 2026  
-**Branch**: `deployment`  
-**Overall Progress**: 99% | Attachments v1.1 Complete, AWS Deployment In Progress
+**Last Updated**: March 21, 2026  
+**Branch**: `deployment` (verify on clone)  
+**Overall Progress**: 99% | Attachments (note/link/file UX) + S3 path in progress, AWS deploy ongoing
 
 ---
 
@@ -12,7 +12,7 @@
 Backend:     ████████████ 100%  (core specs passing, 33 endpoints)
 Frontend:    ████████████ 100%  (11 routes, comments/likes/attachments, UI + E2E tests)
 Security:    ████████████ 100%  (TLS, MFA, XSS, encryption, rate limiting)
-Deployment:  ███████░░░░░  60%  Infra provisioned, backend runtime cutover in progress
+Deployment:  ████████░░░░  65%  Infra + ECR flow; S3 Active Storage cutover + migrate pending
 ```
 
 ---
@@ -24,7 +24,7 @@ Deployment:  ███████░░░░░  60%  Infra provisioned, backe
 - TOTP-based MFA (rotp gem, setup/verify/disable endpoints)
 - Security: TLS, MFA, XSS, rate limiting, encryption, CORS
 - New social features: comments on public/shared lists, likes on lists/items
-- New attachment features: list/item attachments (links, files, images) via ActiveStorage
+- Attachment features: list/item attachments via ActiveStorage — kinds `link`, `image`, `file`, **`note`** (text body); unified optional fields in `ListDetail` UI
 - Core spec suites passing (`spec/models`, `spec/requests`, `spec/services`)
 
 ## Frontend: 100%
@@ -45,11 +45,11 @@ Deployment:  ███████░░░░░  60%  Infra provisioned, backe
 - [x] UI tests for list/item likes, comment posting/deletion permissions, unauthenticated behavior
 - [x] E2E tests for list/item likes, comments, and auth-aware UI behavior
 - [x] Attachment tests: backend model/request + frontend unit + frontend E2E
-- [x] Item-level attachment management UI in `ListDetail`
+- [x] Item-level attachment management UI in `ListDetail` (single form: optional note, link, file, label)
 - [x] Attachment endpoint documentation refreshed in Swagger
 
 ### Remaining (post-midterm)
-- [ ] Deployment (AWS: Terraform + EC2 + RDS + S3 + CloudFront)
+- [ ] Deployment (AWS: Terraform + EC2 + RDS + S3 + CloudFront) — **see `pickup.md` for S3 upload cutover**
 
 ### Newly Completed
 - [x] Server-side search/filter API (`GET /api/v1/lists` query params for `search`, `visibility`, `sort`)
@@ -77,13 +77,10 @@ Deployment:  ███████░░░░░  60%  Infra provisioned, backe
 - [x] EC2 IAM runtime role permissions corrected for ECR/S3 path
 - [x] Deployment debugging retrospective documented in `root_cause_deplpyment_lessons.md`
 
-### Deferred to next week
-- [ ] EventBridge start/stop scheduling automation
-- [ ] AWS Budgets and Cost Anomaly Detection hard guardrails
-- [ ] Terraform guardrail refinement and post-deploy cleanup
-- [ ] See `next_week.md`
-
-If backend health and DB prepare are not completed tonight, remaining deploy execution rolls to next week with no additional feature scope.
+### Deferred / next session
+- [ ] Production **`ACTIVE_STORAGE_SERVICE=amazon`** + migrated DB + new image on EC2
+- [ ] EventBridge/budgets/terraform polish — see `next_week.md`
+- [ ] Session handoff: **`pickup.md`**
 
 ---
 
@@ -163,6 +160,6 @@ cd frontend && npm run build
 
 ---
 
-*Last updated: March 20, 2026*  
+*Last updated: March 21, 2026*  
 *Backend: 33 endpoints, core specs passing (requests/models/services)*  
-*Frontend: comments/likes/search/analytics/attachments complete, UI + E2E tests passing*
+*Frontend: comments/likes/search/analytics/attachments complete; `ListDetail.test.jsx` aligned with unified attachment form*

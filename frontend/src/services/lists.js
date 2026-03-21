@@ -35,7 +35,12 @@ const listsService = {
   createAttachment: (listId, data) => {
     const formData = new FormData();
     formData.append('attachment[kind]', data.kind);
-    formData.append('attachment[title]', data.title);
+    if (data.title != null && String(data.title).trim() !== '') {
+      formData.append('attachment[title]', data.title);
+    }
+    if (data.body != null && String(data.body).trim() !== '') {
+      formData.append('attachment[body]', data.body);
+    }
     if (data.url) formData.append('attachment[url]', data.url);
     if (data.asset) formData.append('attachment[asset]', data.asset);
 

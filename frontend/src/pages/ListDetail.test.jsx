@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import ListDetail from './ListDetail';
 import listsService from '../services/lists';
 import itemsService from '../services/items';
@@ -267,13 +267,15 @@ describe('ListDetail', () => {
     renderListDetail();
     await screen.findByText('Attachments');
 
-    fireEvent.change(screen.getAllByPlaceholderText(/attachment title/i)[0], {
+    const listForm = screen.getByText('Add list attachment').closest('form');
+    const listFormUtils = within(listForm);
+    fireEvent.change(listFormUtils.getByPlaceholderText('Optional label'), {
       target: { value: 'API Guide' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/https:\/\/example.com\/resource/i), {
+    fireEvent.change(listFormUtils.getByPlaceholderText(/optional link/i), {
       target: { value: 'https://example.com/api-guide' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /add link/i }));
+    fireEvent.click(listFormUtils.getByRole('button', { name: /add attachment/i }));
 
     await waitFor(() => {
       expect(listsService.createAttachment).toHaveBeenCalledWith(1, {
@@ -281,7 +283,7 @@ describe('ListDetail', () => {
         title: 'API Guide',
         url: 'https://example.com/api-guide',
       });
-      expect(toast.success).toHaveBeenCalledWith('Link added');
+      expect(toast.success).toHaveBeenCalledWith('Attachment added');
       expect(screen.getByText('API Guide')).toBeInTheDocument();
     });
   });
@@ -350,15 +352,17 @@ describe('ListDetail', () => {
     });
 
     renderListDetail();
-    await screen.findByText('Item Attachments');
+    await screen.findByText('Item attachments');
 
-    fireEvent.change(screen.getByPlaceholderText(/item link title/i), {
+    const itemForm = screen.getByPlaceholderText(/optional label \(shown above note\/link\/file\)/i).closest('form');
+    const itemFormUtils = within(itemForm);
+    fireEvent.change(itemFormUtils.getByPlaceholderText(/optional label \(shown above/i), {
       target: { value: 'Item Source' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/https:\/\/example.com\/item-resource/i), {
+    fireEvent.change(itemFormUtils.getByPlaceholderText(/optional link/i), {
       target: { value: 'https://example.com/item-source' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /add item link/i }));
+    fireEvent.click(itemFormUtils.getByRole('button', { name: /add attachment/i }));
 
     await waitFor(() => {
       expect(itemsService.createAttachment).toHaveBeenCalledWith(100, {
@@ -366,7 +370,7 @@ describe('ListDetail', () => {
         title: 'Item Source',
         url: 'https://example.com/item-source',
       });
-      expect(toast.success).toHaveBeenCalledWith('Item link added');
+      expect(toast.success).toHaveBeenCalledWith('Attachment added');
       expect(screen.getByText('Item Source')).toBeInTheDocument();
     });
   });
@@ -384,14 +388,15 @@ describe('ListDetail', () => {
     renderListDetail();
     await screen.findByText('Attachments');
 
-    fireEvent.change(screen.getAllByPlaceholderText(/attachment title/i)[1], {
+    const listForm = screen.getByText('Add list attachment').closest('form');
+    const listFormUtils = within(listForm);
+    fireEvent.change(listFormUtils.getByPlaceholderText('Optional label'), {
       target: { value: 'Bad Upload' },
     });
-    const uploadForm = screen.getByText(/upload file\/image/i).closest('form');
-    const fileInput = uploadForm.querySelector('input[type="file"]');
+    const fileInput = listForm.querySelector('input[type="file"]');
     const invalidFile = new File(['x'], 'bad.exe', { type: 'application/x-msdownload' });
     fireEvent.change(fileInput, { target: { files: [invalidFile] } });
-    fireEvent.click(screen.getByRole('button', { name: /^upload file$/i }));
+    fireEvent.click(listFormUtils.getByRole('button', { name: /add attachment/i }));
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(

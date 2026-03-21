@@ -1,8 +1,8 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: March 9, 2026  
-**Branch**: `feature/mar-2-search-analytics`  
-**Status**: 100% -- Feedback Features + Attachments + Automated Tests Enabled
+**Last Updated**: March 21, 2026  
+**Branch**: `deployment`  
+**Status**: 100% — Comments, likes, unified attachments (note/link/file), tests
 
 ---
 
@@ -133,8 +133,8 @@ frontend/
 - Share button generates short URL (`/s/:code`) for non-private lists
 - Comments on public/shared lists
 - "Thumbs up / I like it" reactions for lists and items
-- List-level attachments (links + file/image uploads, including ZIP up to 5MB)
-- Item-level attachments in `ListDetail` (owner add/delete with preview rendering)
+- List-level attachments: one form with optional **text note**, **https link**, or **file** (plus optional label)
+- Item-level attachments: same pattern per item (owner add/delete; previews for image/audio/link/file/note)
 - Comment moderation: comment owner or list owner can delete
 - List owners cannot like or comment on their own lists
 - 422 moderation errors are surfaced with clean, user-friendly warnings

@@ -1,6 +1,7 @@
 # CatalogIt Frontend
 
-React frontend for the CatalogIt cataloging platform.
+React frontend for the CatalogIt cataloging platform.  
+**Docs:** `../FRONTEND_SETUP.md`, `../pickup.md` (deploy handoff).
 
 ## Quick Start
 

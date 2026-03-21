@@ -1,7 +1,7 @@
 # Root Cause Deployment Lessons (AWS)
 
-Date: 2026-03-20  
-Scope: CatalogIt AWS deployment debugging and recovery
+Date: 2026-03-20 (updated 2026-03-21)  
+Scope: CatalogIt AWS deployment debugging, recovery, and attachment/S3 follow-up
 
 ## 1) End-to-end summary of what we did
 
@@ -79,15 +79,20 @@ cd /opt/catalogit/catalog-it/backend
 set -a
 source .env.production
 set +a
+unset RAILS_MASTER_KEY
 
 docker rm -f catalogit_backend 2>/dev/null || true
 docker run -d --name catalogit_backend --restart unless-stopped -p 80:80 \
-  -e RAILS_ENV -e RAILS_MASTER_KEY -e SECRET_KEY_BASE -e FRONTEND_URL \
+  --entrypoint /bin/sh \
+  -e RAILS_ENV=production -e SECRET_KEY_BASE -e FRONTEND_URL \
   -e DATABASE_HOST -e DATABASE_PORT -e DATABASE_NAME -e DATABASE_USERNAME \
   -e CATALOGIT_DATABASE_PASSWORD -e RAILS_MAX_THREADS -e WEB_CONCURRENCY \
-  -e RAILS_LOG_LEVEL \
-  106641707917.dkr.ecr.us-east-1.amazonaws.com/catalogit-backend:latest
+  -e RAILS_LOG_LEVEL -e ACTIVE_STORAGE_SERVICE -e AWS_ACCESS_KEY_ID \
+  -e AWS_SECRET_ACCESS_KEY -e AWS_REGION -e AWS_S3_BUCKET \
+  106641707917.dkr.ecr.us-east-1.amazonaws.com/catalogit-backend:latest \
+  -c "rm -f /rails/config/credentials.yml.enc && exec /rails/bin/docker-entrypoint ./bin/thrust ./bin/rails server"
 
+sleep 5
 docker ps --filter "name=catalogit_backend"
 docker logs --tail=120 catalogit_backend
 ```
@@ -125,16 +130,19 @@ aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 
 - Action taken: attached `AmazonEC2ContainerRegistryReadOnly` (and S3 runtime permissions as needed).
 - Outcome: ECR login/pull succeeded on EC2.
 
-### Root cause E: Container restart loop
+### Root cause E: Container restart loop (REAL root cause)
 - Symptom: `catalogit_backend` constantly restarting; `/up` unreachable.
 - Runtime error:
   - first: `ArgumentError: key must be 16 bytes`
   - then: `ActiveSupport::MessageEncryptor::InvalidMessage`
-- Causes:
-  1. invalid `RAILS_MASTER_KEY` length/format (64 hex chars instead of expected 32 hex chars for credentials key),
-  2. boot path tried decrypting credentials first.
-- Action taken: updated JWT secret resolution order to prefer `Rails.application.secret_key_base` first, then rebuild/push/pull image.
-- Outcome: boot path no longer hard-fails on credentials-first access.
+- **Actual cause**: `config/credentials.yml.enc` is baked into the Docker image (not in `.dockerignore`). When `RAILS_MASTER_KEY` is passed to the container, Rails tries to decrypt this file at boot — but the key doesn't match because the original `config/master.key` was gitignored and never committed. **No generated key can work** — it must be the exact key that originally encrypted the file.
+- Why the `json_web_token.rb` fix was insufficient: that fix only changed one application-level fallback. The crash happens at the **Rails framework level** during `db:load_config` → `Rails.application.initialize!`, before any app code runs.
+- **Correct fix**:
+  1. Remove `RAILS_MASTER_KEY` from `.env.production` (nothing in this app uses encrypted credentials — all config is ENV-based).
+  2. Remove `-e RAILS_MASTER_KEY` from the `docker run` command.
+  3. Delete the orphaned `credentials.yml.enc` inside the running container (avoids any accidental credential decryption attempt).
+  4. Long-term: add `config/credentials.yml.enc` to `.dockerignore` and delete it from the repo.
+- Outcome: Rails boots without attempting credential decryption; all secrets flow through explicit ENV vars.
 
 ## 5) Lessons learned
 
@@ -148,14 +156,35 @@ aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 
 6. **Keep deployment runbook command-driven and minimal**:
    - reduce context switching and repeated partial retries.
 
-## Current state and next actions
+### Root cause F: Missing S3 adapter for Active Storage
+- Symptom: container crash with `Missing service adapter for "S3" (RuntimeError)` during eager loading — or uploads fail if storage is local disk in Docker.
+- Cause: `ACTIVE_STORAGE_SERVICE=amazon` requires the **`aws-sdk-s3`** gem (and valid S3 env vars).
+- **Short-term workaround used:** `ACTIVE_STORAGE_SERVICE=local` so the API boots without the gem.
+- **Codebase fix:** `gem "aws-sdk-s3"` added to `Gemfile`; rebuild image and set **`ACTIVE_STORAGE_SERVICE=amazon`** for durable production uploads.
+- Outcome after switch: file/image attachments persist in S3; see `pickup.md` for deploy checklist.
 
-- Infra exists and outputs are available.
-- ECR image push/pull flow works.
-- EC2 can run container from ECR.
-- Remaining:
-  1. verify container stays healthy (`docker ps`, `curl /up`),
-  2. run `docker exec catalogit_backend ./bin/rails db:prepare`,
-  3. deploy frontend build to S3,
-  4. invalidate CloudFront,
-  5. run end-to-end validation checklist from `deploy_todo.md`.
+### Root cause G: CloudFront 504 + “Signup failed” when EC2 is stopped
+- Symptom: `504 Gateway Timeout` from CloudFront (often HTTP/3); signup shows generic “Signup failed. Please try again.”
+- Cause: **EventBridge schedules stop the EC2 instance** (cost-saving). CloudFront `/api/*` origin is the EC2 Elastic IP — when the instance is **stopped**, the origin is unreachable → **504**. The browser gets no JSON body → axios surfaces a generic error.
+- Fix: **Start EC2** (`aws ec2 start-instances --instance-ids i-0b2c25f255d32b9a1`) and wait ~1–2 minutes for Docker. Optional: `terraform apply -var="enable_schedules=false"` to disable stop/start schedules while testing (no new resources; may reduce savings).
+- Verify: `curl -I https://d2cvnbu2jarn1q.cloudfront.net/up` → 200; `POST .../api/v1/auth/signup` → 201.
+
+## Current state (as of Mar 21)
+
+- **Elastic IP**: `52.22.20.36` (stable; CloudFront API origin uses EC2 public DNS).
+- **HTTPS API (same domain as frontend)**: `https://d2cvnbu2jarn1q.cloudfront.net/api/v1/...`
+- **Frontend**: same CloudFront URL; build with `VITE_API_URL=https://d2cvnbu2jarn1q.cloudfront.net/api/v1`
+- **Remember**: If EC2 is **stopped**, expect **504** on API routes until you start it again.
+- **Attachments UX/API**: List and item attachments support optional **text note**, **https link**, or **file** (single form; not two parallel required flows). Kinds include `note` | `link` | `image` | `file`.
+- **Production uploads**: Prefer **`ACTIVE_STORAGE_SERVICE=amazon`** + **`aws-sdk-s3`** in the image; run **`rails db:migrate`** for attachment schema updates.
+
+## Long-term cleanup
+
+- Delete `config/credentials.yml.enc` from the repo (it's encrypted with a lost key).
+- Add `config/credentials.yml.enc` to `.dockerignore` (done locally).
+- Keep **`aws-sdk-s3`** in the Gemfile and use **`ACTIVE_STORAGE_SERVICE=amazon`** in production for real file hosting.
+- Rebuild and push a clean image that doesn't contain the orphaned credentials file.
+
+## Next session
+
+- See **`pickup.md`** (session handoff: AWS logout commands, S3 deploy, smoke tests).

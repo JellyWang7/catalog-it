@@ -1,5 +1,7 @@
 # CatalogIt Terraform Infrastructure
 
+**Last updated:** March 21, 2026  
+
 This folder provisions a low-cost AWS stack for CatalogIt:
 
 - S3 bucket for frontend static files
@@ -12,7 +14,7 @@ This folder provisions a low-cost AWS stack for CatalogIt:
 ## 1) Prerequisites
 
 - Terraform >= 1.6
-- AWS CLI configured (`aws configure`)
+- AWS CLI configured (`aws configure`); when pausing work, see **`pickup.md`** in repo root for logout/cache cleanup
 - IAM permissions for EC2, RDS, S3, CloudFront, IAM, Scheduler, Budgets
 
 ## 2) Configure Variables

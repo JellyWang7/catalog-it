@@ -1,55 +1,45 @@
-# Next Week Plan (Deferred from Mar 19 AWS Execution Week)
+# Next Week Plan (Deferred work)
 
-This file tracks work intentionally deferred after completing this week's deployment execution scope.
+**Last updated:** March 21, 2026  
 
-## Carryover from Mar 20 (if not finished tonight)
+> **Start here after a break:** [`pickup.md`](pickup.md) — AWS session teardown, S3/attachment deploy checklist, URLs, smoke tests.
 
-- Stabilize backend container startup on EC2 and confirm `GET /up` returns 200.
-- Complete database bootstrap inside running container:
-  - `rails db:prepare`
-  - `rails db:migrate`
-- Build frontend with production `VITE_API_URL`, upload to S3, invalidate CloudFront.
-- Complete validation checklist:
-  - `/up` and `/api/v1/lists`
-  - auth + list CRUD
-  - CORS restrictions
-  - HTTPS behavior and no redirect loops
+## Immediate carryover (from Mar 21)
 
-## 1) Runtime scheduling automation
+- Deploy backend image with **`aws-sdk-s3`**; set **`ACTIVE_STORAGE_SERVICE=amazon`** on EC2; run **`rails db:migrate`** on RDS.
+- Rebuild frontend with production `VITE_API_URL`, upload to S3, invalidate CloudFront.
+- Validate attachments end-to-end (note / link / file) on list and item rows.
 
-- Implement EventBridge schedules for:
-  - EC2 start
-  - EC2 stop
-  - RDS start
-  - RDS stop
-- Validate start/stop behavior across at least two daily cycles
+## Longer defer list
 
-## 2) Cost guardrails
+### 1) Runtime scheduling automation
 
-- Create AWS Budgets alerts at:
-  - `$1`
-  - `$5`
-  - `$10`
-- Enable Cost Anomaly Detection
-- Confirm all resources are tagged:
-  - `Project=CatalogIt`
-  - `Environment=prod`
-  - `Owner=<your-name>`
+- EventBridge schedules for EC2/RDS start/stop (if not already satisfied)
+- Validate across at least two daily cycles
 
-## 3) Terraform hardening
+### 2) Cost guardrails
 
-- Restrict default instance classes to micro sizes
-- Add guardrails to prevent accidental multi-AZ in free-first mode
-- Review backup/snapshot retention for minimal-cost profile
+- AWS Budgets alerts (`$1`, `$5`, `$10`)
+- Cost Anomaly Detection
+- Resource tags: `Project=CatalogIt`, `Environment=prod`, `Owner=<name>`
 
-## 4) Deployment quality follow-up
+### 3) Terraform hardening
 
-- Measure cold-start timing after scheduled startup
-- Add a short operational runbook for start-window troubleshooting
-- Capture and document rollback steps
+- Default instance classes to micro sizes
+- Guardrails against accidental multi-AZ in free-first mode
+- Review backup/snapshot retention
 
-## 5) Documentation alignment
+### 4) Deployment quality follow-up
 
-- Update status percentages after AWS deploy validation is complete
-- Ensure all docs consistently reference AWS path (remove stale Render/Netlify mentions)
-- Add final deployment URLs and verification evidence
+- Cold-start timing after scheduled startup
+- Operational runbook for start-window troubleshooting
+- Rollback steps documented
+
+### 5) Documentation
+
+- Final deployment URLs and verification evidence after S3 cutover
+- TLS termination notes if ALB/custom domain is added
+
+---
+
+*Supersedes ad-hoc “Mar 19” defer notes; use `pickup.md` for session handoff.*
