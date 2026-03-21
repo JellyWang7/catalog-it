@@ -1,6 +1,6 @@
 # Deploy TODO (AWS Path)
 
-**Last updated:** March 21, 2026  
+**Last updated:** March 20, 2026  
 
 This checklist follows `DEPLOY_PLAN.md` and covers execution scope. **Next-session handoff:** [`pickup.md`](pickup.md).
 

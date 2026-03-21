@@ -1,6 +1,6 @@
 # CatalogIt - AWS Deployment Plan (Free-First, Scale-Ready)
 
-**Last Updated**: March 21, 2026  
+**Last Updated**: March 20, 2026  
 **Target**: Lowest-cost AWS deployment now, with smooth upgrade path later  
 **Strategy**: S3 + CloudFront (frontend), EC2 (Rails), RDS PostgreSQL (database), EventBridge schedules
 
@@ -258,4 +258,4 @@ Important notes:
 
 ---
 
-*Last updated: March 21, 2026*
+*Last updated: March 20, 2026*

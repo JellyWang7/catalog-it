@@ -1,6 +1,6 @@
 # Testing Guide for CatalogIt API
 
-*Last reviewed: March 21, 2026 — attachment kinds include `note`; run full suite after DB migrations.*
+*Last reviewed: March 20, 2026 — attachment kinds include `note`; run full suite after DB migrations.*
 
 ## Test Coverage Summary
 

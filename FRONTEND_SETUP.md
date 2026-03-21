@@ -1,6 +1,6 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: March 21, 2026  
+**Last Updated**: March 20, 2026  
 **Branch**: `deployment`  
 **Status**: 100% — Comments, likes, unified attachments (note/link/file), tests
 

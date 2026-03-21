@@ -1,6 +1,6 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: March 21, 2026  
+**Last Updated**: March 20, 2026  
 **Current Branch**: `deployment`  
 **Project Status**: Midterm Complete + Attachments (note/link/file) + AWS deployment / S3 cutover
 
@@ -225,4 +225,4 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md), `deploy_todo.md`, [pickup.md](pickup.md) (
 
 ---
 
-*Last updated: March 21, 2026*
+*Last updated: March 20, 2026*

@@ -1,10 +1,10 @@
 # Next Week Plan (Deferred work)
 
-**Last updated:** March 21, 2026  
+**Last updated:** March 20, 2026  
 
 > **Start here after a break:** [`pickup.md`](pickup.md) — AWS session teardown, S3/attachment deploy checklist, URLs, smoke tests.
 
-## Immediate carryover (from Mar 21)
+## Immediate carryover (from Mar 20)
 
 - Deploy backend image with **`aws-sdk-s3`**; set **`ACTIVE_STORAGE_SERVICE=amazon`** on EC2; run **`rails db:migrate`** on RDS.
 - Rebuild frontend with production `VITE_API_URL`, upload to S3, invalidate CloudFront.

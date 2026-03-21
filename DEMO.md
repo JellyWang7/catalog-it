@@ -1,6 +1,6 @@
 # CatalogIt - Demo Guide
 
-**Date**: March 9, 2026 (doc refresh March 21, 2026)  
+**Date**: March 9, 2026 (doc refresh March 20, 2026)  
 **Branch**: `deployment` (or your feature branch)
 
 ---

@@ -61,7 +61,7 @@ aws sts get-caller-identity  # should fail or prompt until you log in again
 
 ---
 
-## 5) Doc index (updated Mar 21, 2026)
+## 5) Doc index (updated Mar 20, 2026)
 
 | File | Purpose |
 |------|---------|
@@ -73,4 +73,4 @@ aws sts get-caller-identity  # should fail or prompt until you log in again
 
 ---
 
-*Created: March 21, 2026*
+*Created: March 20, 2026*

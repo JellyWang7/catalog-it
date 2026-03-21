@@ -1,6 +1,6 @@
 # Swagger/OpenAPI Documentation Setup
 
-*Doc refresh: March 21, 2026 — regenerate after attachment schema/API changes.*
+*Doc refresh: March 20, 2026 — regenerate after attachment schema/API changes.*
 
 CatalogIt API now includes complete Swagger/OpenAPI documentation for easy API exploration and testing.
 

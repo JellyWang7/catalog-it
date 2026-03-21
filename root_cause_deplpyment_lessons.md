@@ -1,6 +1,6 @@
 # Root Cause Deployment Lessons (AWS)
 
-Date: 2026-03-20 (updated 2026-03-21)  
+Date: 2026-03-20  
 Scope: CatalogIt AWS deployment debugging, recovery, and attachment/S3 follow-up
 
 ## 1) End-to-end summary of what we did
@@ -169,7 +169,7 @@ aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 
 - Fix: **Start EC2** (`aws ec2 start-instances --instance-ids i-0b2c25f255d32b9a1`) and wait ~1–2 minutes for Docker. Optional: `terraform apply -var="enable_schedules=false"` to disable stop/start schedules while testing (no new resources; may reduce savings).
 - Verify: `curl -I https://d2cvnbu2jarn1q.cloudfront.net/up` → 200; `POST .../api/v1/auth/signup` → 201.
 
-## Current state (as of Mar 21)
+## Current state (as of Mar 20)
 
 - **Elastic IP**: `52.22.20.36` (stable; CloudFront API origin uses EC2 public DNS).
 - **HTTPS API (same domain as frontend)**: `https://d2cvnbu2jarn1q.cloudfront.net/api/v1/...`

@@ -1,6 +1,6 @@
 # CatalogIt Terraform Infrastructure
 
-**Last updated:** March 21, 2026  
+**Last updated:** March 20, 2026  
 
 This folder provisions a low-cost AWS stack for CatalogIt:
 
