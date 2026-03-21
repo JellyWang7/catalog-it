@@ -58,10 +58,12 @@ class Attachment < ApplicationRecord
     end
 
     if link? && title.blank? && url.present?
-      uri = URI.parse(url)
-      self.title = uri.host&.sub(/\Awww\./, "") || "Link"
-    rescue URI::InvalidURIError
-      self.title = "Link"
+      begin
+        uri = URI.parse(url)
+        self.title = uri.host&.sub(/\Awww\./, "") || "Link"
+      rescue URI::InvalidURIError
+        self.title = "Link"
+      end
     end
 
     if file_or_image? && asset.attached? && title.blank?
