@@ -1,6 +1,6 @@
 # CatalogIt - Project Status
 
-**Last Updated**: March 20, 2026  
+**Last Updated**: March 21, 2026  
 **Branch**: `deployment` (verify on clone)  
 **Overall Progress**: 99% | Attachments (note/link/file UX) + S3 path in progress, AWS deploy ongoing
 
@@ -160,6 +160,6 @@ cd frontend && npm run build
 
 ---
 
-*Last updated: March 20, 2026*  
+*Last updated: March 21, 2026*  
 *Backend: 33 endpoints, core specs passing (requests/models/services)*  
 *Frontend: comments/likes/search/analytics/attachments complete; `ListDetail.test.jsx` aligned with unified attachment form*

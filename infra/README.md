@@ -1,11 +1,11 @@
 # CatalogIt Terraform Infrastructure
 
-**Last updated:** March 20, 2026  
+**Last updated:** March 21, 2026  
 
 This folder provisions a low-cost AWS stack for CatalogIt:
 
 - S3 bucket for frontend static files
-- CloudFront distribution for CDN + HTTPS
+- CloudFront: **S3 (default) + EC2 custom origin** for `/api/*`, `/up`, `/api-docs*`, `/rails/*` (see `main.tf`; lessons in `../root_cause_deplpyment_lessons.md`)
 - EC2 instance for Rails backend
 - RDS PostgreSQL database
 - EventBridge Scheduler jobs to start/stop EC2 + RDS daily

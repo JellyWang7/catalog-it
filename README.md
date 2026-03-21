@@ -134,20 +134,16 @@ App: **http://localhost:5173**
 
 ## Current Deployment Track (AWS)
 
-CatalogIt is now committed to the AWS deployment path in `DEPLOY_PLAN.md`.
+CatalogIt uses **Terraform** (`infra/`) with **CloudFront dual origin** (S3 SPA + EC2 API on `/api/*`, `/up`, etc.). Details: `DEPLOY_PLAN.md`, `infra/README.md`, `root_cause_deplpyment_lessons.md`.
 
-### This Week (Mar 19 focus)
+### Production deploy summary
 
-1. Validate readiness blockers:
-   - Ruby image/version compatibility on EC2 target environment
-   - TLS termination strategy with `config.force_ssl = true`
-2. Prepare production env file and run preflight checks.
-3. Deploy backend to EC2 and run DB commands.
-4. Build frontend with production `VITE_API_URL`, upload to S3, and invalidate CloudFront cache.
-5. Run validation checklist (`/up`, `/api/v1/lists`, auth, CRUD, CORS, HTTPS).
+1. **Backend:** build/push Docker image to ECR; on EC2 `docker pull`, **`docker rm` + `docker run`** (not pull alone); `docker exec … rails db:migrate`.
+2. **Frontend:** `VITE_API_URL=https://<cloudfront-domain>/api/v1 npm run build` → `aws s3 sync dist` → CloudFront **invalidation** `/*`.
+3. **Smoke:** `https://<cloudfront>/up` (Rails health), app in incognito; empty Explore = **“No public lists found”** is OK if API works.
+4. **Seeds:** `db:seed` **wipes** users/lists — production only if you accept data loss.
 
-See `deploy_todo.md` for command-level execution steps.  
-**After a break:** `pickup.md`. Deferred work: `next_week.md`.
+See `deploy_todo.md` for commands. **Handoff:** `pickup.md`. **Deferred:** `next_week.md`.
 
 ---
 

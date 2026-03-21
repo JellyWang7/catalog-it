@@ -1,6 +1,6 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: March 20, 2026  
+**Last Updated**: March 21, 2026  
 **Branch**: `deployment`  
 **Status**: 100% — Comments, likes, unified attachments (note/link/file), tests
 
@@ -151,7 +151,8 @@ frontend/
 ## API Service Layer
 
 ### Base Config (`services/api.js`)
-- Base URL: `/api/v1` (proxied via Vite to Rails)
+- Base URL: **`import.meta.env.VITE_API_URL`** or `/api/v1` (Vite dev proxies to Rails on `:3000`)
+- **Production:** set **`VITE_API_URL=https://<your-cloudfront-domain>/api/v1`** so the browser hits the same host as the SPA (dual-origin CloudFront → EC2)
 - Request interceptor: JWT token from localStorage
 - Response interceptor: 401 -> clear auth, redirect
 

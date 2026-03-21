@@ -1,8 +1,8 @@
 # Deploy TODO (AWS Path)
 
-**Last updated:** March 20, 2026  
+**Last updated:** March 21, 2026  
 
-This checklist follows `DEPLOY_PLAN.md` and covers execution scope. **Next-session handoff:** [`pickup.md`](pickup.md).
+This checklist follows `DEPLOY_PLAN.md` and covers execution scope. **Next-session handoff:** [`pickup.md`](pickup.md). **Lessons:** [`root_cause_deplpyment_lessons.md`](root_cause_deplpyment_lessons.md) (CloudFront dual origin, `docker pull` vs recreate, prod seed warning).
 
 ## A) Readiness blockers
 
@@ -73,31 +73,45 @@ chmod +x scripts/deploy_ec2_backend.sh
 # ./scripts/deploy_ec2_backend.sh --skip-s3-check
 ```
 
-After container is up, run:
+After container is up, run (on EC2 via Docker):
 
 ```bash
-rails db:prepare
-rails db:migrate
-# optional
-# rails db:seed
+docker exec catalogit_backend ./bin/rails db:migrate RAILS_ENV=production
+# optional — WARNING: seeds.rb DESTROYS all users/lists/items first; demo DB only
+# docker exec catalogit_backend ./bin/rails db:seed RAILS_ENV=production
 ```
+
+**New image on EC2:** `docker pull` alone is not enough — **`docker rm -f catalogit_backend`** then **`docker run ...`** again so the container uses the new image (see `root_cause_deplpyment_lessons.md`).
 
 ## D) Build/upload frontend to S3 + CloudFront
 
+**Requires Terraform dual-origin CloudFront** (see `infra/main.tf`): same hostname for SPA + API.
+
 ```bash
-cd frontend
-VITE_API_URL="https://<api-domain-or-ec2-endpoint>/api/v1" npm run build
+cd infra
+# use your distribution + bucket from `terraform output`
+export CF_DOMAIN="$(terraform output -raw cloudfront_domain_name)"
+export CF_ID="$(terraform output -raw cloudfront_distribution_id)"
+export BUCKET="$(terraform output -raw frontend_bucket_name)"
+
+cd ../frontend
+VITE_API_URL="https://${CF_DOMAIN}/api/v1" npm run build
+
+cd ../infra
+aws s3 sync ../frontend/dist "s3://${BUCKET}" --delete
+aws cloudfront create-invalidation --distribution-id "${CF_ID}" --paths "/*"
 ```
 
-Then:
-- upload `frontend/dist/` to S3 bucket
-- invalidate CloudFront cache
+**After `terraform apply`** changes to CloudFront: wait until distribution status is **Deployed**, then invalidate `/*`. Rebuild + sync + invalidate again whenever you change `VITE_API_URL` or app code.
+
+**Smoke:** `https://<cloudfront-domain>/up` → Rails health (not React 404). Explore empty → **“No public lists found”** means API works; create a **public** list to populate.
 
 ## E) Run validation checklist
 
 - Frontend URL responds over HTTPS
-- API `/up` is reachable during active window
-- `/api/v1/lists` responds correctly
+- **`https://<cloudfront-domain>/up`** returns Rails health (not SPA) — requires dual-origin CloudFront
+- **`curl` to `http://127.0.0.1/up` only on EC2** (not your Mac) unless testing EC2 public IP from a machine that can reach port 80
+- `/api/v1/lists` returns JSON (Explore loads; empty catalog is OK)
 - Login/signup/list CRUD flows work
 - CORS allows only CloudFront domain
 - App behavior after stop window is expected (frontend up, API down)

@@ -26,7 +26,14 @@
 - [ ] Confirm **Elastic IP** situation (avoid idle EIP charges)
 - [ ] Note: **S3 + CloudFront** stay up — usually cheap; not “shut down” like compute
 
+## Deploy gotchas (short)
+
+- **CloudFront** must route **`/api/*`** to **EC2**, not only S3 — otherwise Explore breaks and `/up` shows the React 404 page.
+- **`docker pull`** then always **`docker rm`** + **`docker run`** to pick up a new image.
+- **`curl 127.0.0.1/up`** for health only **on EC2** (or use CloudFront URL from your laptop).
+- **`rails db:seed` in prod** = wipe users/lists unless you changed `seeds.rb`.
+
 ## Docs to keep aligned
 
 - `pickup.md` — next-session deploy handoff  
-- `root_cause_deplpyment_lessons.md` — 504 when EC2 stopped, etc.
+- `root_cause_deplpyment_lessons.md` — full timeline + lessons H–L

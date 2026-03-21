@@ -1,77 +1,66 @@
 # Pickup — Next session (week of Mar 24, 2026)
 
-Handoff after doc sync + repo push. Use this file first when you return.
+Handoff for CatalogIt AWS. **Lessons log:** [`root_cause_deplpyment_lessons.md`](root_cause_deplpyment_lessons.md) (Mar 21: CloudFront dual origin, Docker recreate, `curl` host, prod seed, Attachment syntax).
 
-## 1) End AWS CLI sessions locally (do this when pausing AWS work)
-
-Run what applies to your setup:
+## 1) End AWS CLI sessions locally (when pausing AWS work)
 
 ```bash
-# AWS SSO (if you use `aws sso login`)
 aws sso logout --profile <your-profile> 2>/dev/null || aws sso logout
-
-# Clear short-lived env vars in the current shell
 unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_SECURITY_TOKEN AWS_CREDENTIAL_EXPIRATION
-
-# Remove cached SSO/CLI login tokens (forces fresh login next time)
 rm -rf ~/.aws/cli/cache/* 2>/dev/null
-
-# Optional: see what the CLI will use next time
 aws configure list
-aws sts get-caller-identity  # should fail or prompt until you log in again
 ```
 
-**Note:** Do not delete `~/.aws/credentials` unless you intend to remove static keys entirely.
+Do not delete `~/.aws/credentials` unless you intend to remove static keys.
 
 ---
 
-## 2) Production: file uploads + attachments (highest priority)
+## 2) Production checklist (current architecture)
 
-**Problem solved in code:** unified list/item attachment UI (optional **note**, **https link**, or **file** — not two parallel required forms). Backend supports **`note`** kind + nullable title; **`aws-sdk-s3`** added for S3.
+**Done in baseline deploy (verify if you changed infra):**
 
-**Still required on AWS:**
+- Terraform **dual-origin CloudFront**: `/api/*`, `/up`, `/api-docs*`, `/rails/*` → **EC2**; default → **S3** (`infra/main.tf`).
+- Frontend build: **`VITE_API_URL=https://d2cvnbu2jarn1q.cloudfront.net/api/v1`** (same as your CloudFront domain).
+- After Terraform or frontend changes: distribution **Deployed** → **`aws cloudfront create-invalidation --paths "/*"`** → rebuild/sync if needed.
 
-1. Deploy a **new backend image** that includes `aws-sdk-s3` and run **`rails db:migrate`** on RDS (attachment `body` / nullable `title` migration).
-2. On EC2 `.env.production` (and `docker run -e`):
-   - Set **`ACTIVE_STORAGE_SERVICE=amazon`** (not `local` long-term).
-   - Ensure **S3** env vars match your bucket/region/credentials (same as preflight script expects).
-3. Rebuild frontend with:
-   ```bash
-   VITE_API_URL=https://d2cvnbu2jarn1q.cloudfront.net/api/v1 npm run build
-   ```
-4. Upload `dist/` to S3, **invalidate CloudFront**.
+**Ongoing:**
 
-**Smoke test:** add attachment as **text only**, **link only**, **file only**; confirm no “Failed to upload item file” when S3 is active.
+- **EC2 + Docker:** new ECR image → **`docker pull`** then **`docker rm -f catalogit_backend`** + **`docker run …`** (pull alone does not update the running container).
+- **DB:** `docker exec catalogit_backend ./bin/rails db:migrate RAILS_ENV=production`
+- **S3 uploads:** `ACTIVE_STORAGE_SERVICE=amazon` + `aws-sdk-s3` in image + S3 env vars; recreate container after `.env` change.
+- **`db:seed` on prod:** **destructive** (`destroy_all` at top of `seeds.rb`) — demo DB only.
 
 ---
 
-## 3) URLs / infra reminders (from `root_cause_deplpyment_lessons.md`)
+## 3) URLs / outputs (example)
 
-- **CloudFront (frontend + API path):** `https://d2cvnbu2jarn1q.cloudfront.net`
+- **CloudFront:** `https://d2cvnbu2jarn1q.cloudfront.net`
 - **API base:** `https://d2cvnbu2jarn1q.cloudfront.net/api/v1`
-- **EC2 Elastic IP:** `52.22.20.36` (if schedules **stop** the instance, expect **504** on `/api/*` until it’s started again).
-- **Infra:** `infra/main.tf` routes `/api/*`, `/up`, `/api-docs*`, `/rails/*` to EC2. Run **`terraform apply`** in `infra/` after pulling latest, wait for deploy, then **`aws cloudfront create-invalidation … --paths "/*"`**. Rebuild frontend with `VITE_API_URL=https://<cloudfront-domain>/api/v1`.
+- **Health:** `https://d2cvnbu2jarn1q.cloudfront.net/up` (Rails, not React — requires dual-origin CF)
+- **EC2:** Elastic IP `52.22.20.36` — if instance **stopped**, **504** on API/`/up` until started again.
+- Use **`terraform output`** in `infra/` for `cloudfront_distribution_id`, `frontend_bucket_name`, `cloudfront_api_origin_domain`.
 
 ---
 
-## 4) Deferred / nice-to-have (see also `next_week.md`)
+## 4) Deferred / nice-to-have
 
-- Terraform budgets, cost anomaly, schedule tuning
-- TLS/termination doc if you add ALB/custom domain
-- Full `bundle exec rspec` in Docker `linux/amd64` if local `bundle` is flaky
+- Budgets, cost anomaly, schedule tuning
+- ALB + custom domain + ACM (optional)
+- Docker `linux/amd64` RSpec if local `bundle` is flaky
 
 ---
 
-## 5) Doc index (updated Mar 20, 2026)
+## 5) Doc index (updated Mar 21, 2026)
 
 | File | Purpose |
 |------|---------|
-| [root_cause_deplpyment_lessons.md](root_cause_deplpyment_lessons.md) | AWS debugging timeline, JWT/credentials/S3/504 lessons |
-| [deploy_todo.md](deploy_todo.md) | Command-level deploy checklist |
-| [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Architecture + runbook |
-| [PROJECT_STATUS.md](PROJECT_STATUS.md) | Status snapshot |
+| [root_cause_deplpyment_lessons.md](root_cause_deplpyment_lessons.md) | Full lesson list (H–L: CF, Docker, Ruby, curl, seed) |
+| [deploy_todo.md](deploy_todo.md) | Command-level checklist |
+| [infra/README.md](infra/README.md) | Terraform + `s3 sync` + invalidation |
+| [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Architecture |
+| [memory.md](memory.md) | Cost + idle reminders |
 | [next_week.md](next_week.md) | Longer defer list |
 
 ---
 
-*Created: March 20, 2026*
+*Updated: March 21, 2026*

@@ -1,8 +1,8 @@
 # Next Week Plan (Deferred work)
 
-**Last updated:** March 20, 2026  
+**Last updated:** March 21, 2026  
 
-> **Start here after a break:** [`pickup.md`](pickup.md) — AWS session teardown, S3/attachment deploy checklist, URLs, smoke tests.
+> **Start here after a break:** [`pickup.md`](pickup.md) — AWS session teardown, CloudFront + Docker notes, URLs, smoke tests. **Deep dive:** [`root_cause_deplpyment_lessons.md`](root_cause_deplpyment_lessons.md).
 
 ## Immediate carryover (from Mar 20)
 

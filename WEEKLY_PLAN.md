@@ -1,6 +1,6 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: March 20, 2026  
+**Last Updated**: March 21, 2026  
 **Current Branch**: `deployment`  
 **Project Status**: Midterm Complete + Attachments (note/link/file) + AWS deployment / S3 cutover
 
@@ -225,4 +225,9 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md), `deploy_todo.md`, [pickup.md](pickup.md) (
 
 ---
 
-*Last updated: March 20, 2026*
+*Last updated: March 21, 2026*
+
+### Mar 21 — Deploy lessons captured
+
+- CloudFront **dual origin** documented in `infra/main.tf`, `DEPLOY_PLAN.md`, `root_cause_deplpyment_lessons.md` (Root cause H).
+- `deploy_todo.md` + `pickup.md` updated for **invalidation**, **`VITE_API_URL`**, **Docker recreate**, **prod seed** warning.

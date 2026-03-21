@@ -1,7 +1,7 @@
 # Root Cause Deployment Lessons (AWS)
 
-Date: 2026-03-20  
-Scope: CatalogIt AWS deployment debugging, recovery, and attachment/S3 follow-up
+Date: 2026-03-20 (lessons updated 2026-03-21)  
+Scope: CatalogIt AWS deployment — debugging, CloudFront/API routing, Docker, attachments, prod smoke tests
 
 ## 1) End-to-end summary of what we did
 
@@ -167,9 +167,36 @@ aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 
 - Symptom: `504 Gateway Timeout` from CloudFront (often HTTP/3); signup shows generic “Signup failed. Please try again.”
 - Cause: **EventBridge schedules stop the EC2 instance** (cost-saving). CloudFront `/api/*` origin is the EC2 Elastic IP — when the instance is **stopped**, the origin is unreachable → **504**. The browser gets no JSON body → axios surfaces a generic error.
 - Fix: **Start EC2** (`aws ec2 start-instances --instance-ids i-0b2c25f255d32b9a1`) and wait ~1–2 minutes for Docker. Optional: `terraform apply -var="enable_schedules=false"` to disable stop/start schedules while testing (no new resources; may reduce savings).
-- Verify: `curl -I https://d2cvnbu2jarn1q.cloudfront.net/up` → 200; `POST .../api/v1/auth/signup` → 201.
+- Verify: with **dual-origin CloudFront** (below): `curl -I https://d2cvnbu2jarn1q.cloudfront.net/up` → **200** when EC2 is up; when EC2 is **stopped**, **504** on `/api/*` and `/up`. `POST .../api/v1/auth/signup` → 201 when origin healthy.
 
-## Current state (as of Mar 20)
+### Root cause H: CloudFront had only S3 origin — `/api/*` and `/up` never reached Rails
+- Symptom: **“Failed to load list”** on Explore; **`https://…cloudfront.net/up`** showed the **React “Oops”** 404 page, not Rails health.
+- Cause: Default behavior sent **all** paths to **S3**. Requests to `/api/v1/...` returned HTML (SPA / error page); Axios expected JSON. `/up` had no S3 object → 403/404 handling → **index.html** → React Router 404.
+- Fix (Terraform in `infra/main.tf`): second **custom origin** (EC2 HTTP `:80`), **ordered cache behaviors** for `/api/*`, `/up`, `/api-docs*`, `/rails/*` → EC2; default behavior stays **S3**. Removed **global** `404 → index.html` custom error so API can return real **404 JSON** (kept **403 → index.html** for SPA + OAC).
+- Frontend: **`VITE_API_URL=https://<cloudfront-domain>/api/v1`** (same host, HTTPS, no mixed content).
+- After `terraform apply`: wait for distribution **Deployed**, then **`aws cloudfront create-invalidation --paths "/*"`**, rebuild frontend, **`aws s3 sync dist`**, invalidate again.
+
+### Root cause I: `docker pull` without recreating the container
+- Symptom: Pulled new `:latest` from ECR but logs still showed **old** errors (e.g. `SyntaxError` in `attachment.rb`).
+- Cause: **`docker pull` updates the local image tag; the running container still uses the old image ID** until removed and recreated.
+- Fix: `docker rm -f catalogit_backend` then full **`docker run ...`** (after `source .env.production`, `unset RAILS_MASTER_KEY`).
+
+### Root cause J: Ruby syntax — `rescue` after `if` without `begin`/`end`
+- Symptom: Rails boot **SyntaxError** in `app/models/attachment.rb` (`unexpected 'rescue'`).
+- Cause: In Ruby you cannot write `if cond … rescue E … end`; **`rescue` must be inside `begin`/`end`** (or on the method).
+- Fix: wrap `URI.parse` / title assignment in **`begin … rescue URI::InvalidURIError … end`** inside the `if`.
+
+### Root cause K: Health check from the wrong machine / wrong expectation
+- Symptom: `curl http://127.0.0.1/up` → **connection refused** on port 80.
+- Cause: Command run on **Mac** (`127.0.0.1` = laptop). The container runs on **EC2**; host port **80** maps to Thruster in the container, not to the dev machine.
+- Fix: On **EC2**: `curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1/up`. From laptop: **`https://<cloudfront>/up`** (with dual origin) or **`http://<EC2-public-ip>/up`** if SG allows.
+
+### Root cause L: Production `db:seed` wipes the database
+- Symptom: N/A until run — **destructive**.
+- Cause: `db/seeds.rb` starts with **`User.destroy_all` / `List.destroy_all` / `Item.destroy_all`** then recreates demo data.
+- Fix: **Do not** run `rails db:seed` on production if you need existing data. Safe only for **empty demo** RDS. Prefer creating public lists via UI or a **non-destructive** seed script.
+
+## Current state (as of Mar 21)
 
 - **Elastic IP**: `52.22.20.36` (stable; CloudFront API origin uses EC2 public DNS).
 - **HTTPS API (same domain as frontend)**: `https://d2cvnbu2jarn1q.cloudfront.net/api/v1/...`
@@ -187,4 +214,5 @@ aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 
 
 ## Next session
 
-- See **`pickup.md`** (session handoff: AWS logout commands, S3 deploy, smoke tests).
+- See **`pickup.md`** (session handoff: AWS logout, S3 uploads, CloudFront invalidation, smoke tests).
+- **Terraform output** (example): `cloudfront_distribution_id`, `cloudfront_api_origin_domain`, `frontend_bucket_name` — use in invalidation + `s3 sync` commands (`infra/README.md`).

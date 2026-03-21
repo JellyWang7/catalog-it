@@ -1,6 +1,6 @@
 # CatalogIt - AWS Deployment Plan (Free-First, Scale-Ready)
 
-**Last Updated**: March 20, 2026  
+**Last Updated**: March 21, 2026  
 **Target**: Lowest-cost AWS deployment now, with smooth upgrade path later  
 **Strategy**: S3 + CloudFront (frontend), EC2 (Rails), RDS PostgreSQL (database), EventBridge schedules
 
@@ -27,13 +27,18 @@ Recommended:
 
 ## Architecture Overview (Current Goal)
 
+**Implemented:** one **CloudFront** distribution, **two origins**:
+
 ```
-Browser
-  -> CloudFront (HTTPS + CDN)
-  -> S3 bucket (React static build)
-  -> API calls to EC2 public URL (Rails API)
-  -> EC2 talks to RDS PostgreSQL in private subnet/security group
+Browser (HTTPS)
+  -> CloudFront
+       ├─ path /api/*, /up, /api-docs*, /rails/*  ->  EC2:80 (Rails / Thruster, HTTP to origin)
+       └─ default /*                               ->  S3 (React static build; OAC)
+  -> EC2 talks to RDS PostgreSQL (private SG)
 ```
+
+- Viewer always uses **HTTPS** to CloudFront; **EC2 origin is HTTP** (port from `api_port`, default 80) — no mixed-content issues if **`VITE_API_URL=https://<cloudfront-domain>/api/v1`**.
+- Do **not** use S3-only CloudFront for a single-domain app: API routes would return HTML and break the SPA (`root_cause_deplpyment_lessons.md` **Root cause H**).
 
 Free-first profile:
 - Frontend: S3 + CloudFront (very low cost, often near $0 for low traffic).
@@ -76,7 +81,7 @@ Create Terraform stack with:
 - EC2 instance (t2.micro or t3.micro)
 - RDS PostgreSQL (db.t3.micro, single-AZ, minimal storage)
 - S3 bucket for frontend
-- CloudFront distribution for S3 origin
+- CloudFront distribution: **S3 default origin + EC2 custom origin** with path-based cache behaviors (`infra/main.tf`)
 - IAM roles/policies for:
   - EC2 SSM access (optional but recommended)
   - Scheduler/Lambda start-stop automation
@@ -258,4 +263,4 @@ Important notes:
 
 ---
 
-*Last updated: March 20, 2026*
+*Last updated: March 21, 2026*
