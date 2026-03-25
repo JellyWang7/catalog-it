@@ -1,12 +1,12 @@
 # Root Cause Deployment Lessons (AWS)
 
-Date: 2026-03-20 (lessons updated 2026-03-21)  
+Date: 2026-03-20 (lessons updated 2026-03-24)  
 Scope: CatalogIt AWS deployment — debugging, CloudFront/API routing, Docker, attachments, prod smoke tests
 
 ## 1) End-to-end summary of what we did
 
 1. Ran full local test gates and verified backend/frontend test health.
-2. Standardized docs to commit to AWS path (`DEPLOY_PLAN.md`) and moved deferred tasks to `next_week.md`.
+2. Standardized docs to commit to AWS path (`DEPLOY_PLAN.md`); ongoing handoff/defer lists live in [OPERATIONS.md](OPERATIONS.md).
 3. Provisioned AWS infrastructure with Terraform (EC2, RDS, S3, CloudFront, scheduler/budget resources).
 4. Prepared production environment variables in `backend/.env.production`.
 5. Attempted direct EC2 build/deploy; observed repeated startup and connectivity failures.
@@ -28,8 +28,8 @@ Scope: CatalogIt AWS deployment — debugging, CloudFront/API routing, Docker, a
   - `README.md`
   - `PROJECT_STATUS.md`
   - `WEEKLY_PLAN.md`
-  - `deploy_todo.md`
-  - `next_week.md`
+  - [DEPLOY_PLAN.md](DEPLOY_PLAN.md) (appendix checklist)
+  - [OPERATIONS.md](OPERATIONS.md)
 
 ## 3) Helpful commands that worked
 
@@ -38,7 +38,7 @@ Only commands that helped or unblocked deployment are listed below.
 ### AWS CLI / Terraform
 
 ```bash
-aws configure set region us-east-1
+aws configure set region <your-region>
 aws sts get-caller-identity
 
 cd infra
@@ -63,17 +63,18 @@ set +a
 
 ```bash
 cd backend
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 106641707917.dkr.ecr.us-east-1.amazonaws.com
+# Replace <account-id>, <region>, <repo> with values from your AWS account / `terraform output` / ECR console.
+aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
 docker buildx create --use --name catalogitbuilder 2>/dev/null || true
-docker buildx build --platform linux/amd64 -t 106641707917.dkr.ecr.us-east-1.amazonaws.com/catalogit-backend:latest --push .
-aws ecr list-images --region us-east-1 --repository-name catalogit-backend --output json
+docker buildx build --platform linux/amd64 -t <account-id>.dkr.ecr.<region>.amazonaws.com/<repo>:latest --push .
+aws ecr list-images --region <region> --repository-name <repo> --output json
 ```
 
 ### EC2 runtime (after role/policy fixes)
 
 ```bash
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 106641707917.dkr.ecr.us-east-1.amazonaws.com
-docker pull 106641707917.dkr.ecr.us-east-1.amazonaws.com/catalogit-backend:latest
+aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
+docker pull <account-id>.dkr.ecr.<region>.amazonaws.com/<repo>:latest
 
 cd /opt/catalogit/catalog-it/backend
 set -a
@@ -89,7 +90,7 @@ docker run -d --name catalogit_backend --restart unless-stopped -p 80:80 \
   -e CATALOGIT_DATABASE_PASSWORD -e RAILS_MAX_THREADS -e WEB_CONCURRENCY \
   -e RAILS_LOG_LEVEL -e ACTIVE_STORAGE_SERVICE -e AWS_ACCESS_KEY_ID \
   -e AWS_SECRET_ACCESS_KEY -e AWS_REGION -e AWS_S3_BUCKET \
-  106641707917.dkr.ecr.us-east-1.amazonaws.com/catalogit-backend:latest \
+  <account-id>.dkr.ecr.<region>.amazonaws.com/<repo>:latest \
   -c "rm -f /rails/config/credentials.yml.enc && exec /rails/bin/docker-entrypoint ./bin/thrust ./bin/rails server"
 
 sleep 5
@@ -101,8 +102,8 @@ docker logs --tail=120 catalogit_backend
 
 ```bash
 ssh -vvv -o ConnectTimeout=10 -o ConnectionAttempts=1 ec2-user@<public-ip>
-aws ec2 describe-instance-status --region us-east-1 --instance-ids i-0b2c25f255d32b9a1 --include-all-instances
-aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 --latest --output text | tail -n 200
+aws ec2 describe-instance-status --region <your-region> --instance-ids <your-instance-id> --include-all-instances
+aws ec2 get-console-output --region <your-region> --instance-id <your-instance-id> --latest --output text | tail -n 200
 ```
 
 ## 4) Debug session layout: root causes and actions
@@ -161,13 +162,13 @@ aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 
 - Cause: `ACTIVE_STORAGE_SERVICE=amazon` requires the **`aws-sdk-s3`** gem (and valid S3 env vars).
 - **Short-term workaround used:** `ACTIVE_STORAGE_SERVICE=local` so the API boots without the gem.
 - **Codebase fix:** `gem "aws-sdk-s3"` added to `Gemfile`; rebuild image and set **`ACTIVE_STORAGE_SERVICE=amazon`** for durable production uploads.
-- Outcome after switch: file/image attachments persist in S3; see `pickup.md` for deploy checklist.
+- Outcome after switch: file/image attachments persist in S3; see [DEPLOY_PLAN.md](DEPLOY_PLAN.md) and [OPERATIONS.md](OPERATIONS.md) for deploy checklist.
 
 ### Root cause G: CloudFront 504 + “Signup failed” when EC2 is stopped
 - Symptom: `504 Gateway Timeout` from CloudFront (often HTTP/3); signup shows generic “Signup failed. Please try again.”
 - Cause: **EventBridge schedules stop the EC2 instance** (cost-saving). CloudFront `/api/*` origin is the EC2 Elastic IP — when the instance is **stopped**, the origin is unreachable → **504**. The browser gets no JSON body → axios surfaces a generic error.
-- Fix: **Start EC2** (`aws ec2 start-instances --instance-ids i-0b2c25f255d32b9a1`) and wait ~1–2 minutes for Docker. Optional: `terraform apply -var="enable_schedules=false"` to disable stop/start schedules while testing (no new resources; may reduce savings).
-- Verify: with **dual-origin CloudFront** (below): `curl -I https://d2cvnbu2jarn1q.cloudfront.net/up` → **200** when EC2 is up; when EC2 is **stopped**, **504** on `/api/*` and `/up`. `POST .../api/v1/auth/signup` → 201 when origin healthy.
+- Fix: **Start EC2** (`aws ec2 start-instances --region <your-region> --instance-ids <your-instance-id>`) and wait ~1–2 minutes for Docker. Optional: `terraform apply -var="enable_schedules=false"` to disable stop/start schedules while testing (no new resources; may reduce savings).
+- Verify: with **dual-origin CloudFront** (below): `curl -I https://<your-cloudfront-domain>/up` → **200** when EC2 is up; when EC2 is **stopped**, **504** on `/api/*` and `/up`. `POST https://<your-cloudfront-domain>/api/v1/auth/signup` → 201 when origin healthy.
 
 ### Root cause H: CloudFront had only S3 origin — `/api/*` and `/up` never reached Rails
 - Symptom: **“Failed to load list”** on Explore; **`https://…cloudfront.net/up`** showed the **React “Oops”** 404 page, not Rails health.
@@ -201,11 +202,11 @@ aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 
 - Cause: Production uses **`config.cache_store = :solid_cache_store`** and **Rack::Attack** uses **`Rails.cache`** for throttles. The Solid Cache table lives in **`db/cache_schema.rb`**, which is **not** applied by a normal **`db:migrate`** on the primary DB only — so **`solid_cache_entries`** never exists → **`PG::UndefinedTable`** during throttle/cache writes.
 - Fix: Run migrations after deploying **`20260322120000_create_solid_cache_entries`** (adds the table to the primary DB, same RDS as `cache:` in `database.yml`). On EC2: **`docker exec catalogit_backend ./bin/rails db:migrate RAILS_ENV=production`**. If you use **`SOLID_QUEUE_IN_PUMA`** or **Solid Cable** in production, ensure **`queue_schema.rb` / `cable_schema.rb`** tables exist too (separate load or install tasks), or jobs/WebSockets can fail later.
 
-## Current state (as of Mar 21)
+## Current state (snapshot — use your own infra values)
 
-- **Elastic IP**: `52.22.20.36` (stable; CloudFront API origin uses EC2 public DNS).
-- **HTTPS API (same domain as frontend)**: `https://d2cvnbu2jarn1q.cloudfront.net/api/v1/...`
-- **Frontend**: same CloudFront URL; build with `VITE_API_URL=https://d2cvnbu2jarn1q.cloudfront.net/api/v1`
+- **Elastic IP / EC2 DNS**: from `terraform output` or EC2 console (CloudFront custom origin should point at your stable API endpoint).
+- **HTTPS API (same domain as frontend)**: `https://<your-cloudfront-domain>/api/v1/...`
+- **Frontend**: same CloudFront URL; build with `VITE_API_URL=https://<your-cloudfront-domain>/api/v1`
 - **Remember**: If EC2 is **stopped**, expect **504** on API routes until you start it again.
 - **Attachments UX/API**: List and item attachments support optional **text note**, **https link**, or **file** (single form; not two parallel required flows). Kinds include `note` | `link` | `image` | `file`.
 - **Production uploads**: Prefer **`ACTIVE_STORAGE_SERVICE=amazon`** + **`aws-sdk-s3`** in the image; run **`rails db:migrate`** for attachment schema updates.
@@ -219,5 +220,5 @@ aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 
 
 ## Next session
 
-- See **`pickup.md`** (session handoff: AWS logout, S3 uploads, CloudFront invalidation, smoke tests).
-- **Terraform output** (example): `cloudfront_distribution_id`, `cloudfront_api_origin_domain`, `frontend_bucket_name` — use in invalidation + `s3 sync` commands (`infra/README.md`).
+- See **[OPERATIONS.md](OPERATIONS.md)** (session handoff: AWS logout, S3 uploads, CloudFront invalidation, smoke tests).
+- **Terraform output** (example): `cloudfront_distribution_id`, `cloudfront_api_origin_domain`, `frontend_bucket_name` — use in invalidation + `s3 sync` commands ([infra/README.md](infra/README.md)).

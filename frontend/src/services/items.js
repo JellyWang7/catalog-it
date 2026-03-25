@@ -34,6 +34,7 @@ const itemsService = {
 
     return api.post(`/items/${id}/attachments`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
     });
   },
 

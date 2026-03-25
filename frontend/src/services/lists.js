@@ -46,6 +46,7 @@ const listsService = {
 
     return api.post(`/lists/${listId}/attachments`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
     });
   },
 

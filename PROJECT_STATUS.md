@@ -1,6 +1,6 @@
 # CatalogIt - Project Status
 
-**Last Updated**: March 21, 2026  
+**Last Updated**: March 24, 2026  
 **Branch**: `deployment` (verify on clone)  
 **Overall Progress**: 99% | Attachments (note/link/file UX) + S3 path in progress, AWS deploy ongoing
 
@@ -49,7 +49,7 @@ Deployment:  ████████░░░░  65%  Infra + ECR flow; S3 Act
 - [x] Attachment endpoint documentation refreshed in Swagger
 
 ### Remaining (post-midterm)
-- [ ] Deployment (AWS: Terraform + EC2 + RDS + S3 + CloudFront) — **see `pickup.md` for S3 upload cutover**
+- [ ] Deployment (AWS: Terraform + EC2 + RDS + S3 + CloudFront) — **see [OPERATIONS.md](OPERATIONS.md) / [DEPLOY_PLAN.md](DEPLOY_PLAN.md) for S3 upload cutover**
 
 ### Newly Completed
 - [x] Server-side search/filter API (`GET /api/v1/lists` query params for `search`, `visibility`, `sort`)
@@ -75,12 +75,12 @@ Deployment:  ████████░░░░  65%  Infra + ECR flow; S3 Act
 - [x] Terraform apply completed; outputs captured for EC2/RDS/S3/CloudFront
 - [x] ECR flow validated (local buildx push, EC2 pull)
 - [x] EC2 IAM runtime role permissions corrected for ECR/S3 path
-- [x] Deployment debugging retrospective documented in `root_cause_deplpyment_lessons.md`
+- [x] Deployment debugging retrospective documented in `root_cause_deployment_lessons.md`
 
 ### Deferred / next session
 - [ ] Production **`ACTIVE_STORAGE_SERVICE=amazon`** + migrated DB + new image on EC2
-- [ ] EventBridge/budgets/terraform polish — see `next_week.md`
-- [ ] Session handoff: **`pickup.md`**
+- [ ] EventBridge/budgets/terraform polish — see [OPERATIONS.md](OPERATIONS.md)
+- [ ] Session handoff: **[OPERATIONS.md](OPERATIONS.md)**
 
 ---
 

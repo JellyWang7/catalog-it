@@ -282,8 +282,11 @@ export default function ListDetail() {
       }));
       setListAttachmentDraft(emptyAttachmentDraft());
       toast.success('Attachment added');
-      navigate(`/lists/${list.id}${isSharedViewer ? '?shared=1' : ''}`);
     } catch (err) {
+      if (err.code === 'ECONNABORTED' || String(err.message || '').toLowerCase().includes('timeout')) {
+        toast.error('Upload timed out. Try a smaller file or check your connection.');
+        return;
+      }
       const errors = err.response?.data?.errors || [];
       const invalidLink = errors.some((message) => message.toLowerCase().includes('https link'));
       const typeError = errors.some((message) => message.toLowerCase().includes('type is not allowed'));
@@ -294,7 +297,12 @@ export default function ListDetail() {
       } else if (typeError || sizeError) {
         toast.error('Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP. Max size: 5MB.');
       } else {
-        toast.error(errors.join(', ') || 'Failed to add attachment');
+        const msg =
+          errors.join(', ') ||
+          err.response?.data?.error ||
+          err.response?.statusText ||
+          err.message;
+        toast.error(msg || 'Failed to add attachment');
       }
     } finally {
       setSubmittingAttachment(false);
@@ -365,6 +373,10 @@ export default function ListDetail() {
       updateItemAttachmentInput(itemId, emptyAttachmentDraft());
       toast.success('Attachment added');
     } catch (err) {
+      if (err.code === 'ECONNABORTED' || String(err.message || '').toLowerCase().includes('timeout')) {
+        toast.error('Upload timed out. Try a smaller file or check your connection.');
+        return;
+      }
       const errors = err.response?.data?.errors || [];
       const invalidLink = errors.some((message) => message.toLowerCase().includes('https link'));
       const typeError = errors.some((message) => message.toLowerCase().includes('type is not allowed'));
@@ -375,7 +387,12 @@ export default function ListDetail() {
       } else if (typeError || sizeError) {
         toast.error('Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP. Max size: 5MB.');
       } else {
-        toast.error(errors.join(', ') || 'Failed to add attachment');
+        const msg =
+          errors.join(', ') ||
+          err.response?.data?.error ||
+          err.response?.statusText ||
+          err.message;
+        toast.error(msg || 'Failed to add attachment');
       }
     } finally {
       setItemAttachmentSubmitting((prev) => ({ ...prev, [itemId]: false }));

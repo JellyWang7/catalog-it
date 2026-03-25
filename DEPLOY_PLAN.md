@@ -1,6 +1,6 @@
 # CatalogIt - AWS Deployment Plan (Free-First, Scale-Ready)
 
-**Last Updated**: March 21, 2026  
+**Last Updated**: March 24, 2026  
 **Target**: Lowest-cost AWS deployment now, with smooth upgrade path later  
 **Strategy**: S3 + CloudFront (frontend), EC2 (Rails), RDS PostgreSQL (database), EventBridge schedules
 
@@ -38,7 +38,7 @@ Browser (HTTPS)
 ```
 
 - Viewer always uses **HTTPS** to CloudFront; **EC2 origin is HTTP** (port from `api_port`, default 80) — no mixed-content issues if **`VITE_API_URL=https://<cloudfront-domain>/api/v1`**.
-- Do **not** use S3-only CloudFront for a single-domain app: API routes would return HTML and break the SPA (`root_cause_deplpyment_lessons.md` **Root cause H**).
+- Do **not** use S3-only CloudFront for a single-domain app: API routes would return HTML and break the SPA ([root_cause_deployment_lessons.md](root_cause_deployment_lessons.md) **Root cause H**).
 
 Free-first profile:
 - Frontend: S3 + CloudFront (very low cost, often near $0 for low traffic).
@@ -63,7 +63,7 @@ Current state:
 - Done: optional local fallback path exists via `--skip-s3-check`.
 - Pending: validate Ruby image/version compatibility in your target EC2 build environment.
 - Pending: finalize TLS termination setup for your chosen endpoint (CloudFront/ALB/reverse proxy).
-- Pending: production **must** run migrations for attachment `body` / nullable `title` after pulling latest code; see **`pickup.md`**.
+- Pending: production **must** run migrations for attachment `body` / nullable `title` after pulling latest code; see **[OPERATIONS.md](OPERATIONS.md)**.
 
 TLS/SSL requirement:
    - `config.force_ssl = true` is enabled.
@@ -263,4 +263,89 @@ Important notes:
 
 ---
 
-*Last updated: March 21, 2026*
+## Appendix: execution checklist
+
+Detailed command sequence (readiness, env, EC2, S3/CloudFront, validation). **Substitute** `<your-region>` and `<your-instance-id>` from your AWS account / `terraform output` — do not use example IDs from old notes.
+
+### A) Readiness blockers
+
+**1) Validate Ruby / Docker on EC2** — On host: `ruby -v`, `bundle -v`, `docker --version`. In repo: `cd backend && cat .ruby-version && bundle platform`.
+
+**2) TLS** — `force_ssl` is on; confirm HTTPS works end-to-end (CloudFront → EC2) with no redirect loop.
+
+### B) Prepare deployment env
+
+```bash
+cd backend
+cp .env.production.example .env.production
+# edit .env.production locally — DO NOT COMMIT (see SECURITY_GIT.md)
+set -a && source .env.production && set +a
+chmod +x scripts/check_prod_env.sh
+./scripts/check_prod_env.sh
+# optional: ./scripts/check_prod_env.sh --skip-s3-check
+```
+
+Verify: `RAILS_ENV=production`, `SECRET_KEY_BASE`, DB vars, `FRONTEND_URL`, `ACTIVE_STORAGE_SERVICE=amazon` when using S3 uploads. Avoid mismatched `RAILS_MASTER_KEY` vs `credentials.yml.enc` unless you use that workflow ([root_cause_deployment_lessons.md](root_cause_deployment_lessons.md)).
+
+### C) Deploy backend to EC2
+
+```bash
+cd backend
+chmod +x scripts/deploy_ec2_backend.sh
+./scripts/deploy_ec2_backend.sh
+```
+
+Then:
+
+```bash
+docker exec catalogit_backend ./bin/rails db:migrate RAILS_ENV=production
+# optional — WARNING: seeds destroy demo data
+# docker exec catalogit_backend ./bin/rails db:seed RAILS_ENV=production
+```
+
+**New image:** `docker pull` is not enough — **`docker rm -f catalogit_backend`** then **`docker run …`** again.
+
+### D) Frontend → S3 + CloudFront
+
+```bash
+cd infra
+export CF_DOMAIN="$(terraform output -raw cloudfront_domain_name)"
+export CF_ID="$(terraform output -raw cloudfront_distribution_id)"
+export BUCKET="$(terraform output -raw frontend_bucket_name)"
+
+cd ../frontend
+VITE_API_URL="https://${CF_DOMAIN}/api/v1" npm run build
+
+cd ../infra
+aws s3 sync ../frontend/dist "s3://${BUCKET}" --delete
+aws cloudfront create-invalidation --distribution-id "${CF_ID}" --paths "/*"
+```
+
+### E) Validation
+
+- `https://<cloudfront-domain>/up` returns Rails health (dual-origin).
+- `/api/v1/lists` returns JSON; auth flows work.
+- CORS allows your CloudFront origin.
+
+**504 / signup failures:** EC2 may be stopped (schedules). Check instance status, then:
+
+```bash
+aws ec2 describe-instance-status --region <your-region> --instance-ids <your-instance-id> --include-all-instances
+aws ec2 start-instances --region <your-region> --instance-ids <your-instance-id>
+```
+
+Optional: `terraform apply -var="enable_schedules=false"` in `infra/` while testing.
+
+### Optional: systemd auto-start on boot
+
+```bash
+cd backend
+chmod +x scripts/install_systemd_service.sh
+sudo APP_DIR=/opt/catalogit/backend ./scripts/install_systemd_service.sh
+```
+
+**Handoff / next steps:** [OPERATIONS.md](OPERATIONS.md).
+
+---
+
+*Last updated: March 24, 2026*

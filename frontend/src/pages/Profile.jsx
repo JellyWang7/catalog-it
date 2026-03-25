@@ -91,15 +91,19 @@ export default function Profile() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Profile Card */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="h-28 bg-gradient-to-r from-deep-blue to-teal" />
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        {/* Decorative top bar only — avatar + text sit fully on white below (no overlap / half-on-gradient) */}
+        <div className="h-16 sm:h-20 bg-gradient-to-r from-deep-blue to-teal" />
 
-        <div className="px-6 sm:px-10 pb-8 pt-2">
-          <div className="-mt-12 flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
-            <div className="w-24 h-24 rounded-full bg-white border-4 border-white shadow-lg flex items-center justify-center text-3xl font-extrabold text-deep-blue flex-shrink-0 mx-auto sm:mx-0">
+        <div className="px-6 sm:px-10 pb-8 pt-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 mb-8">
+            <div
+              className="w-24 h-24 rounded-full bg-gray-50 border-4 border-white shadow-lg ring-2 ring-gray-100 flex items-center justify-center text-3xl font-extrabold text-deep-blue flex-shrink-0"
+              aria-hidden
+            >
               {initials}
             </div>
-            <div className="text-center sm:text-left min-w-0 flex-1 pt-1">
+            <div className="text-center sm:text-left min-w-0 flex-1">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
                 {user.username}
               </h1>

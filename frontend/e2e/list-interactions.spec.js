@@ -317,9 +317,10 @@ test('list owner can add a link attachment', async ({ page }) => {
   await page.goto('/lists/1');
   await expect(page.getByRole('heading', { name: 'Attachments', exact: true })).toBeVisible();
 
-  await page.getByPlaceholder('Attachment title').first().fill('API Guide');
-  await page.getByPlaceholder('https://example.com/resource').fill('https://example.com/api-guide');
-  await page.getByRole('button', { name: 'Add Link' }).click();
+  const listAttachmentForm = page.locator('form').filter({ hasText: 'Add list attachment' });
+  await listAttachmentForm.getByPlaceholder('https://… (optional link)').fill('https://example.com/api-guide');
+  await listAttachmentForm.getByPlaceholder('Optional label').fill('API Guide');
+  await listAttachmentForm.getByRole('button', { name: 'Add attachment' }).click();
 
   await expect(page.getByText('API Guide')).toBeVisible();
 });

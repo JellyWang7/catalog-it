@@ -5,7 +5,7 @@
 This folder provisions a low-cost AWS stack for CatalogIt:
 
 - S3 bucket for frontend static files
-- CloudFront: **S3 (default) + EC2 custom origin** for `/api/*`, `/up`, `/api-docs*`, `/rails/*` (see `main.tf`; lessons in `../root_cause_deplpyment_lessons.md`)
+- CloudFront: **S3 (default) + EC2 custom origin** for `/api/*`, `/up`, `/api-docs*`, `/rails/*` (see `main.tf`; lessons in `../root_cause_deployment_lessons.md`)
 - EC2 instance for Rails backend
 - RDS PostgreSQL database
 - EventBridge Scheduler jobs to start/stop EC2 + RDS daily
@@ -14,7 +14,7 @@ This folder provisions a low-cost AWS stack for CatalogIt:
 ## 1) Prerequisites
 
 - Terraform >= 1.6
-- AWS CLI configured (`aws configure`); when pausing work, see **`pickup.md`** in repo root for logout/cache cleanup
+- AWS CLI configured (`aws configure`); when pausing work, see **[OPERATIONS.md](../OPERATIONS.md)** in repo root for logout/cache cleanup
 - IAM permissions for EC2, RDS, S3, CloudFront, IAM, Scheduler, Budgets
 
 ## 2) Configure Variables

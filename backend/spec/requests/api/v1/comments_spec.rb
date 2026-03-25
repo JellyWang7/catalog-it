@@ -82,6 +82,19 @@ RSpec.describe "Api::V1::Comments", type: :request do
       errors = JSON.parse(response.body)['errors']
       expect(errors).to include('Content contains inappropriate language.')
     end
+
+    it "rejects anti-Asian slur chingchong" do
+      expect do
+        post "/api/v1/lists/#{list.id}/comments",
+             params: { comment: { body: 'chingchong' } },
+             headers: auth_headers,
+             as: :json
+      end.not_to change(Comment, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      errors = JSON.parse(response.body)['errors']
+      expect(errors).to include('Content contains inappropriate language.')
+    end
   end
 
   describe "DELETE /api/v1/comments/:id" do

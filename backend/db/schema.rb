@@ -45,12 +45,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_120000) do
   create_table "attachments", force: :cascade do |t|
     t.bigint "attachable_id", null: false
     t.string "attachable_type", null: false
+    t.text "body"
     t.datetime "created_at", null: false
     t.string "kind", null: false
     t.string "mime_type"
     t.bigint "size_bytes"
     t.string "storage_key"
-    t.string "title", null: false
+    t.string "title"
     t.datetime "updated_at", null: false
     t.string "url"
     t.bigint "user_id", null: false
@@ -114,11 +115,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_120000) do
   end
 
   create_table "solid_cache_entries", force: :cascade do |t|
-    t.binary "key", limit: 1024, null: false
-    t.binary "value", limit: 536870912, null: false
+    t.integer "byte_size", null: false
     t.datetime "created_at", null: false
+    t.binary "key", null: false
     t.bigint "key_hash", null: false
-    t.integer "byte_size", limit: 4, null: false
+    t.binary "value", null: false
     t.index ["byte_size"], name: "index_solid_cache_entries_on_byte_size"
     t.index ["key_hash", "byte_size"], name: "index_solid_cache_entries_on_key_hash_and_byte_size"
     t.index ["key_hash"], name: "index_solid_cache_entries_on_key_hash", unique: true

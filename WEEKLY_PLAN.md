@@ -1,6 +1,6 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: March 21, 2026  
+**Last Updated**: March 24, 2026  
 **Current Branch**: `deployment`  
 **Project Status**: Midterm Complete + Attachments (note/link/file) + AWS deployment / S3 cutover
 
@@ -126,7 +126,7 @@ See [DEMO.md](DEMO.md) for full walkthrough, SQL commands, and curl examples.
 - [x] Terraform apply completed successfully with EC2/RDS/S3/CloudFront outputs
 - [x] ECR repository created and image push/pull path validated
 - [x] EC2 access path stabilized (public IP update + instance-connect/role workflow)
-- [x] Root-cause documentation created: `root_cause_deplpyment_lessons.md`
+- [x] Root-cause documentation created: `root_cause_deployment_lessons.md`
 - [ ] Backend container stable boot and database prepare still pending final validation
 
 ### Carryover Rule (Tonight vs Next Week)
@@ -148,7 +148,7 @@ Use this before ending the session tonight:
 
 Decision:
 - **Go (finish tonight):** all 5 checks are complete.
-- **No-Go (move to next week):** any check is incomplete; move remaining steps to `next_week.md`.
+- **No-Go (move to next week):** any check is incomplete; move remaining steps to [OPERATIONS.md](OPERATIONS.md).
 
 ### Validation Snapshot (Mar 19 local baseline)
 - [x] Backend full suite: `234 examples, 0 failures`
@@ -163,7 +163,7 @@ Decision:
 - [x] Max upload size: 5MB
 - [x] Links must be `https://`
 
-See [DEPLOY_PLAN.md](DEPLOY_PLAN.md), `deploy_todo.md`, [pickup.md](pickup.md) (next-session handoff), and `next_week.md` (longer defer list).
+See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) (appendix checklist), [OPERATIONS.md](OPERATIONS.md) (handoff + defer list).
 
 ---
 
@@ -205,7 +205,7 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md), `deploy_todo.md`, [pickup.md](pickup.md) (
 
 ### Deployment (In Progress)
 - [x] Infrastructure provisioned with Terraform (baseline)
-- [~] Backend deployed to EC2; **S3 Active Storage + migrate** — see `pickup.md`
+- [~] Backend deployed to EC2; **S3 Active Storage + migrate** — see [OPERATIONS.md](OPERATIONS.md)
 - [~] Frontend deployed to S3 + CloudFront (rebuild when API URL or attachment UI changes)
 - [ ] Full validation checklist (attachments + `/up` + auth)
 
@@ -225,9 +225,9 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md), `deploy_todo.md`, [pickup.md](pickup.md) (
 
 ---
 
-*Last updated: March 21, 2026*
+*Last updated: March 24, 2026*
 
 ### Mar 21 — Deploy lessons captured
 
-- CloudFront **dual origin** documented in `infra/main.tf`, `DEPLOY_PLAN.md`, `root_cause_deplpyment_lessons.md` (Root cause H).
-- `deploy_todo.md` + `pickup.md` updated for **invalidation**, **`VITE_API_URL`**, **Docker recreate**, **prod seed** warning.
+- CloudFront **dual origin** documented in `infra/main.tf`, `DEPLOY_PLAN.md`, `root_cause_deployment_lessons.md` (Root cause H).
+- [DEPLOY_PLAN.md](DEPLOY_PLAN.md) appendix + [OPERATIONS.md](OPERATIONS.md) cover **invalidation**, **`VITE_API_URL`**, **Docker recreate**, **prod seed** warning.

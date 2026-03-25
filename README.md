@@ -16,10 +16,9 @@
 | [WEEKLY_PLAN.md](WEEKLY_PLAN.md) | Week-by-week roadmap & progress |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Detailed status & compliance |
 | [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (AWS free-first + scale-ready) |
-| [root_cause_deplpyment_lessons.md](root_cause_deplpyment_lessons.md) | Deployment debugging timeline, root causes, and lessons |
-| [pickup.md](pickup.md) | **Next session handoff** (AWS logout, S3 deploy, smoke tests) |
-| [memory.md](memory.md) | Minimal-cost defaults, idle shutdown / reminders |
-| [next_week.md](next_week.md) | Deferred post-deploy tasks |
+| [OPERATIONS.md](OPERATIONS.md) | **Session handoff**, cost/reminders, deferred work |
+| [SECURITY_GIT.md](SECURITY_GIT.md) | What must never be committed; safe doc placeholders |
+| [root_cause_deployment_lessons.md](root_cause_deployment_lessons.md) | Deployment debugging timeline, root causes, and lessons |
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
 | [backend/SWAGGER_SETUP.md](backend/SWAGGER_SETUP.md) | Swagger/OpenAPI setup and generation |
 | [backend/TESTING.md](backend/TESTING.md) | Testing guide (current backend suite details) |
@@ -38,6 +37,15 @@
 | `.github/workflows/frontend-tests.yml` | React frontend | `npm run test` (Vitest UI), `npm run test:e2e` (Playwright E2E) |
 
 ### Local Commands (match CI)
+
+**Full suite (one command)** — from this repo root, after `npm install` in `frontend/`, `bundle install` in `backend/`, and a working test database (see [backend/TESTING.md](backend/TESTING.md)):
+
+```bash
+chmod +x scripts/test-all.sh   # first time only
+./scripts/test-all.sh
+```
+
+This runs Vitest, installs Playwright Chromium if needed, runs Playwright E2E, then `RAILS_ENV=test bundle exec rspec`.
 
 ```bash
 # Frontend
@@ -134,7 +142,7 @@ App: **http://localhost:5173**
 
 ## Current Deployment Track (AWS)
 
-CatalogIt uses **Terraform** (`infra/`) with **CloudFront dual origin** (S3 SPA + EC2 API on `/api/*`, `/up`, etc.). Details: `DEPLOY_PLAN.md`, `infra/README.md`, `root_cause_deplpyment_lessons.md`.
+CatalogIt uses **Terraform** (`infra/`) with **CloudFront dual origin** (S3 SPA + EC2 API on `/api/*`, `/up`, etc.). Details: `DEPLOY_PLAN.md`, `infra/README.md`, `root_cause_deployment_lessons.md`.
 
 ### Production deploy summary
 
@@ -143,7 +151,7 @@ CatalogIt uses **Terraform** (`infra/`) with **CloudFront dual origin** (S3 SPA 
 3. **Smoke:** `https://<cloudfront>/up` (Rails health), app in incognito; empty Explore = **“No public lists found”** is OK if API works.
 4. **Seeds:** `db:seed` **wipes** users/lists — production only if you accept data loss.
 
-See `deploy_todo.md` for commands. **Handoff:** `pickup.md`. **Deferred:** `next_week.md`.
+Command-level steps: [DEPLOY_PLAN.md](DEPLOY_PLAN.md) (appendix). **Handoff / defer:** [OPERATIONS.md](OPERATIONS.md).
 
 ---
 
