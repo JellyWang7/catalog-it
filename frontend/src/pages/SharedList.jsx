@@ -13,7 +13,7 @@ export default function SharedList() {
       try {
         const res = await listsService.getByShareCode(code);
         // Redirect to the actual list detail page
-        navigate(`/lists/${res.data.id}`, { replace: true });
+        navigate(`/lists/${res.data.id}?shared=1`, { replace: true });
       } catch {
         toast.error('Shared list not found or no longer available');
         navigate('/explore', { replace: true });

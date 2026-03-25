@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import listsService from '../services/lists';
 import itemsService from '../services/items';
@@ -11,7 +11,10 @@ import ConfirmModal from '../components/ConfirmModal';
 export default function ListDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuth();
+
+  const isSharedViewer = searchParams.get('shared') === '1';
 
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,6 +33,7 @@ export default function ListDetail() {
   const [itemAttachmentSubmitting, setItemAttachmentSubmitting] = useState({});
 
   const isOwner = isAuthenticated && list && user?.id === list.user_id;
+  const canEdit = isOwner && !isSharedViewer;
 
   useEffect(() => {
     fetchList();
@@ -236,7 +240,7 @@ export default function ListDetail() {
   const handleSubmitListAttachment = async (e) => {
     e.preventDefault();
     if (!ensureAuthenticated()) return;
-    if (!isOwner) {
+    if (!canEdit) {
       toast.error('Only the list owner can add attachments');
       return;
     }
@@ -278,7 +282,7 @@ export default function ListDetail() {
       }));
       setListAttachmentDraft(emptyAttachmentDraft());
       toast.success('Attachment added');
-      navigate(`/lists/${list.id}`);
+      navigate(`/lists/${list.id}${isSharedViewer ? '?shared=1' : ''}`);
     } catch (err) {
       const errors = err.response?.data?.errors || [];
       const invalidLink = errors.some((message) => message.toLowerCase().includes('https link'));
@@ -313,7 +317,7 @@ export default function ListDetail() {
   const handleSubmitItemAttachment = async (e, itemId) => {
     e.preventDefault();
     if (!ensureAuthenticated()) return;
-    if (!isOwner) {
+    if (!canEdit) {
       toast.error('Only the list owner can add item attachments');
       return;
     }
@@ -380,7 +384,7 @@ export default function ListDetail() {
 
   const handleDeleteAttachment = async (attachmentId, itemId = null) => {
     if (!ensureAuthenticated()) return;
-    if (!isOwner) {
+    if (!canEdit) {
       toast.error('Only the list owner can delete attachments');
       return;
     }
@@ -426,7 +430,7 @@ export default function ListDetail() {
   const items = list.items || [];
   const comments = list.comments || [];
   const attachments = list.attachments || [];
-  const isShareable = isOwner && list.visibility !== 'private';
+  const isShareable = canEdit && list.visibility !== 'private';
 
   const resolveAttachmentType = (attachment) => {
     const mime = attachment?.mime_type?.toLowerCase() || '';
@@ -442,6 +446,12 @@ export default function ListDetail() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-10">
+        {isSharedViewer && (
+          <div className="mb-6 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
+            You opened this list from a <strong>shared link</strong>. Editing is hidden so you see the same
+            read-only view as other visitors.
+          </div>
+        )}
         {/* List Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start border-b pb-6 mb-6 gap-4">
           <div>
@@ -489,7 +499,7 @@ export default function ListDetail() {
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            {isOwner && (
+            {canEdit && (
               <>
                 <button
                   onClick={() => setShowAddItem(true)}
@@ -517,7 +527,7 @@ export default function ListDetail() {
                 {sharing ? 'Sharing...' : 'Share'}
               </button>
             )}
-            {isOwner && list.visibility === 'private' && (
+            {canEdit && list.visibility === 'private' && (
               <span className="px-4 py-2 text-gray-500 border border-gray-300 font-semibold rounded-xl text-sm">
                 Private list cannot be shared
               </span>
@@ -534,7 +544,7 @@ export default function ListDetail() {
           {items.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
               <p className="text-lg mb-2">No items yet.</p>
-              {isOwner && (
+              {canEdit && (
                 <button
                   onClick={() => setShowAddItem(true)}
                   className="text-deep-blue font-semibold hover:underline"
@@ -606,7 +616,7 @@ export default function ListDetail() {
                   </div>
 
                   {/* Owner actions */}
-                  {isOwner && (
+                  {canEdit && (
                     <div className="flex items-center ml-3 gap-1 flex-shrink-0">
                       <button
                         onClick={() => setEditingItem(item)}
@@ -657,7 +667,7 @@ export default function ListDetail() {
                       </span>
                     </div>
 
-                    {isOwner && (
+                    {canEdit && (
                       <form
                         onSubmit={(e) => handleSubmitItemAttachment(e, item.id)}
                         className="space-y-3 mb-4 border border-dashed border-gray-200 rounded-lg p-3 bg-gray-50/50"
@@ -736,7 +746,7 @@ export default function ListDetail() {
                                 <span>Open file</span>
                               </a>
                             )}
-                            {isOwner && (
+                            {canEdit && (
                               <button
                                 onClick={() => handleDeleteAttachment(attachment.id, item.id)}
                                 className="mt-2 text-xs text-red-600 hover:text-red-700 font-medium"
@@ -759,7 +769,7 @@ export default function ListDetail() {
         <div className="mt-10 border-t pt-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Attachments</h2>
 
-          {isOwner && (
+          {canEdit && (
             <form
               onSubmit={handleSubmitListAttachment}
               className="border border-gray-200 rounded-xl p-4 space-y-3 mb-6 bg-gray-50/50"
@@ -854,7 +864,7 @@ export default function ListDetail() {
                     )}
                     <p className="text-xs text-gray-400 mt-2">{resolveAttachmentType(attachment).toUpperCase()}</p>
                   </div>
-                  {isOwner && (
+                  {canEdit && (
                     <button
                       onClick={() => handleDeleteAttachment(attachment.id)}
                       className="text-xs text-red-600 hover:text-red-700 font-medium"
@@ -908,7 +918,8 @@ export default function ListDetail() {
             <div className="space-y-3">
               {comments.map((comment) => {
                 const canDeleteComment =
-                  isAuthenticated && (comment.user_id === user?.id || list.user_id === user?.id);
+                  isAuthenticated &&
+                  (comment.user_id === user?.id || (list.user_id === user?.id && canEdit));
 
                 return (
                   <div key={comment.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4">

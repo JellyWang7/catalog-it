@@ -1,6 +1,25 @@
 # Pickup — Next session (week of Mar 24, 2026)
 
-Handoff for CatalogIt AWS. **Lessons log:** [`root_cause_deplpyment_lessons.md`](root_cause_deplpyment_lessons.md) (Mar 21: CloudFront dual origin, Docker recreate, `curl` host, prod seed, Attachment syntax).
+Handoff for CatalogIt AWS. **Lessons log:** [`root_cause_deplpyment_lessons.md`](root_cause_deplpyment_lessons.md) (Mar 21: CloudFront dual origin, Docker recreate, `curl` host, prod seed, Attachment syntax, **Root cause M — Solid Cache / signup 500**).
+
+## 0) Where we left off (Mar 21, 2026) — clean pickup
+
+**Local backend image:** `docker build` in `backend/` completed successfully → image tagged **`catalogit-backend:latest`** on your machine.
+
+**Not done yet (do these first next session):**
+
+1. **Tag + push** to your ECR repo (use your account ID + repo name from prior deploys).
+2. On **EC2:** `docker pull` → **`docker rm -f catalogit_backend`** → **`docker run …`** (same env as before — pull alone is not enough).
+3. **Migrate RDS** (required for this image):  
+   `docker exec catalogit_backend ./bin/rails db:migrate RAILS_ENV=production`  
+   This applies **`20260322120000_create_solid_cache_entries`** — fixes **signup / Rack::Attack** **`Internal Server Error`** when `solid_cache_entries` was missing (**[Root cause M](root_cause_deplpyment_lessons.md)**).
+4. **Smoke:** `curl` CloudFront **`/up`** and **`/api/v1/lists`**; **signup in incognito** once.
+
+**Optional before EC2 (same Dockerfile, local Postgres only):** [`PROD_LOCAL_SMOKE.md`](PROD_LOCAL_SMOKE.md) → `./scripts/smoke_prod_local.sh` from repo root.
+
+**Do not set on EC2:** `FORCE_SSL=false` / `ASSUME_SSL=false` — those are only for local prod-smoke compose.
+
+---
 
 ## 1) End AWS CLI sessions locally (when pausing AWS work)
 
@@ -60,6 +79,7 @@ Do not delete `~/.aws/credentials` unless you intend to remove static keys.
 | [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Architecture |
 | [memory.md](memory.md) | Cost + idle reminders |
 | [next_week.md](next_week.md) | Longer defer list |
+| [PROD_LOCAL_SMOKE.md](PROD_LOCAL_SMOKE.md) | Prod-like Docker smoke on Mac before EC2 |
 
 ---
 

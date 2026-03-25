@@ -2,12 +2,16 @@
 
 **Last updated:** March 21, 2026  
 
-> **Start here after a break:** [`pickup.md`](pickup.md) — AWS session teardown, CloudFront + Docker notes, URLs, smoke tests. **Deep dive:** [`root_cause_deplpyment_lessons.md`](root_cause_deplpyment_lessons.md).
+> **Start here after a break:** [`pickup.md`](pickup.md) — AWS session teardown, CloudFront + Docker notes, URLs, smoke tests. **Deep dive:** [`root_cause_deplpyment_lessons.md`](root_cause_deplpyment_lessons.md). **Pre-EC2 prod image smoke:** [`PROD_LOCAL_SMOKE.md`](PROD_LOCAL_SMOKE.md).
 
-## Immediate carryover (from Mar 20)
+## Immediate carryover (Mar 21 → next session)
 
-- Deploy backend image with **`aws-sdk-s3`**; set **`ACTIVE_STORAGE_SERVICE=amazon`** on EC2; run **`rails db:migrate`** on RDS.
-- Rebuild frontend with production `VITE_API_URL`, upload to S3, invalidate CloudFront.
+**Backend (in progress):** Local **`docker build`** → **`catalogit-backend:latest`** is good. **Next:** ECR push, EC2 recreate container, then **`db:migrate`** on RDS (Solid Cache migration — signup/throttle fix). Details: [`pickup.md`](pickup.md) §0.
+
+**Still open:**
+
+- Set **`ACTIVE_STORAGE_SERVICE=amazon`** on EC2 when you want real S3 uploads (image already has **`aws-sdk-s3`**).
+- Rebuild frontend with production **`VITE_API_URL`**, upload to S3, invalidate CloudFront.
 - Validate attachments end-to-end (note / link / file) on list and item rows.
 
 ## Longer defer list
@@ -34,6 +38,18 @@
 - Cold-start timing after scheduled startup
 - Operational runbook for start-window troubleshooting
 - Rollback steps documented
+
+### 4b) Reduce “rebuild → smoke → new bug” loops (deferred hardening)
+
+**Done now (Step 1):** prod-like local Docker smoke — [`PROD_LOCAL_SMOKE.md`](PROD_LOCAL_SMOKE.md) + [`docker-compose.prod-local.yml`](docker-compose.prod-local.yml) + [`scripts/smoke_prod_local.sh`](scripts/smoke_prod_local.sh) (same image as EC2, local Postgres only).
+
+**Schedule for later:**
+
+1. **Frozen deploy checklist** — Short ordered list (pull → `rm` container → `run` → `db:migrate` → `curl /up` → signup/login smoke); paste every deploy so steps aren’t skipped under stress.
+2. **`scripts/smoke_prod.sh` (EC2 or CloudFront URL)** — Automate post-deploy: health + one API that hits DB/cache (e.g. `GET /api/v1/lists` + optional signup dry run).
+3. **CI on every PR** — At minimum: `bundle exec rspec` (or test suite) + `docker build` for backend so “won’t boot” fails before EC2.
+4. **Cheap staging** — Same stack as prod (second EC2 or small RDS) so production only promotes what already passed.
+5. **Expect a one-time prod tail** — Cache, jobs, mail, CORS, cookies often surface once; after that, churn drops if prod-like + CI gates stay in place.
 
 ### 5) Documentation
 

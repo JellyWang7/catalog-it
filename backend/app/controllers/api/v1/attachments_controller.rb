@@ -106,7 +106,7 @@ module Api
         return nil if attachment.note?
         return nil unless attachment.asset.attached?
 
-        rails_blob_url(attachment.asset, host: request.base_url)
+        rails_blob_url_for_attachment(attachment.asset)
       end
     end
   end

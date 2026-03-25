@@ -37,3 +37,7 @@
 
 - `pickup.md` — next-session deploy handoff  
 - `root_cause_deplpyment_lessons.md` — full timeline + lessons H–L
+
+## “Pickup” (for you + for the assistant)
+
+When you say **“pickup”**, resume from **`pickup.md`** — especially **§0 (where we left off)** and **`next_week.md`** for carryover. Treat that as the source of truth for the next deploy step (ECR, EC2 container recreate, `db:migrate`, smoke tests).

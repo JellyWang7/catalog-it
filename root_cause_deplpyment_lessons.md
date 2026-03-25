@@ -196,6 +196,11 @@ aws ec2 get-console-output --region us-east-1 --instance-id i-0b2c25f255d32b9a1 
 - Cause: `db/seeds.rb` starts with **`User.destroy_all` / `List.destroy_all` / `Item.destroy_all`** then recreates demo data.
 - Fix: **Do not** run `rails db:seed` on production if you need existing data. Safe only for **empty demo** RDS. Prefer creating public lists via UI or a **non-destructive** seed script.
 
+### Root cause M: Signup (or API writes) return **500** — missing **`solid_cache_entries`**
+- Symptom: **`Internal Server Error`** on **`POST /api/v1/auth/signup`** (e.g. incognito); other throttled API traffic can fail similarly.
+- Cause: Production uses **`config.cache_store = :solid_cache_store`** and **Rack::Attack** uses **`Rails.cache`** for throttles. The Solid Cache table lives in **`db/cache_schema.rb`**, which is **not** applied by a normal **`db:migrate`** on the primary DB only — so **`solid_cache_entries`** never exists → **`PG::UndefinedTable`** during throttle/cache writes.
+- Fix: Run migrations after deploying **`20260322120000_create_solid_cache_entries`** (adds the table to the primary DB, same RDS as `cache:` in `database.yml`). On EC2: **`docker exec catalogit_backend ./bin/rails db:migrate RAILS_ENV=production`**. If you use **`SOLID_QUEUE_IN_PUMA`** or **Solid Cable** in production, ensure **`queue_schema.rb` / `cable_schema.rb`** tables exist too (separate load or install tasks), or jobs/WebSockets can fail later.
+
 ## Current state (as of Mar 21)
 
 - **Elastic IP**: `52.22.20.36` (stable; CloudFront API origin uses EC2 public DNS).
