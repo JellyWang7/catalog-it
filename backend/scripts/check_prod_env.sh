@@ -7,8 +7,9 @@ set -euo pipefail
 #   ./scripts/check_prod_env.sh
 #   ./scripts/check_prod_env.sh --skip-s3-check
 
+# RAILS_MASTER_KEY is intentionally NOT required: this app uses ENV-based secrets on EC2.
+# Passing a wrong master key makes Rails try to decrypt baked-in credentials.yml.enc and crash boot.
 required_vars=(
-  RAILS_MASTER_KEY
   SECRET_KEY_BASE
   FRONTEND_URL
   DATABASE_HOST

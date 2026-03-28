@@ -43,7 +43,6 @@ docker run -d \
   --restart unless-stopped \
   -p "${HOST_PORT}:80" \
   -e RAILS_ENV \
-  -e RAILS_MASTER_KEY \
   -e SECRET_KEY_BASE \
   -e FRONTEND_URL \
   -e DATABASE_HOST \
