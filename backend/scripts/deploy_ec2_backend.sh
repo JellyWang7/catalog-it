@@ -68,6 +68,7 @@ docker run -d \
   -e RAILS_ENV \
   -e SECRET_KEY_BASE \
   -e FRONTEND_URL \
+  -e PUBLIC_APP_URL \
   -e DATABASE_HOST \
   -e DATABASE_PORT \
   -e DATABASE_NAME \
@@ -76,6 +77,14 @@ docker run -d \
   -e RAILS_MAX_THREADS \
   -e WEB_CONCURRENCY \
   -e RAILS_LOG_LEVEL \
+  -e ACTIVE_STORAGE_SERVICE \
+  -e AWS_ACCESS_KEY_ID \
+  -e AWS_SECRET_ACCESS_KEY \
+  -e AWS_REGION \
+  -e AWS_S3_BUCKET \
+  -e ASSUME_SSL \
+  -e FORCE_SSL \
+  -e SOLID_QUEUE_IN_PUMA \
   "${IMAGE_NAME}"
 
 echo "Running database prepare inside container..."
