@@ -51,6 +51,8 @@ gem "obscenity"
 gem "rack-attack"
 
 # Swagger/OpenAPI documentation
+# Ruby 4.0+: ostruct is not a default gem; rswag-ui requires it without listing it in its gemspec.
+gem "ostruct"
 gem "rswag-api"
 gem "rswag-ui"
 

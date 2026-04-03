@@ -437,6 +437,7 @@ DEPENDENCIES
   jwt
   kamal
   obscenity
+  ostruct
   pg (~> 1.1)
   puma (>= 5.0)
   rack-attack
