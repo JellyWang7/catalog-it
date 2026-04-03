@@ -18,11 +18,13 @@
 | [FRONTEND_SETUP.md](FRONTEND_SETUP.md) | Frontend architecture & component guide |
 | [OPERATIONS.md](OPERATIONS.md) | Cost, session handoff, deferred work |
 | [SECURITY_GIT.md](SECURITY_GIT.md) | What must never be committed; public-repo doc hygiene |
-
-**Public repository:** Do not commit real AWS account IDs, ECR URIs, or secrets in markdown. Use placeholders (`<account-id>`, `<region>`). Operator-specific one-liners can live in **`continue.md`** or **`p.md`** locally — both are **gitignored** (see [.gitignore](.gitignore)).
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
 | [backend/SWAGGER_SETUP.md](backend/SWAGGER_SETUP.md) | Swagger/OpenAPI setup and generation |
 | [backend/TESTING.md](backend/TESTING.md) | Testing guide (current backend suite details) |
+
+**Public repository:** Do not commit AWS account IDs, ECR URIs, API keys, production credentials, or PII in markdown. Use placeholders (`<account-id>`, `<region>`). Private operator notes belong in **`continue.md`** or **`p.md`** locally — both are **gitignored** (see [.gitignore](.gitignore)).
+
+**Production release:** For a complete AWS deploy (backend image, **migrations + Solid Queue DB**, frontend sync, smoke checks), follow **[DEPLOY.md §0 — Full production release](DEPLOY.md#0-full-production-release-do-all-of-this-for-a-complete-deploy)**.
 
 ---
 

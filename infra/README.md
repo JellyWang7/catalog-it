@@ -90,7 +90,7 @@ aws cloudfront create-invalidation --distribution-id "$(terraform output -raw cl
 
 **Backend ECR + EC2:** **[DEPLOY.md](../DEPLOY.md)** (section 2 — Backend; also [DEMO.md §2.3–2.4](../DEMO.md#23-backend-on-ec2-full-deploy)).
 
-Summary: SSH → `cd` repo → `git checkout deployment` → `cd backend` → `source .env.production` → `./scripts/check_prod_env.sh` → `./scripts/deploy_ec2_backend.sh` → `docker exec … db:migrate`.
+Summary: SSH → `cd` repo → `git checkout deployment` → `cd backend` → `source .env.production` → `./scripts/deploy_ec2_backend.sh --pull`. The script runs **`db:prepare`** and **`db:ensure_solid_queue`** in the container (migrations + Solid Queue schema). Details: **[DEPLOY.md](../DEPLOY.md)** (§0 full release, §2 backend).
 
 Optional **systemd** auto-start (adjust `APP_DIR` to your clone):
 
@@ -100,12 +100,7 @@ chmod +x scripts/install_systemd_service.sh
 sudo APP_DIR=/opt/catalogit/catalog-it/backend ./scripts/install_systemd_service.sh
 ```
 
-If you use file uploads in production, also set S3 vars in `.env.production`:
-- `ACTIVE_STORAGE_SERVICE=amazon`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_REGION`
-- `AWS_S3_BUCKET`
+If you use file uploads in production, configure Active Storage against S3 using the variables listed in **`backend/.env.production.example`** (set values only in **`backend/.env.production`** on the server — never commit that file).
 
 ## 6) Schedule Behavior
 

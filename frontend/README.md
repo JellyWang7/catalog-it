@@ -1,7 +1,7 @@
 # CatalogIt Frontend
 
 React frontend for the CatalogIt cataloging platform.  
-**Docs:** `../DEMO.md` (local + AWS), `../DEPLOY.md` (production build & deploy), `../FRONTEND_SETUP.md`, `../OPERATIONS.md`.
+**Docs:** `../DEMO.md` (local + AWS narrative), `../DEPLOY.md` (**§0** = full backend + DB + frontend release commands), `../FRONTEND_SETUP.md`, `../OPERATIONS.md`.
 
 ## Quick Start
 

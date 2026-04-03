@@ -14,6 +14,7 @@ These patterns are **gitignored** in this repo — do not force-add them, and do
 | `backend/.kamal/secrets*` | Deploy secrets |
 | `*.pem`, `*.key` | TLS or SSH private material |
 | **Raw API keys, JWTs, DB URLs** in any `*.md` | Use placeholders like `<SECRET_KEY_BASE>` |
+| **Passwords** (seed, demo, or production) in committed `*.md` | Point readers to **`db/seeds.rb`** locally for dev-only seeds; never document real production credentials |
 
 **Operational IDs in docs:** Prefer placeholders (`<instance-id>`, `<cloudfront-domain>`) instead of real AWS resource IDs in files that ship to git — especially public remotes.
 

@@ -26,7 +26,14 @@ module BlobUrlOptions
     uri.port
   end
 
+  # Never raise from JSON serialization: a bad/missing host would turn a successful
+  # upload into a 500. Log and return nil so the row still saves and clients can refresh.
   def rails_blob_url_for_attachment(blob)
     rails_blob_url(blob, **blob_url_options)
+  rescue ArgumentError, ActionController::UrlGenerationError, URI::InvalidURIError => e
+    Rails.logger.warn(
+      "[ActiveStorage] rails_blob_url failed for blob_id=#{blob&.id}: #{e.class}: #{e.message}"
+    )
+    nil
   end
 end

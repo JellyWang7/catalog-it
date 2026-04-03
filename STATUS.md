@@ -21,7 +21,7 @@ Single consolidated status doc (replaces former `PROJECT_STATUS.md` and `WEEKLY_
 Backend:     ████████████ 100%  (Rails API, tests, Swagger)
 Frontend:    ████████████ 100%  (React, Vitest, Playwright)
 Security:    ████████████ 100%  (TLS, MFA, JWT, rate limits, etc.)
-Deployment:  documented       Terraform + EC2 + RDS + S3 + CloudFront + ECR — see DEPLOY.md
+Deployment:  documented       Terraform + EC2 + RDS + S3 + CloudFront + ECR; migrations + Solid Queue on deploy — see DEPLOY.md §0
 ```
 
 ---
@@ -61,17 +61,9 @@ TLS, at-rest encryption, MFA, JWT, password reset/hashing, XSS, rate limiting, C
 
 ---
 
-## Demo seed accounts (development only)
+## Local demo accounts (development only)
 
-> **Warning:** These match **`db/seeds.rb`** for **local/demo** databases only. **Do not reuse these passwords in production.** If you deploy seeds to any shared environment, rotate credentials immediately.
-
-| Role | Email (example) | Password (dev seed) |
-|------|-------------------|---------------------|
-| admin | `admin@catalogit.com` | `password123` |
-| user | `movies@example.com` | `password123` |
-| user | `books@example.com` | `password123` |
-| user | `collector@example.com` | `password123` |
-| suspended | `banned@example.com` | `password123` |
+> Seeded users and credentials are defined only in **`backend/db/seeds.rb`** for local or disposable databases. **Do not** document real passwords in this repository; **do not** run **`db:seed`** on production unless you fully understand data loss and credential risk.
 
 ---
 

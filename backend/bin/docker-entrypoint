@@ -11,6 +11,9 @@ fi
 
 if [[ "${rails_server}" == true ]]; then
   ./bin/rails db:prepare
+  # Solid Queue tables live in db/queue_schema.rb; db:prepare only runs db/migrate on primary.
+  # Without this, Active Storage enqueues PurgeJob/AnalyzeJob → INSERT into solid_queue_jobs → 500.
+  ./bin/rails db:ensure_solid_queue
 fi
 
 exec "${@}"

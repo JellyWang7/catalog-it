@@ -1,11 +1,84 @@
 # CatalogIt — AWS deployment & smoke tests
 
 **Last updated:** April 3, 2026  
-**Deploy branch:** `deployment`
+**Deploy branch:** `deployment` (use the branch your GitHub rules allow; align local and EC2 checkouts.)
 
-Single reference for **what worked in production**: Terraform layout, **backend image (ECR + EC2)**, **frontend (S3 + CloudFront)**, and **smoke checks**. Do not commit real account IDs or secrets here; use placeholders.
+Single reference for **production**: Terraform, **backend (ECR + EC2 + DB)**, **frontend (S3 + CloudFront)**, and **verification**. Use placeholders only (`<account-id>`, `<region>`, `<cloudfront-domain>`); never paste secrets, tokens, or private keys into committed docs — see [SECURITY_GIT.md](SECURITY_GIT.md).
 
-**Related:** [DEMO.md](DEMO.md) (full demo + local dev), [OPERATIONS.md](OPERATIONS.md) (cost, handoff, deferred items), [infra/README.md](infra/README.md) (Terraform apply), [SECURITY_GIT.md](SECURITY_GIT.md).
+**Related:** [DEMO.md](DEMO.md) (local + AWS demo narrative), [OPERATIONS.md](OPERATIONS.md) (cost, handoff), [infra/README.md](infra/README.md) (Terraform), [README.md](README.md) (overview + tests).
+
+---
+
+## 0) Full production release (do all of this for a complete deploy)
+
+For a **full** release, treat these as one flow so **API, database schema, Solid Queue, and SPA** stay in sync. Skip only the parts that truly did not change (see **Partial releases** below).
+
+| Step | What | Why |
+|------|------|-----|
+| **A. Preflight** | EC2 + RDS **running**; Docker up on EC2; AWS CLI works on your laptop for ECR/S3/CloudFront | Stopped instances → **504**; missing CLI → push/sync fails |
+| **B. Tests (recommended)** | From repo root: `./scripts/test-all.sh` (or run backend + frontend test commands in [README.md](README.md)) | Catches regressions before prod |
+| **C. Infra (if needed)** | `terraform plan` / `apply` in `infra/` only when resources or outputs change | New buckets, CloudFront IDs, etc. |
+| **D. Backend** | Build/push image → EC2 `deploy_ec2_backend.sh --pull` | New Rails code, gems, Dockerfile |
+| **E. Database** | Handled automatically: container **entrypoint** and **`deploy_ec2_backend.sh`** run **`db:prepare`** (migrations on primary) + **`db:ensure_solid_queue`** (Solid Queue tables from `db/queue_schema.rb`) | Skipping this is how **`solid_queue_jobs` missing** broke attachments |
+| **F. Frontend** | `npm ci` + `npm run build` with **`VITE_API_URL=https://<cloudfront-domain>/api/v1`** → `aws s3 sync` → CloudFront **`create-invalidation /*`** | UI and API base URL must match the live distribution |
+| **G. Verify** | Smoke table in [§5](#5-smoke-tests-where-to-go); optional attachment upload/delete on a list | Confirms end-to-end |
+
+**Partial releases**
+
+- **Backend only:** D + E (frontend unchanged).  
+- **Frontend only:** F + G (no new image).  
+- **DB migration only:** Redeploy backend or run `docker exec catalogit_backend bin/rails db:prepare` and `db:ensure_solid_queue` if the image already includes new migrations.
+
+---
+
+### Copy-paste: full release commands (typical paths)
+
+Replace placeholders. **Laptop** has Docker (for ECR push), Node, Terraform state in `infra/`, and AWS credentials.
+
+**1 — Backend image → ECR**
+
+```bash
+cd /path/to/catalog-it/backend
+export ECR_REPO=<account-id>.dkr.ecr.<region>.amazonaws.com/catalogit-backend
+chmod +x scripts/deploy_ecr_push.sh
+./scripts/deploy_ecr_push.sh
+```
+
+**2 — EC2: pull image, recreate container, run DB tasks**
+
+```bash
+cd /path/to/catalog-it-on-ec2/backend
+set -a && source .env.production && set +a
+export ECR_REPO=<account-id>.dkr.ecr.<region>.amazonaws.com/catalogit-backend
+chmod +x scripts/check_prod_env.sh scripts/deploy_ec2_backend.sh
+./scripts/deploy_ec2_backend.sh --pull
+```
+
+**3 — Frontend → S3 + CloudFront**
+
+```bash
+cd /path/to/catalog-it/infra
+export CF_DOMAIN="$(terraform output -raw cloudfront_domain_name)"
+export CF_ID="$(terraform output -raw cloudfront_distribution_id)"
+export BUCKET="$(terraform output -raw frontend_bucket_name)"
+
+cd ../frontend
+npm ci
+VITE_API_URL="https://${CF_DOMAIN}/api/v1" npm run build
+
+cd ../infra
+aws s3 sync ../frontend/dist "s3://${BUCKET}" --delete
+aws cloudfront create-invalidation --distribution-id "${CF_ID}" --paths "/*"
+```
+
+**4 — Quick checks**
+
+```bash
+curl -sS -o /dev/null -w "%{http_code}\n" "https://${CF_DOMAIN}/up"
+# On EC2:
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1/up
+docker ps --filter name=catalogit_backend
+```
 
 ---
 
@@ -18,9 +91,10 @@ Single reference for **what worked in production**: Terraform layout, **backend 
 
 ## Before anything
 
+0. Prefer the ordered checklist in **[§0](#0-full-production-release-do-all-of-this-for-a-complete-deploy)** so nothing is skipped.
 1. **EC2** and **RDS** are **running** (schedules often stop them → **504** until started).
 2. On EC2, Docker: `sudo systemctl start docker` if needed.
-3. **`backend/.env.production`** on the server (never committed) with DB, `SECRET_KEY_BASE`, `FRONTEND_URL`, S3 vars as used by `check_prod_env.sh`.
+3. **`backend/.env.production`** on the server (never committed): copy from **`.env.production.example`** and fill values; run **`check_prod_env.sh`** before deploy.
 
 ---
 
@@ -62,7 +136,7 @@ chmod +x scripts/check_prod_env.sh scripts/deploy_ec2_backend.sh
 ./scripts/deploy_ec2_backend.sh --pull
 ```
 
-The script: validates env, **`docker pull`**, recreates **`catalogit_backend`**, runs **`db:prepare`** in the container.
+The script: validates env, **`docker pull`**, recreates **`catalogit_backend`**, then runs **`db:prepare`** and **`db:ensure_solid_queue`** in the container (migrations + Solid Queue tables). The container **entrypoint** also runs these when the server starts, so a fresh boot stays consistent.
 
 **Health on EC2** (must run **on the instance**, not your Mac — `127.0.0.1` is local to each machine):
 
@@ -134,6 +208,7 @@ curl -sS "https://<cloudfront-domain>/api/v1/lists" | head -c 200
 | Old UI after deploy | CloudFront cache — **`create-invalidation --paths "/*"`**, wait, hard refresh. |
 | **`docker pull` only** | Not enough — recreate container; **`deploy_ec2_backend.sh --pull`** does that. |
 | **Attachment upload → 500** | Often the SPA sent **`FormData`** while Axios default **`Content-Type: application/json`** caused the body to be JSON-mangled. Fixed in **`postFormData`** (`frontend/src/services/api.js`); **rebuild + S3 sync** the frontend. |
+| **Attachment upload/delete → 500**, logs show **`solid_queue_jobs` does not exist** | **Solid Queue** tables were never loaded: **`db:prepare`** only runs **`db/migrate`**, while queue tables live in **`db/queue_schema.rb`**. **Fix now:** `docker exec catalogit_backend bin/rails db:ensure_solid_queue` (or redeploy backend so **`docker-entrypoint`** runs that task after **`db:prepare`**). Ensure **`SOLID_QUEUE_IN_PUMA`** is set so Puma runs the queue worker. |
 
 **Do not run** `db:seed` on production unless you accept **data wipe** (seeds use **`destroy_all`**).
 

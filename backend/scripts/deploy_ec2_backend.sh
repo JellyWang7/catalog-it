@@ -2,6 +2,8 @@
 set -euo pipefail
 
 # Deploy or refresh the Rails backend container on EC2.
+# After the container is up, runs db:prepare (migrations) and db:ensure_solid_queue
+# (Solid Queue tables — required for Active Storage purge/analyze jobs).
 #
 # Usage (from backend/):
 #   ./scripts/deploy_ec2_backend.sh                  # build image locally on EC2 (slow on micro)
@@ -87,8 +89,9 @@ docker run -d \
   -e SOLID_QUEUE_IN_PUMA \
   "${IMAGE_NAME}"
 
-echo "Running database prepare inside container..."
+echo "Running database migrations + Solid Queue tables inside container..."
 docker exec "${APP_NAME}" ./bin/rails db:prepare
+docker exec "${APP_NAME}" ./bin/rails db:ensure_solid_queue
 
 echo "Deployment finished."
 echo "Container status:"

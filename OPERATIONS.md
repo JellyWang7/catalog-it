@@ -2,12 +2,14 @@
 
 **Last updated:** April 3, 2026  
 
+**Full production release** (recommended whenever you ship a version users should run): backend image + **`db:prepare`** + **`db:ensure_solid_queue`**, frontend build/sync + CloudFront invalidation, then smoke tests — **[DEPLOY.md §0](DEPLOY.md#0-full-production-release-do-all-of-this-for-a-complete-deploy)**.
+
 **Deploy commands, EC2/ECR flow, frontend sync, smoke URLs:** **[DEPLOY.md](DEPLOY.md)**  
 **Local + class demo walkthrough:** **[DEMO.md](DEMO.md)**  
 **Terraform:** **[infra/README.md](infra/README.md)**  
 **Secrets / git hygiene:** **[SECURITY_GIT.md](SECURITY_GIT.md)**
 
-Infra URLs and IDs: use **`terraform output`** and the AWS console — do not rely on old hostnames in notes.
+Infra URLs and IDs: use **`terraform output`** and the AWS console — do not rely on old hostnames in notes or paste live resource IDs into committed markdown.
 
 ---
 

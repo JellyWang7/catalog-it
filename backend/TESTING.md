@@ -1,6 +1,6 @@
 # Testing Guide for CatalogIt API
 
-*Last reviewed: March 20, 2026 — attachment kinds include `note`; run full suite after DB migrations.*
+*Last reviewed: April 3, 2026 — run the full suite before production releases; see repo root [DEPLOY.md](../DEPLOY.md) §0.*
 
 ## Quick: run the full suite
 

@@ -32,8 +32,15 @@ module Api
 
       # DELETE /api/v1/attachments/:id
       def destroy
-        @attachment.destroy
+        id = @attachment.id
+        @attachment.destroy!
         head :no_content
+      rescue StandardError => e
+        Rails.logger.error(
+          "[AttachmentsController#destroy] attachment_id=#{id} #{e.class}: #{e.message}\n" \
+            "#{e.backtrace&.first(25)&.join("\n")}"
+        )
+        raise
       end
 
       private

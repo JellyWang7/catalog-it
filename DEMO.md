@@ -57,6 +57,8 @@ npm run dev
 
 **Architecture (short):** React **static files** → **S3** + **CloudFront**. Rails **Docker** on **EC2**; CloudFront sends `/api/*`, `/up`, `/api-docs*`, `/rails/*` to EC2. Browser uses **one HTTPS hostname**; set `VITE_API_URL=https://<cloudfront-domain>/api/v1` when building the frontend.
 
+**End-to-end production release** (backend + DB migrations + Solid Queue + frontend + checks): use the ordered checklist in **[DEPLOY.md §0](DEPLOY.md#0-full-production-release-do-all-of-this-for-a-complete-deploy)**.
+
 ### 2.1 Before you run commands
 
 - Terraform stack applied (`infra/`); EC2, RDS, S3 bucket, CloudFront distribution exist.
@@ -112,7 +114,7 @@ chmod +x scripts/check_prod_env.sh scripts/deploy_ec2_backend.sh
 ./scripts/deploy_ec2_backend.sh --pull
 ```
 
-This pulls the pre-built image from ECR (seconds) and starts the container — **no `docker build` on EC2**.
+This pulls the pre-built image from ECR (seconds) and starts the container — **no `docker build` on EC2**. The script then runs **`db:prepare`** (Rails migrations on the primary DB) and **`db:ensure_solid_queue`** (Solid Queue tables for Active Storage jobs). The container entrypoint runs the same steps when the server starts.
 
 #### Troubleshooting (Docker / Bundler / Ruby 4)
 
@@ -306,10 +308,7 @@ WHERE tc.constraint_type = 'FOREIGN KEY';
 
 ### Login and authorize
 
-1. **POST /api/v1/auth/login** → Try it out → body:
-   ```json
-   { "user": { "email": "movies@example.com", "password": "password123" } }
-   ```
+1. **POST /api/v1/auth/login** → Try it out → use a seeded email and the matching password from **`backend/db/seeds.rb`** (local dev only), e.g. `{ "user": { "email": "<seeded-email>", "password": "<from-seeds>" } }`.
 2. Copy `token` → **Authorize** → `Bearer <token>`.
 
 ### Try endpoints
@@ -361,7 +360,7 @@ For **AWS**, use **§2.5** (`VITE_API_URL` required).
 |------|------|----------------|
 | 1 | **Home** `/` | Hero, features, CTA |
 | 2 | **Sign up** `/signup` | Validation |
-| 3 | **Login** `/login` | `movies@example.com` / `password123` |
+| 3 | **Login** `/login` | Use a seeded account from **`backend/db/seeds.rb`** (local only) |
 | 4 | **Dashboard** `/dashboard` | Stats, search, visibility filter, lists |
 | 5 | **New list** | Modal: title, description, public |
 | 6 | **List detail** `/lists/:id` | Items, star ratings |
@@ -380,17 +379,17 @@ For **AWS**, use **§2.5** (`VITE_API_URL` required).
 
 ## 8. Demo accounts
 
-> **Development seeds only** (`db/seeds.rb`). For **local** or disposable DBs. **Do not** reuse these passwords in production; **`db:seed` on production** is destructive and unsafe if it recreates known credentials.
+> **Development seeds only** — see **`backend/db/seeds.rb`**. Use that file locally for emails, roles, and passwords. **Do not** paste production or real-user credentials into documentation. **`db:seed` on production** is destructive and unsafe for typical setups.
 
-| Email | Password | Role | Notes |
-|-------|----------|------|-------|
-| admin@catalogit.com | password123 | admin | |
-| movies@example.com | password123 | user | Movie lists |
-| books@example.com | password123 | user | Book lists |
-| collector@example.com | password123 | user | Mixed lists |
-| banned@example.com | password123 | user | Suspended — login blocked |
+| Email (examples from seeds) | Role | Notes |
+|------|------|-------|
+| `admin@catalogit.com` | admin | |
+| `movies@example.com` | user | Movie lists |
+| `books@example.com` | user | Book lists |
+| `collector@example.com` | user | Mixed lists |
+| `banned@example.com` | user | Suspended — login blocked |
 
-*(Seeds required — **local** only unless you intentionally seed prod.)*
+Passwords are **not** listed in this doc — open **`db/seeds.rb`** on your machine when running a local demo.
 
 ---
 
