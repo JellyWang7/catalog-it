@@ -13,6 +13,8 @@ bundle exec puma -p 3000
 
 API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 
+**AWS (Docker on EC2):** [DEMO.md §2](../DEMO.md#2-aws-production-start-backend-and-frontend).
+
 ## Stack
 
 - **Ruby on Rails 8** (API mode)

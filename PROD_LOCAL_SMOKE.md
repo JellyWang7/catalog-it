@@ -1,12 +1,13 @@
 # Prod-like smoke test on your Mac (before EC2)
 
-Runs the **same backend `Dockerfile`** as production with **`RAILS_ENV=production`**, against a **local Postgres** container. Your `backend/.env.production` supplies secrets (`RAILS_MASTER_KEY`, `SECRET_KEY_BASE`, …); **`DATABASE_*` and local-only flags are overridden** by `docker-compose.prod-local.yml` so you do **not** hit RDS.
+**For full AWS deploy commands (EC2 + S3 + CloudFront), use [DEMO.md](DEMO.md#2-aws-production-start-backend-and-frontend).**
+
+Runs the **same backend `Dockerfile`** as production with **`RAILS_ENV=production`**, against a **local Postgres** container. Your `backend/.env.production` supplies **`SECRET_KEY_BASE`** and other boot vars (this project’s EC2 path avoids `RAILS_MASTER_KEY`; see [root_cause_deployment_lessons.md](root_cause_deployment_lessons.md)). **`DATABASE_*` and local-only flags are overridden** by `docker-compose.prod-local.yml` so you do **not** hit RDS.
 
 ## Prerequisites
 
 - Docker Desktop (or Docker Engine + Compose v2)
 - File **`backend/.env.production`** (gitignored) with at least:
-  - `RAILS_MASTER_KEY`
   - `SECRET_KEY_BASE`
   - Other vars required at boot (run `set -a && source backend/.env.production && set +a && backend/scripts/check_prod_env.sh --skip-s3-check` to validate)
 

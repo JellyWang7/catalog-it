@@ -1,6 +1,6 @@
 # Security: what must never be committed
 
-**Last updated:** March 24, 2026  
+**Last updated:** April 2026  
 
 These patterns are **gitignored** in this repo — do not force-add them, and do not paste real secrets into markdown that gets committed.
 

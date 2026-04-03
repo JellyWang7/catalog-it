@@ -1,8 +1,10 @@
 # CatalogIt - Project Status
 
-**Last Updated**: March 24, 2026  
+**Last Updated**: April 2026  
 **Branch**: `deployment` (verify on clone)  
-**Overall Progress**: 99% | Attachments (note/link/file UX) + S3 path in progress, AWS deploy ongoing
+**Overall Progress**: 99% | Attachments (note/link/file UX) + S3 path in progress, AWS deploy ongoing  
+
+**Demo & AWS/local start commands:** [DEMO.md](DEMO.md)
 
 ---
 

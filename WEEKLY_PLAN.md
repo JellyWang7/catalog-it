@@ -1,8 +1,10 @@
 # CatalogIt - Weekly Plan & Progress
 
-**Last Updated**: March 24, 2026  
+**Last Updated**: April 2026  
 **Current Branch**: `deployment`  
-**Project Status**: Midterm Complete + Attachments (note/link/file) + AWS deployment / S3 cutover
+**Project Status**: Midterm Complete + Attachments (note/link/file) + AWS deployment / S3 cutover  
+
+**Runbook for demos:** [DEMO.md](DEMO.md)
 
 ---
 
@@ -163,7 +165,7 @@ Decision:
 - [x] Max upload size: 5MB
 - [x] Links must be `https://`
 
-See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) (appendix checklist), [OPERATIONS.md](OPERATIONS.md) (handoff + defer list).
+See [DEMO.md](DEMO.md) (commands), [DEPLOY_PLAN.md](DEPLOY_PLAN.md) (architecture), [OPERATIONS.md](OPERATIONS.md) (handoff + defer).
 
 ---
 
@@ -225,9 +227,9 @@ See [DEPLOY_PLAN.md](DEPLOY_PLAN.md) (appendix checklist), [OPERATIONS.md](OPERA
 
 ---
 
-*Last updated: March 24, 2026*
+*Last updated: April 2026*
 
 ### Mar 21 — Deploy lessons captured
 
 - CloudFront **dual origin** documented in `infra/main.tf`, `DEPLOY_PLAN.md`, `root_cause_deployment_lessons.md` (Root cause H).
-- [DEPLOY_PLAN.md](DEPLOY_PLAN.md) appendix + [OPERATIONS.md](OPERATIONS.md) cover **invalidation**, **`VITE_API_URL`**, **Docker recreate**, **prod seed** warning.
+- [DEMO.md](DEMO.md) + [OPERATIONS.md](OPERATIONS.md) cover **invalidation**, **`VITE_API_URL`**, **Docker recreate**, **prod seed** warning.

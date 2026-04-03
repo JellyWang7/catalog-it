@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build and run the production Dockerfile against a local Postgres — before pushing to EC2.
-# Requires backend/.env.production (gitignored) with at least RAILS_MASTER_KEY, SECRET_KEY_BASE,
+# Requires backend/.env.production (gitignored) with at least SECRET_KEY_BASE,
 # and any other vars your app needs at boot (see backend/scripts/check_prod_env.sh --skip-s3-check).
 set -euo pipefail
 
@@ -12,7 +12,7 @@ COMPOSE=(docker compose -f "$ROOT/docker-compose.prod-local.yml")
 
 if [[ ! -f "$ENV_FILE" ]]; then
   echo "Missing env file: $ENV_FILE"
-  echo "Create it from your secrets (RAILS_MASTER_KEY, SECRET_KEY_BASE, …). DB/AWS in that file are ignored for smoke — compose pins local Postgres."
+  echo "Create it from your secrets (SECRET_KEY_BASE, …). DB/AWS in that file are ignored for smoke — compose pins local Postgres."
   exit 1
 fi
 

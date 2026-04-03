@@ -28,7 +28,7 @@ Scope: CatalogIt AWS deployment — debugging, CloudFront/API routing, Docker, a
   - `README.md`
   - `PROJECT_STATUS.md`
   - `WEEKLY_PLAN.md`
-  - [DEPLOY_PLAN.md](DEPLOY_PLAN.md) (appendix checklist)
+  - [DEMO.md](DEMO.md) (deploy commands)
   - [OPERATIONS.md](OPERATIONS.md)
 
 ## 3) Helpful commands that worked
@@ -220,5 +220,5 @@ aws ec2 get-console-output --region <your-region> --instance-id <your-instance-i
 
 ## Next session
 
-- See **[OPERATIONS.md](OPERATIONS.md)** (session handoff: AWS logout, S3 uploads, CloudFront invalidation, smoke tests).
+- **Commands:** [DEMO.md §2](DEMO.md#2-aws-production-start-backend-and-frontend) (backend + frontend deploy). **Handoff / cost:** [OPERATIONS.md](OPERATIONS.md).
 - **Terraform output** (example): `cloudfront_distribution_id`, `cloudfront_api_origin_domain`, `frontend_bucket_name` — use in invalidation + `s3 sync` commands ([infra/README.md](infra/README.md)).

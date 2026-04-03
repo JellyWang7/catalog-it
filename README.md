@@ -12,6 +12,7 @@
 
 | Document | Purpose |
 |----------|---------|
+| **[DEMO.md](DEMO.md)** | **Start app (local + AWS), demo walkthrough, all deploy commands** |
 | [FRONTEND_SETUP.md](FRONTEND_SETUP.md) | Frontend architecture & component guide |
 | [WEEKLY_PLAN.md](WEEKLY_PLAN.md) | Week-by-week roadmap & progress |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Detailed status & compliance |
@@ -142,16 +143,16 @@ App: **http://localhost:5173**
 
 ## Current Deployment Track (AWS)
 
-CatalogIt uses **Terraform** (`infra/`) with **CloudFront dual origin** (S3 SPA + EC2 API on `/api/*`, `/up`, etc.). Details: `DEPLOY_PLAN.md`, `infra/README.md`, `root_cause_deployment_lessons.md`.
+CatalogIt uses **Terraform** (`infra/`) with **CloudFront dual origin** (S3 SPA + EC2 API on `/api/*`, `/up`, etc.). **Step-by-step commands:** [DEMO.md §2](DEMO.md#2-aws-production-start-backend-and-frontend). Architecture: [DEPLOY_PLAN.md](DEPLOY_PLAN.md), [infra/README.md](infra/README.md), [root_cause_deployment_lessons.md](root_cause_deployment_lessons.md).
 
 ### Production deploy summary
 
-1. **Backend:** build/push Docker image to ECR; on EC2 `docker pull`, **`docker rm` + `docker run`** (not pull alone); `docker exec … rails db:migrate`.
-2. **Frontend:** `VITE_API_URL=https://<cloudfront-domain>/api/v1 npm run build` → `aws s3 sync dist` → CloudFront **invalidation** `/*`.
+1. **Backend (EC2):** `git` + `source .env.production` + `./scripts/deploy_ec2_backend.sh` + `db:migrate` — full block in **[DEMO.md](DEMO.md)**.
+2. **Frontend (laptop):** `VITE_API_URL=https://<cloudfront-domain>/api/v1 npm run build` → `aws s3 sync` → CloudFront **invalidation** `/*`.
 3. **Smoke:** `https://<cloudfront>/up` (Rails health), app in incognito; empty Explore = **“No public lists found”** is OK if API works.
 4. **Seeds:** `db:seed` **wipes** users/lists — production only if you accept data loss.
 
-Command-level steps: [DEPLOY_PLAN.md](DEPLOY_PLAN.md) (appendix). **Handoff / defer:** [OPERATIONS.md](OPERATIONS.md).
+**Handoff / defer:** [OPERATIONS.md](OPERATIONS.md).
 
 ---
 

@@ -1,13 +1,13 @@
 # Operations & deploy handoff
 
-**Last updated:** March 24, 2026  
+**Last updated:** April 2026  
 
 Single entry point for **AWS session handoff**, **cost/reminders**, and **deferred work**. Replaces former `pickup.md`, `memory.md`, and `next_week.md`.
 
 | Topic | Where |
 |--------|--------|
 | Architecture & phases | [DEPLOY_PLAN.md](DEPLOY_PLAN.md) |
-| Command checklist (readiness → EC2 → S3 → validation) | [DEPLOY_PLAN.md — Appendix: execution checklist](DEPLOY_PLAN.md#appendix-execution-checklist) |
+| **Demo: local + AWS commands (BE + FE)** | [DEMO.md](DEMO.md) |
 | Debugging timeline (root causes H–M) | [root_cause_deployment_lessons.md](root_cause_deployment_lessons.md) |
 | Terraform outputs & sync | [infra/README.md](infra/README.md) |
 | Prod-like Docker smoke (Mac, before EC2) | [PROD_LOCAL_SMOKE.md](PROD_LOCAL_SMOKE.md) |
@@ -92,10 +92,11 @@ Do not delete `~/.aws/credentials` unless you intend to remove static keys.
 | File | Purpose |
 |------|---------|
 | [root_cause_deployment_lessons.md](root_cause_deployment_lessons.md) | Lessons H–M (CloudFront, Docker, curl, seed, Solid Cache) |
-| [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Architecture + execution appendix |
+| [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Architecture + phases (commands → DEMO) |
+| [DEMO.md](DEMO.md) | Local & AWS start commands, UI/Swagger walkthrough |
 | [infra/README.md](infra/README.md) | Terraform + `s3 sync` + invalidation |
 | [PROD_LOCAL_SMOKE.md](PROD_LOCAL_SMOKE.md) | Prod-like Docker smoke on Mac |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Feature/status snapshot |
 | [WEEKLY_PLAN.md](WEEKLY_PLAN.md) | Short pointer + historical milestones |
 
-When you say **“pickup”**, resume from **§0** above and [DEPLOY_PLAN.md](DEPLOY_PLAN.md).
+When you say **“pickup”**, resume from **§0** above, then **[DEMO.md §2](DEMO.md#2-aws-production-start-backend-and-frontend)** for deploy commands.

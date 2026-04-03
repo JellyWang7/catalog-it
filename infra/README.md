@@ -1,6 +1,6 @@
 # CatalogIt Terraform Infrastructure
 
-**Last updated:** March 21, 2026  
+**Last updated:** April 2026  
 
 This folder provisions a low-cost AWS stack for CatalogIt:
 
@@ -14,7 +14,7 @@ This folder provisions a low-cost AWS stack for CatalogIt:
 ## 1) Prerequisites
 
 - Terraform >= 1.6
-- AWS CLI configured (`aws configure`); when pausing work, see **[OPERATIONS.md](../OPERATIONS.md)** in repo root for logout/cache cleanup
+- AWS CLI configured (`aws configure`); when pausing work, see **[OPERATIONS.md](../OPERATIONS.md)**; **deploy commands:** **[DEMO.md](../DEMO.md#2-aws-production-start-backend-and-frontend)**
 - IAM permissions for EC2, RDS, S3, CloudFront, IAM, Scheduler, Budgets
 
 ## 2) Configure Variables
@@ -72,60 +72,32 @@ cloudfront_api_origin_domain = "ec2-1-2-3-4.compute-1.amazonaws.com"
 
 ## 4) Deploy Frontend to S3
 
-Build frontend with the **CloudFront** API base (recommended):
+**Full copy-paste flow** (build with `VITE_API_URL`, `npm ci`, `s3 sync`, invalidation, troubleshooting): **[DEMO.md §2.5](../DEMO.md#25-frontend-from-laptop-build-s3-sync-cloudfront-invalidation)**.
+
+Minimal one-liners from **`infra/`** (after `terraform output` works):
 
 ```bash
 cd ../frontend
 VITE_API_URL="https://$(terraform output -raw cloudfront_domain_name)/api/v1" npm run build
-```
-
-(Legacy direct-to-EC2: `VITE_API_URL="http://<ec2-public-ip>/api/v1"` — often blocked as mixed content when the site is served over HTTPS.)
-
-Upload:
-
-```bash
 cd ../infra
 aws s3 sync ../frontend/dist "s3://$(terraform output -raw frontend_bucket_name)" --delete
+aws cloudfront create-invalidation --distribution-id "$(terraform output -raw cloudfront_distribution_id)" --paths "/*"
 ```
 
-Invalidate CloudFront:
-
-```bash
-aws cloudfront create-invalidation \
-  --distribution-id "$(terraform output -raw cloudfront_distribution_id)" \
-  --paths "/*"
-```
+(Legacy direct-to-EC2 API URL over HTTP breaks **HTTPS** SPAs — use CloudFront same-origin API.)
 
 ## 5) Deploy Backend on EC2
 
-1. SSH into EC2.
-2. Install/start Docker (already done in user data on first boot).
-3. Copy project backend code to EC2.
-4. Create env file from:
-   - `backend/.env.production.example`
-5. Export env vars and run:
+**Full sequence** (typical path `/opt/catalogit/catalog-it`, `deployment` branch, migrations, restart-only path): **[DEMO.md §2.3–2.4](../DEMO.md#23-backend-on-ec2-full-deploy)**.
+
+Summary: SSH → `cd` repo → `git checkout deployment` → `cd backend` → `source .env.production` → `./scripts/check_prod_env.sh` → `./scripts/deploy_ec2_backend.sh` → `docker exec … db:migrate`.
+
+Optional **systemd** auto-start (adjust `APP_DIR` to your clone):
 
 ```bash
-cd backend
-set -a
-source .env.production
-set +a
-chmod +x scripts/check_prod_env.sh
-./scripts/check_prod_env.sh
-# optional when not using S3 uploads:
-# ./scripts/check_prod_env.sh --skip-s3-check
-chmod +x scripts/deploy_ec2_backend.sh
-./scripts/deploy_ec2_backend.sh
-# optional one-command deploy when not using S3 uploads:
-# ./scripts/deploy_ec2_backend.sh --skip-s3-check
-```
-
-For auto-start on EC2 boot:
-
-```bash
-cd backend
+cd /opt/catalogit/catalog-it/backend
 chmod +x scripts/install_systemd_service.sh
-sudo APP_DIR=/opt/catalogit/backend ./scripts/install_systemd_service.sh
+sudo APP_DIR=/opt/catalogit/catalog-it/backend ./scripts/install_systemd_service.sh
 ```
 
 If you use file uploads in production, also set S3 vars in `.env.production`:
