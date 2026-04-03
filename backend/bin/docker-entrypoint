@@ -1,7 +1,15 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+# If running the Rails server, create or migrate the database first.
+# Match: ./bin/rails server [...]  OR  ./bin/thrust ./bin/rails server [...]
+rails_server=false
+if [[ "${1:-}" == "./bin/rails" && "${2:-}" == "server" ]]; then
+  rails_server=true
+elif [[ "${1:-}" == "./bin/thrust" && "${2:-}" == "./bin/rails" && "${3:-}" == "server" ]]; then
+  rails_server=true
+fi
+
+if [[ "${rails_server}" == true ]]; then
   ./bin/rails db:prepare
 fi
 

@@ -1,9 +1,9 @@
 # CatalogIt — Demo guide
 
-**Last updated:** April 2026  
+**Last updated:** April 3, 2026  
 **Deploy branch:** `deployment`
 
-This file is the **single place** for **how to run** the app for a demo: **local** (two terminals) and **AWS** (EC2 backend + S3/CloudFront frontend). For architecture and Terraform theory, see [DEPLOY_PLAN.md](DEPLOY_PLAN.md). For secrets and what not to commit, see [SECURITY_GIT.md](SECURITY_GIT.md).
+This file is the **single place** for **how to run** the app for a demo: **local** (two terminals) and **AWS** (EC2 backend + S3/CloudFront frontend). For **deploy commands, smoke tests, and troubleshooting**, see **[DEPLOY.md](DEPLOY.md)**. For secrets and what not to commit, see [SECURITY_GIT.md](SECURITY_GIT.md).
 
 ---
 
@@ -114,6 +114,13 @@ chmod +x scripts/check_prod_env.sh scripts/deploy_ec2_backend.sh
 
 This pulls the pre-built image from ECR (seconds) and starts the container — **no `docker build` on EC2**.
 
+#### Troubleshooting (Docker / Bundler / Ruby 4)
+
+- **“empty CHECKSUMS entry … frozen mode”** — Regenerate checksums locally (with validation enabled): `cd backend && bundle config unset disable_checksum_validation` (if set), then `bundle lock --add-checksums`, commit **`Gemfile.lock`**.
+- **`LoadError: cannot load such file -- ostruct`** (often via `rswag-ui`) — Ruby 4.0 no longer includes `ostruct` as a default gem; this repo adds **`gem "ostruct"`** in the `Gemfile`.
+- **Slow or stuck `docker build` on small EC2** — Use the **fast path** (build on a laptop with `scripts/deploy_ecr_push.sh`, then `--pull` on EC2).
+- **Missing env on EC2** — Create **`backend/.env.production`** from `.env.production.example` (never commit the real file). Run `set -a && source .env.production && set +a` before `deploy_ec2_backend.sh`.
+
 #### Local build path (slower, no ECR needed)
 
 SSH into EC2, then:
@@ -214,7 +221,7 @@ Then open **`https://<your-cloudfront-domain>`** in a browser (incognito recomme
 | Old UI after deploy | CloudFront cache — run invalidation `/*`, wait, hard refresh |
 | New image, old behavior | On EC2: **`docker pull` alone is not enough** — recreate container (deploy script does this) |
 
-More detail: [root_cause_deployment_lessons.md](root_cause_deployment_lessons.md), [OPERATIONS.md](OPERATIONS.md).
+More detail: **[DEPLOY.md](DEPLOY.md)** (troubleshooting), [OPERATIONS.md](OPERATIONS.md).
 
 ### 2.8 Optional systemd auto-start on EC2 boot
 
@@ -372,6 +379,8 @@ For **AWS**, use **§2.5** (`VITE_API_URL` required).
 ---
 
 ## 8. Demo accounts
+
+> **Development seeds only** (`db/seeds.rb`). For **local** or disposable DBs. **Do not** reuse these passwords in production; **`db:seed` on production** is destructive and unsafe if it recreates known credentials.
 
 | Email | Password | Role | Notes |
 |-------|----------|------|-------|

@@ -3,23 +3,23 @@
 > A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS 701 -- Special Projects in CS II  
-**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments v1.1) | AWS Deployment In Progress  
+**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments v1.1) | AWS deploy documented ([DEPLOY.md](DEPLOY.md))  
 **Tests**: Full backend RSpec + Frontend UI/E2E tests passing  
 
 ---
 
-## Quick Links
+## Quick links
 
 | Document | Purpose |
 |----------|---------|
-| **[DEMO.md](DEMO.md)** | **Start app (local + AWS), demo walkthrough, all deploy commands** |
+| **[DEMO.md](DEMO.md)** | **Start app (local + AWS), demo walkthrough** |
+| **[DEPLOY.md](DEPLOY.md)** | **AWS deploy (ECR/EC2), frontend S3/CloudFront, smoke tests** |
+| [STATUS.md](STATUS.md) | **Project status, milestones summary, charter snapshot** |
 | [FRONTEND_SETUP.md](FRONTEND_SETUP.md) | Frontend architecture & component guide |
-| [WEEKLY_PLAN.md](WEEKLY_PLAN.md) | Week-by-week roadmap & progress |
-| [PROJECT_STATUS.md](PROJECT_STATUS.md) | Detailed status & compliance |
-| [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (AWS free-first + scale-ready) |
-| [OPERATIONS.md](OPERATIONS.md) | **Session handoff**, cost/reminders, deferred work |
-| [SECURITY_GIT.md](SECURITY_GIT.md) | What must never be committed; safe doc placeholders |
-| [root_cause_deployment_lessons.md](root_cause_deployment_lessons.md) | Deployment debugging timeline, root causes, and lessons |
+| [OPERATIONS.md](OPERATIONS.md) | Cost, session handoff, deferred work |
+| [SECURITY_GIT.md](SECURITY_GIT.md) | What must never be committed; public-repo doc hygiene |
+
+**Public repository:** Do not commit real AWS account IDs, ECR URIs, or secrets in markdown. Use placeholders (`<account-id>`, `<region>`). Operator-specific one-liners can live in **`continue.md`** or **`p.md`** locally — both are **gitignored** (see [.gitignore](.gitignore)).
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
 | [backend/SWAGGER_SETUP.md](backend/SWAGGER_SETUP.md) | Swagger/OpenAPI setup and generation |
 | [backend/TESTING.md](backend/TESTING.md) | Testing guide (current backend suite details) |
@@ -80,7 +80,7 @@ bin/bundler-audit
 | **Backend** | Ruby on Rails 8 (API mode), JWT, TOTP MFA, RSpec | Complete |
 | **Database** | PostgreSQL 15+ (3NF), AES-256 encryption at rest | Complete |
 | **Security** | TLS, MFA, XSS, rate limiting, CORS, IDOR prevention | Complete |
-| **Deployment** | AWS (Terraform + EC2 + RDS + S3 + CloudFront) | In Progress |
+| **Deployment** | AWS (Terraform + EC2 + RDS + S3 + CloudFront) | See [DEPLOY.md](DEPLOY.md) |
 
 ---
 
@@ -143,16 +143,16 @@ App: **http://localhost:5173**
 
 ## Current Deployment Track (AWS)
 
-CatalogIt uses **Terraform** (`infra/`) with **CloudFront dual origin** (S3 SPA + EC2 API on `/api/*`, `/up`, etc.). **Step-by-step commands:** [DEMO.md §2](DEMO.md#2-aws-production-start-backend-and-frontend). Architecture: [DEPLOY_PLAN.md](DEPLOY_PLAN.md), [infra/README.md](infra/README.md), [root_cause_deployment_lessons.md](root_cause_deployment_lessons.md).
+CatalogIt uses **Terraform** (`infra/`) with **CloudFront dual origin** (S3 SPA + EC2 API). **Deploy, frontend sync, smoke URLs:** **[DEPLOY.md](DEPLOY.md)**. **Longer demo script:** [DEMO.md §2](DEMO.md#2-aws-production-start-backend-and-frontend).
 
 ### Production deploy summary
 
-1. **Backend (EC2):** `git` + `source .env.production` + `./scripts/deploy_ec2_backend.sh` + `db:migrate` — full block in **[DEMO.md](DEMO.md)**.
-2. **Frontend (laptop):** `VITE_API_URL=https://<cloudfront-domain>/api/v1 npm run build` → `aws s3 sync` → CloudFront **invalidation** `/*`.
-3. **Smoke:** `https://<cloudfront>/up` (Rails health), app in incognito; empty Explore = **“No public lists found”** is OK if API works.
-4. **Seeds:** `db:seed` **wipes** users/lists — production only if you accept data loss.
+1. **Backend:** ECR push from laptop → **`deploy_ec2_backend.sh --pull`** on EC2 — see **[DEPLOY.md](DEPLOY.md)**.
+2. **Frontend:** `VITE_API_URL` + `npm run build` → `s3 sync` → invalidation — **[DEPLOY.md](DEPLOY.md)** §4.
+3. **Smoke:** CloudFront **`/up`**, **`/api/v1/lists`**, SPA in incognito — **[DEPLOY.md](DEPLOY.md)** §5.
+4. **Seeds:** `db:seed` **wipes** data — production only if intentional.
 
-**Handoff / defer:** [OPERATIONS.md](OPERATIONS.md).
+**Handoff / cost:** [OPERATIONS.md](OPERATIONS.md).
 
 ---
 

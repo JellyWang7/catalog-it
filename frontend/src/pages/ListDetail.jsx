@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 import StarRating from '../components/StarRating';
 import ItemFormModal from '../components/ItemFormModal';
 import ConfirmModal from '../components/ConfirmModal';
+import AttachmentUploadingModal from '../components/AttachmentUploadingModal';
+import { getAttachmentUploadErrorMessage } from '../utils/attachmentUploadErrors';
 
 export default function ListDetail() {
   const { id } = useParams();
@@ -283,27 +285,8 @@ export default function ListDetail() {
       setListAttachmentDraft(emptyAttachmentDraft());
       toast.success('Attachment added');
     } catch (err) {
-      if (err.code === 'ECONNABORTED' || String(err.message || '').toLowerCase().includes('timeout')) {
-        toast.error('Upload timed out. Try a smaller file or check your connection.');
-        return;
-      }
-      const errors = err.response?.data?.errors || [];
-      const invalidLink = errors.some((message) => message.toLowerCase().includes('https link'));
-      const typeError = errors.some((message) => message.toLowerCase().includes('type is not allowed'));
-      const sizeError = errors.some((message) => message.toLowerCase().includes('5mb'));
-
-      if (invalidLink) {
-        toast.error('Invalid link. Use a full https:// URL.');
-      } else if (typeError || sizeError) {
-        toast.error('Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP. Max size: 5MB.');
-      } else {
-        const msg =
-          errors.join(', ') ||
-          err.response?.data?.error ||
-          err.response?.statusText ||
-          err.message;
-        toast.error(msg || 'Failed to add attachment');
-      }
+      const msg = getAttachmentUploadErrorMessage(err);
+      if (msg) toast.error(msg);
     } finally {
       setSubmittingAttachment(false);
     }
@@ -373,27 +356,8 @@ export default function ListDetail() {
       updateItemAttachmentInput(itemId, emptyAttachmentDraft());
       toast.success('Attachment added');
     } catch (err) {
-      if (err.code === 'ECONNABORTED' || String(err.message || '').toLowerCase().includes('timeout')) {
-        toast.error('Upload timed out. Try a smaller file or check your connection.');
-        return;
-      }
-      const errors = err.response?.data?.errors || [];
-      const invalidLink = errors.some((message) => message.toLowerCase().includes('https link'));
-      const typeError = errors.some((message) => message.toLowerCase().includes('type is not allowed'));
-      const sizeError = errors.some((message) => message.toLowerCase().includes('5mb'));
-
-      if (invalidLink) {
-        toast.error('Invalid link. Use a full https:// URL.');
-      } else if (typeError || sizeError) {
-        toast.error('Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP. Max size: 5MB.');
-      } else {
-        const msg =
-          errors.join(', ') ||
-          err.response?.data?.error ||
-          err.response?.statusText ||
-          err.message;
-        toast.error(msg || 'Failed to add attachment');
-      }
+      const msg = getAttachmentUploadErrorMessage(err);
+      if (msg) toast.error(msg);
     } finally {
       setItemAttachmentSubmitting((prev) => ({ ...prev, [itemId]: false }));
     }
@@ -430,7 +394,23 @@ export default function ListDetail() {
       });
       toast.success('Attachment deleted');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to delete attachment');
+      const status = err.response?.status;
+      const serverMsg = err.response?.data?.error;
+      if (status === 401) {
+        toast.error('Please log in again.');
+      } else if (status === 403) {
+        toast.error('You are not allowed to delete this attachment.');
+      } else if (status === 404) {
+        toast.error('Attachment not found — it may have been deleted already.');
+      } else if (status && status >= 400 && status < 500 && serverMsg) {
+        toast.error(serverMsg);
+      } else if (status && status >= 500) {
+        toast.error('Something went wrong on the server. Refresh to check if the attachment was removed.');
+      } else if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        toast.error('Network error. Check your connection and try again.');
+      } else {
+        // No toast for ambiguous / non-actionable errors
+      }
     }
   };
 
@@ -459,6 +439,9 @@ export default function ListDetail() {
     if (mime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac)$/i.test(url)) return 'audio';
     return 'file';
   };
+
+  const attachmentUploadBusy =
+    submittingAttachment || Object.values(itemAttachmentSubmitting).some(Boolean);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -997,6 +980,8 @@ export default function ListDetail() {
           danger
         />
       )}
+
+      {attachmentUploadBusy && <AttachmentUploadingModal />}
     </div>
   );
 }

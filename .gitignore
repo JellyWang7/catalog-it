@@ -2,6 +2,7 @@
 
 # Private handoff notes — keep only on your machine (never commit)
 /continue.md
+/p.md
 
 # Documentation (NEVER push to GitHub)
 /docs/

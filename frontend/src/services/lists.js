@@ -1,4 +1,4 @@
-import api from './api';
+import api, { postFormData } from './api';
 
 const listsService = {
   /** GET /api/v1/lists — all public lists (or user's lists when authenticated) */
@@ -44,10 +44,7 @@ const listsService = {
     if (data.url) formData.append('attachment[url]', data.url);
     if (data.asset) formData.append('attachment[asset]', data.asset);
 
-    return api.post(`/lists/${listId}/attachments`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 120000,
-    });
+    return postFormData(`/lists/${listId}/attachments`, formData);
   },
 
   /** DELETE /api/v1/attachments/:id — delete attachment */

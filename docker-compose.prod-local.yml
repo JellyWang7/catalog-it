@@ -1,7 +1,7 @@
 # Production-like backend smoke test on your Mac (same Dockerfile as EC2).
 # Uses a LOCAL Postgres only — env_file may contain RDS/AWS vars; DATABASE_* are overridden here.
 #
-# Usage: see PROD_LOCAL_SMOKE.md and scripts/smoke_prod_local.sh
+# Usage: see DEPLOY.md §7 and scripts/smoke_prod_local.sh
 #
 version: "3.8"
 

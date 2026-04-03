@@ -474,4 +474,4 @@ All critical security controls are now implemented:
 
 *For test guide, see: `backend/TESTING.md`*  
 *For authentication guide, see: `backend/AUTHENTICATION.md`*  
-*For deployment security, see: `DEPLOY_PLAN.md`*
+*For deployment security, see: `DEPLOY.md`*

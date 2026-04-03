@@ -1,11 +1,11 @@
 # CatalogIt Terraform Infrastructure
 
-**Last updated:** April 2026  
+**Last updated:** April 3, 2026  
 
 This folder provisions a low-cost AWS stack for CatalogIt:
 
 - S3 bucket for frontend static files
-- CloudFront: **S3 (default) + EC2 custom origin** for `/api/*`, `/up`, `/api-docs*`, `/rails/*` (see `main.tf`; lessons in `../root_cause_deployment_lessons.md`)
+- CloudFront: **S3 (default) + EC2 custom origin** for `/api/*`, `/up`, `/api-docs*`, `/rails/*` (see `main.tf`; deploy/smoke: **[DEPLOY.md](../DEPLOY.md)**)
 - EC2 instance for Rails backend
 - RDS PostgreSQL database
 - EventBridge Scheduler jobs to start/stop EC2 + RDS daily
@@ -14,7 +14,7 @@ This folder provisions a low-cost AWS stack for CatalogIt:
 ## 1) Prerequisites
 
 - Terraform >= 1.6
-- AWS CLI configured (`aws configure`); when pausing work, see **[OPERATIONS.md](../OPERATIONS.md)**; **deploy commands:** **[DEMO.md](../DEMO.md#2-aws-production-start-backend-and-frontend)**
+- AWS CLI configured (`aws configure`); when pausing work, see **[OPERATIONS.md](../OPERATIONS.md)**; **deploy + smoke:** **[DEPLOY.md](../DEPLOY.md)** (full demo narrative: [DEMO.md](../DEMO.md#2-aws-production-start-backend-and-frontend))
 - IAM permissions for EC2, RDS, S3, CloudFront, IAM, Scheduler, Budgets
 
 ## 2) Configure Variables
@@ -72,7 +72,7 @@ cloudfront_api_origin_domain = "ec2-1-2-3-4.compute-1.amazonaws.com"
 
 ## 4) Deploy Frontend to S3
 
-**Full copy-paste flow** (build with `VITE_API_URL`, `npm ci`, `s3 sync`, invalidation, troubleshooting): **[DEMO.md §2.5](../DEMO.md#25-frontend-from-laptop-build-s3-sync-cloudfront-invalidation)**.
+**Frontend build + S3 + invalidation:** **[DEPLOY.md](../DEPLOY.md)** (section 4 — Frontend; same flow in [DEMO.md §2.5](../DEMO.md#25-frontend-from-laptop-build-s3-sync-cloudfront-invalidation)).
 
 Minimal one-liners from **`infra/`** (after `terraform output` works):
 
@@ -88,7 +88,7 @@ aws cloudfront create-invalidation --distribution-id "$(terraform output -raw cl
 
 ## 5) Deploy Backend on EC2
 
-**Full sequence** (typical path `/opt/catalogit/catalog-it`, `deployment` branch, migrations, restart-only path): **[DEMO.md §2.3–2.4](../DEMO.md#23-backend-on-ec2-full-deploy)**.
+**Backend ECR + EC2:** **[DEPLOY.md](../DEPLOY.md)** (section 2 — Backend; also [DEMO.md §2.3–2.4](../DEMO.md#23-backend-on-ec2-full-deploy)).
 
 Summary: SSH → `cd` repo → `git checkout deployment` → `cd backend` → `source .env.production` → `./scripts/check_prod_env.sh` → `./scripts/deploy_ec2_backend.sh` → `docker exec … db:migrate`.
 

@@ -195,7 +195,9 @@ npm run build       # Production build verification
 
 ---
 
-## Seed Accounts
+## Seed accounts (development only)
+
+> Passwords below match **`db/seeds.rb`** for local/demo. Not for production.
 
 | User | Email | Password |
 |------|-------|----------|

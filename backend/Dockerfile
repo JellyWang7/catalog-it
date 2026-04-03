@@ -67,6 +67,8 @@ COPY --chown=rails:rails --from=build /rails /rails
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start server via Thruster by default, this can be overwritten at runtime
+# Thruster (./bin/thrust) was unreliable in the image (Gem::GemNotFoundException for thrust on some
+# linux/amd64 ECR builds). Puma is the app server; PORT matches docker run -p 80:80.
 EXPOSE 80
-CMD ["./bin/thrust", "./bin/rails", "server"]
+ENV PORT=80
+CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
