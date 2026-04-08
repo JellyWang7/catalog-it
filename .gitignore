@@ -4,7 +4,27 @@
 /continue.md
 /p.md
 
-# Design / course docs live under docs/ and are safe to commit (no secrets in markdown)
+# Course / design material (entire tree — local only, not on GitHub)
+/docs/
+
+# Project markdown (local only — only /README.md is published on GitHub)
+BRANCH_CLEANUP_TODO.md
+DEMO.md
+DEPLOY.md
+FRONTEND_SETUP.md
+OPERATIONS.md
+QUICKSTART.md
+SECURITY_GIT.md
+START_HERE.md
+STATUS.md
+/backend/AUTHENTICATION.md
+/backend/README.md
+/backend/SECURITY_IMPLEMENTATION.md
+/backend/SWAGGER_SETUP.md
+/backend/TESTING.md
+/frontend/README.md
+/infra/README.md
+
 /CatalogIt-UpdatedProjectCharter_etc.pdf
 *.docx
 
