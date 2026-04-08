@@ -1,5 +1,9 @@
 # See https://help.github.com/articles/ignoring-files for more about ignoring files.
 
+# Private handoff notes — keep only on your machine (never commit)
+/continue.md
+/p.md
+
 # Documentation (NEVER push to GitHub)
 /docs/
 /CatalogIt-UpdatedProjectCharter_etc.pdf
@@ -14,6 +18,8 @@ vendor/bundle/
 .env.*
 !.env.example
 !**/.env.example
+!.env.production.example
+!**/.env.production.example
 
 # Deployment/runtime secrets
 /backend/.env.production
@@ -31,6 +37,7 @@ vendor/bundle/
 
 # Ignore bundler config.
 /.bundle
+/backend/.bundle/
 /backend/gems/
 /backend/specifications/
 /backend/cache/
@@ -102,6 +109,7 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 *.code-workspace
+/catalog-it.code-workspace
 
 # Coverage
 /backend/coverage/
@@ -111,6 +119,7 @@ Thumbs.db
 /backend/test/version_tmp/
 /frontend/test-results/
 /backend/tmp/cache/bootsnap/
+/backend/tmp/cache/bootsnap/**
 
 # Yarn
 yarn-error.log

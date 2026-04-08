@@ -1,5 +1,7 @@
 # CatalogIt Authentication System
 
+*Last reviewed April 3, 2026 — JWT/MFA behavior stable. Production deploy flow: [DEPLOY.md](../DEPLOY.md) §0.*
+
 ## Overview
 
 CatalogIt uses **JWT (JSON Web Token)** authentication for securing API endpoints. This document explains how to use the authentication system.

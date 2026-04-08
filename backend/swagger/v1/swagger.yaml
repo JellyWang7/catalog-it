@@ -329,6 +329,180 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/Error"
+  "/api/v1/lists/{list_id}/attachments":
+    parameters:
+    - name: list_id
+      in: path
+      description: List ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: List all attachments on a list
+      tags:
+      - Attachments
+      description: Returns list-level attachments when list visibility allows access
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Attachment"
+        '403':
+          description: not authorized to view attachments
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: list not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+    post:
+      summary: Create list attachment
+      tags:
+      - Attachments
+      description: Adds a link/file/image attachment to a list (owner only)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/AttachmentCreateRequest"
+      responses:
+        '201':
+          description: attachment created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Attachment"
+        '401':
+          description: authentication required
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '403':
+          description: not authorized to create attachment
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/items/{item_id}/attachments":
+    parameters:
+    - name: item_id
+      in: path
+      description: Item ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: List all attachments on an item
+      tags:
+      - Attachments
+      description: Returns item-level attachments when parent list visibility allows access
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Attachment"
+        '403':
+          description: not authorized to view attachments
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: item not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+    post:
+      summary: Create item attachment
+      tags:
+      - Attachments
+      description: Adds a link/file/image attachment to an item (owner only)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/AttachmentCreateRequest"
+      responses:
+        '201':
+          description: attachment created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Attachment"
+        '401':
+          description: authentication required
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '403':
+          description: not authorized to create attachment
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/attachments/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: Attachment ID
+      required: true
+      schema:
+        type: integer
+    delete:
+      summary: Delete attachment
+      tags:
+      - Attachments
+      description: Deletes an attachment (list owner only)
+      responses:
+        '204':
+          description: attachment deleted
+        '401':
+          description: authentication required
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '403':
+          description: not authorized to delete attachment
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: attachment not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
 servers:
 - url: http://localhost:3000
   description: Development server
@@ -386,6 +560,70 @@ components:
       - id
       - title
       - list_id
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: integer
+        kind:
+          type: string
+          enum:
+          - link
+          - image
+          - file
+        title:
+          type: string
+        url:
+          type: string
+          nullable: true
+        mime_type:
+          type: string
+          nullable: true
+        size_bytes:
+          type: integer
+          nullable: true
+        attachable_type:
+          type: string
+          nullable: true
+        attachable_id:
+          type: integer
+          nullable: true
+        user_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - kind
+      - title
+      - user_id
+    AttachmentCreateRequest:
+      type: object
+      properties:
+        attachment[kind]:
+          type: string
+          enum:
+          - link
+          - image
+          - file
+        attachment[title]:
+          type: string
+        attachment[url]:
+          type: string
+          nullable: true
+          description: Required for link attachments and must be https://
+        attachment[asset]:
+          type: string
+          format: binary
+          nullable: true
+          description: Required for file/image uploads; max 5MB
+      required:
+      - attachment[kind]
+      - attachment[title]
     Error:
       type: object
       properties:

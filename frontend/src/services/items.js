@@ -1,4 +1,4 @@
-import api from './api';
+import api, { postFormData } from './api';
 
 const itemsService = {
   /** GET /api/v1/lists/:listId/items — all items in a list */
@@ -23,13 +23,16 @@ const itemsService = {
   createAttachment: (id, data) => {
     const formData = new FormData();
     formData.append('attachment[kind]', data.kind);
-    formData.append('attachment[title]', data.title);
+    if (data.title != null && String(data.title).trim() !== '') {
+      formData.append('attachment[title]', data.title);
+    }
+    if (data.body != null && String(data.body).trim() !== '') {
+      formData.append('attachment[body]', data.body);
+    }
     if (data.url) formData.append('attachment[url]', data.url);
     if (data.asset) formData.append('attachment[asset]', data.asset);
 
-    return api.post(`/items/${id}/attachments`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return postFormData(`/items/${id}/attachments`, formData);
   },
 
   /** POST /api/v1/items/:id/like — like item */

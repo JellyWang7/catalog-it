@@ -7,6 +7,9 @@ class ContentModeration
     /faggot/i,
     /kike/i,
     /chink/i,
+    # "chingchong" does not contain substring "chink"; block phrase (compact text has no spaces)
+    /ching[\s_-]*chong/i,
+    /gook/i,
     /spic/i,
     /whitepower/i
   ].freeze

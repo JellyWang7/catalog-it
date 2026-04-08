@@ -21,11 +21,13 @@ Rails.application.configure do
   # Use S3 in production by default; override with ACTIVE_STORAGE_SERVICE if needed.
   config.active_storage.service = ENV.fetch("ACTIVE_STORAGE_SERVICE", "amazon").to_sym
 
-  # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  config.assume_ssl = true
+  # Blob URLs for API JSON: use PUBLIC_APP_URL or FRONTEND_URL (see BlobUrlOptions) so img/link src work behind CloudFront.
 
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+  # Assume SSL at the edge (CloudFront/ALB). For local prod-image smoke tests: ASSUME_SSL=false.
+  config.assume_ssl = ActiveModel::Type::Boolean.new.cast(ENV.fetch("ASSUME_SSL", "true"))
+
+  # Redirect HTTP→HTTPS. For local prod-image smoke: FORCE_SSL=false (defaults true on EC2).
+  config.force_ssl = ActiveModel::Type::Boolean.new.cast(ENV.fetch("FORCE_SSL", "true"))
 
   # Skip http-to-https redirect for the default health check endpoint.
   config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }

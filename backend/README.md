@@ -13,6 +13,10 @@ bundle exec puma -p 3000
 
 API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 
+**AWS (Docker on EC2):** [DEMO.md §2](../DEMO.md#2-aws-production-start-backend-and-frontend). **Ordered release steps:** [DEPLOY.md §0](../DEPLOY.md#0-full-production-release-do-all-of-this-for-a-complete-deploy).
+
+**Production database:** `deploy_ec2_backend.sh` and the Docker **entrypoint** run **`db:prepare`** (migrations) and **`db:ensure_solid_queue`** (creates Solid Queue tables from `db/queue_schema.rb` if missing). Active Storage purge/analyze jobs require those tables when using `config.active_job.queue_adapter = :solid_queue`.
+
 ## Stack
 
 - **Ruby on Rails 8** (API mode)
@@ -21,7 +25,7 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 - **bcrypt** (password hashing)
 - **ROTP** (TOTP-based MFA for admin accounts)
 - **ActiveRecord::Encryption** (AES-256-GCM for sensitive fields)
-- **ActiveStorage** (file/image upload support)
+- **ActiveStorage** (file/image uploads; **S3** in production via `ACTIVE_STORAGE_SERVICE=amazon` + `aws-sdk-s3`)
 - **Obscenity + custom moderation service** (strict profanity/slur filtering)
 - **RSpec** (core suites passing; Swagger integration specs tracked separately)
 - **Swagger/OpenAPI** (interactive docs)

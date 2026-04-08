@@ -10,7 +10,7 @@ RSpec.describe Attachment, type: :model do
   end
 
   describe 'validations' do
-    it 'requires kind to be one of link, image, file' do
+    it 'requires kind to be one of link, image, file, note' do
       attachment = described_class.new(user: user, attachable: list, kind: 'invalid')
       expect(attachment).not_to be_valid
       expect(attachment.errors[:kind]).to be_present
@@ -36,6 +36,18 @@ RSpec.describe Attachment, type: :model do
         kind: 'link',
         title: 'Docs',
         url: 'https://example.com/docs'
+      )
+
+      expect(attachment).to be_valid
+    end
+
+    it 'accepts note attachments with body' do
+      attachment = described_class.new(
+        user: user,
+        attachable: list,
+        kind: 'note',
+        title: '',
+        body: 'Just a text note'
       )
 
       expect(attachment).to be_valid

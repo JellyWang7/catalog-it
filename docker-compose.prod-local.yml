@@ -1,0 +1,53 @@
+# Production-like backend smoke test on your Mac (same Dockerfile as EC2).
+# Uses a LOCAL Postgres only — env_file may contain RDS/AWS vars; DATABASE_* are overridden here.
+#
+# Usage: see DEPLOY.md §7 and scripts/smoke_prod_local.sh
+#
+version: "3.8"
+
+services:
+  db_prod_smoke:
+    image: postgres:15-alpine
+    container_name: catalogit_db_prod_smoke
+    environment:
+      POSTGRES_USER: catalogit
+      POSTGRES_PASSWORD: catalogit_prod_local_smoke
+      POSTGRES_DB: catalogit_production_local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U catalogit"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - prod_smoke_net
+
+  backend_prod_smoke:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: catalogit_backend_prod_smoke
+    depends_on:
+      db_prod_smoke:
+        condition: service_healthy
+    ports:
+      - "8088:80"
+    env_file:
+      - ./backend/.env.production
+    environment:
+      RAILS_ENV: production
+      # Never use RDS for this stack — local DB only
+      DATABASE_HOST: db_prod_smoke
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: catalogit_production_local
+      DATABASE_USERNAME: catalogit
+      CATALOGIT_DATABASE_PASSWORD: catalogit_prod_local_smoke
+      FRONTEND_URL: http://localhost:5173
+      ACTIVE_STORAGE_SERVICE: local
+      ASSUME_SSL: "false"
+      FORCE_SSL: "false"
+    networks:
+      - prod_smoke_net
+
+networks:
+  prod_smoke_net:
+    driver: bridge

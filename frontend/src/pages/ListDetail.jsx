@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import listsService from '../services/lists';
 import itemsService from '../services/items';
@@ -7,11 +7,16 @@ import toast from 'react-hot-toast';
 import StarRating from '../components/StarRating';
 import ItemFormModal from '../components/ItemFormModal';
 import ConfirmModal from '../components/ConfirmModal';
+import AttachmentUploadingModal from '../components/AttachmentUploadingModal';
+import { getAttachmentUploadErrorMessage } from '../utils/attachmentUploadErrors';
 
 export default function ListDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuth();
+
+  const isSharedViewer = searchParams.get('shared') === '1';
 
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,13 +28,14 @@ export default function ListDetail() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [listLikeLoading, setListLikeLoading] = useState(false);
   const [itemLikeLoading, setItemLikeLoading] = useState({});
-  const [linkAttachmentTitle, setLinkAttachmentTitle] = useState('');
-  const [fileAttachmentTitle, setFileAttachmentTitle] = useState('');
-  const [attachmentUrl, setAttachmentUrl] = useState('');
-  const [attachmentFile, setAttachmentFile] = useState(null);
+  const emptyAttachmentDraft = () => ({ note: '', linkUrl: '', file: null, label: '' });
+  const [listAttachmentDraft, setListAttachmentDraft] = useState(emptyAttachmentDraft);
   const [submittingAttachment, setSubmittingAttachment] = useState(false);
+  const [itemAttachmentInputs, setItemAttachmentInputs] = useState({});
+  const [itemAttachmentSubmitting, setItemAttachmentSubmitting] = useState({});
 
   const isOwner = isAuthenticated && list && user?.id === list.user_id;
+  const canEdit = isOwner && !isSharedViewer;
 
   useEffect(() => {
     fetchList();
@@ -233,111 +239,178 @@ export default function ListDetail() {
     }
   };
 
-  const handleAddLinkAttachment = async (e) => {
+  const handleSubmitListAttachment = async (e) => {
     e.preventDefault();
     if (!ensureAuthenticated()) return;
-    if (!isOwner) {
+    if (!canEdit) {
       toast.error('Only the list owner can add attachments');
       return;
     }
 
-    const title = linkAttachmentTitle.trim();
-    const url = attachmentUrl.trim();
-    if (!title || !url) {
-      toast.error('Please provide both title and https link');
+    const note = (listAttachmentDraft.note || '').trim();
+    const linkUrl = (listAttachmentDraft.linkUrl || '').trim();
+    const label = (listAttachmentDraft.label || '').trim();
+    const file = listAttachmentDraft.file;
+
+    if (!file && !linkUrl && !note) {
+      toast.error('Add a note, paste an https link, or choose a file.');
       return;
     }
 
     setSubmittingAttachment(true);
     try {
-      const res = await listsService.createAttachment(list.id, {
-        kind: 'link',
-        title,
-        url,
-      });
-      setList((prev) => ({
-        ...prev,
-        attachments: [res.data, ...(prev.attachments || [])],
-      }));
-      setLinkAttachmentTitle('');
-      setAttachmentUrl('');
-      toast.success('Link added');
-      navigate(`/lists/${list.id}`);
-    } catch (err) {
-      const errors = err.response?.data?.errors || [];
-      const invalidLink = errors.some((message) => message.toLowerCase().includes('https link'));
-      toast.error(
-        invalidLink
-          ? 'Invalid link. Please use a full https:// URL.'
-          : errors.join(', ') || 'Failed to add link'
-      );
-    } finally {
-      setSubmittingAttachment(false);
-    }
-  };
-
-  const handleUploadAttachment = async (e) => {
-    e.preventDefault();
-    if (!ensureAuthenticated()) return;
-    if (!isOwner) {
-      toast.error('Only the list owner can add attachments');
-      return;
-    }
-
-    const title = fileAttachmentTitle.trim();
-    if (!title || !attachmentFile) {
-      toast.error('Please provide title and select a file');
-      return;
-    }
-
-    const isImage = attachmentFile.type?.startsWith('image/');
-
-    setSubmittingAttachment(true);
-    try {
-      const res = await listsService.createAttachment(list.id, {
-        kind: isImage ? 'image' : 'file',
-        title,
-        asset: attachmentFile,
-      });
-      setList((prev) => ({
-        ...prev,
-        attachments: [res.data, ...(prev.attachments || [])],
-      }));
-      setFileAttachmentTitle('');
-      setAttachmentFile(null);
-      toast.success('File uploaded');
-      navigate(`/lists/${list.id}`);
-    } catch (err) {
-      const errors = err.response?.data?.errors || [];
-      const typeError = errors.some((message) => message.toLowerCase().includes('type is not allowed'));
-      const sizeError = errors.some((message) => message.toLowerCase().includes('5mb'));
-
-      if (typeError || sizeError) {
-        toast.error('Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP. Max size: 5MB.');
+      let res;
+      if (file) {
+        const kind = file.type?.startsWith('image/') ? 'image' : 'file';
+        const title = label || file.name || 'File';
+        res = await listsService.createAttachment(list.id, { kind, title, asset: file });
+      } else if (linkUrl) {
+        res = await listsService.createAttachment(list.id, {
+          kind: 'link',
+          title: label || undefined,
+          url: linkUrl,
+        });
       } else {
-        toast.error(errors.join(', ') || 'Failed to upload file');
+        res = await listsService.createAttachment(list.id, {
+          kind: 'note',
+          title: label || undefined,
+          body: note,
+        });
       }
+
+      setList((prev) => ({
+        ...prev,
+        attachments: [res.data, ...(prev.attachments || [])],
+      }));
+      setListAttachmentDraft(emptyAttachmentDraft());
+      toast.success('Attachment added');
+    } catch (err) {
+      const msg = getAttachmentUploadErrorMessage(err);
+      if (msg) toast.error(msg);
     } finally {
       setSubmittingAttachment(false);
     }
   };
 
-  const handleDeleteAttachment = async (attachmentId) => {
+  const getItemAttachmentInput = (itemId) =>
+    itemAttachmentInputs[itemId] || emptyAttachmentDraft();
+
+  const updateItemAttachmentInput = (itemId, updates) => {
+    setItemAttachmentInputs((prev) => ({
+      ...prev,
+      [itemId]: {
+        ...getItemAttachmentInput(itemId),
+        ...updates,
+      },
+    }));
+  };
+
+  const handleSubmitItemAttachment = async (e, itemId) => {
+    e.preventDefault();
     if (!ensureAuthenticated()) return;
-    if (!isOwner) {
+    if (!canEdit) {
+      toast.error('Only the list owner can add item attachments');
+      return;
+    }
+
+    const input = getItemAttachmentInput(itemId);
+    const note = (input.note || '').trim();
+    const linkUrl = (input.linkUrl || '').trim();
+    const label = (input.label || '').trim();
+    const file = input.file;
+
+    if (!file && !linkUrl && !note) {
+      toast.error('Add a note, paste an https link, or choose a file.');
+      return;
+    }
+
+    setItemAttachmentSubmitting((prev) => ({ ...prev, [itemId]: true }));
+    try {
+      let res;
+      if (file) {
+        const kind = file.type?.startsWith('image/') ? 'image' : 'file';
+        const title = label || file.name || 'File';
+        res = await itemsService.createAttachment(itemId, { kind, title, asset: file });
+      } else if (linkUrl) {
+        res = await itemsService.createAttachment(itemId, {
+          kind: 'link',
+          title: label || undefined,
+          url: linkUrl,
+        });
+      } else {
+        res = await itemsService.createAttachment(itemId, {
+          kind: 'note',
+          title: label || undefined,
+          body: note,
+        });
+      }
+
+      setList((prev) => ({
+        ...prev,
+        items: (prev.items || []).map((item) =>
+          item.id === itemId
+            ? { ...item, attachments: [res.data, ...(item.attachments || [])] }
+            : item
+        ),
+      }));
+      updateItemAttachmentInput(itemId, emptyAttachmentDraft());
+      toast.success('Attachment added');
+    } catch (err) {
+      const msg = getAttachmentUploadErrorMessage(err);
+      if (msg) toast.error(msg);
+    } finally {
+      setItemAttachmentSubmitting((prev) => ({ ...prev, [itemId]: false }));
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId, itemId = null) => {
+    if (!ensureAuthenticated()) return;
+    if (!canEdit) {
       toast.error('Only the list owner can delete attachments');
       return;
     }
 
     try {
       await listsService.deleteAttachment(attachmentId);
-      setList((prev) => ({
-        ...prev,
-        attachments: (prev.attachments || []).filter((attachment) => attachment.id !== attachmentId),
-      }));
+      setList((prev) => {
+        if (itemId) {
+          return {
+            ...prev,
+            items: (prev.items || []).map((item) =>
+              item.id === itemId
+                ? {
+                    ...item,
+                    attachments: (item.attachments || []).filter((attachment) => attachment.id !== attachmentId),
+                  }
+                : item
+            ),
+          };
+        }
+
+        return {
+          ...prev,
+          attachments: (prev.attachments || []).filter((attachment) => attachment.id !== attachmentId),
+        };
+      });
       toast.success('Attachment deleted');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to delete attachment');
+      const status = err.response?.status;
+      const serverMsg = err.response?.data?.error;
+      if (status === 401) {
+        toast.error('Please log in again.');
+      } else if (status === 403) {
+        toast.error('You are not allowed to delete this attachment.');
+      } else if (status === 404) {
+        toast.error('Attachment not found — it may have been deleted already.');
+      } else if (status && status >= 400 && status < 500 && serverMsg) {
+        toast.error(serverMsg);
+      } else if (status && status >= 500) {
+        toast.error('Something went wrong on the server. Refresh to check if the attachment was removed.');
+      } else if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        toast.error('Network error. Check your connection and try again.');
+      } else {
+        // No toast for ambiguous / non-actionable errors
+      }
     }
   };
 
@@ -354,21 +427,31 @@ export default function ListDetail() {
   const items = list.items || [];
   const comments = list.comments || [];
   const attachments = list.attachments || [];
-  const isShareable = isOwner && list.visibility !== 'private';
+  const isShareable = canEdit && list.visibility !== 'private';
 
   const resolveAttachmentType = (attachment) => {
     const mime = attachment?.mime_type?.toLowerCase() || '';
     const url = attachment?.url?.toLowerCase() || '';
 
+    if (attachment.kind === 'note') return 'note';
     if (attachment.kind === 'link') return 'link';
     if (attachment.kind === 'image' || mime.startsWith('image/')) return 'image';
     if (mime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac)$/i.test(url)) return 'audio';
     return 'file';
   };
 
+  const attachmentUploadBusy =
+    submittingAttachment || Object.values(itemAttachmentSubmitting).some(Boolean);
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-10">
+        {isSharedViewer && (
+          <div className="mb-6 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
+            You opened this list from a <strong>shared link</strong>. Editing is hidden so you see the same
+            read-only view as other visitors.
+          </div>
+        )}
         {/* List Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start border-b pb-6 mb-6 gap-4">
           <div>
@@ -416,7 +499,7 @@ export default function ListDetail() {
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            {isOwner && (
+            {canEdit && (
               <>
                 <button
                   onClick={() => setShowAddItem(true)}
@@ -444,7 +527,7 @@ export default function ListDetail() {
                 {sharing ? 'Sharing...' : 'Share'}
               </button>
             )}
-            {isOwner && list.visibility === 'private' && (
+            {canEdit && list.visibility === 'private' && (
               <span className="px-4 py-2 text-gray-500 border border-gray-300 font-semibold rounded-xl text-sm">
                 Private list cannot be shared
               </span>
@@ -461,7 +544,7 @@ export default function ListDetail() {
           {items.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
               <p className="text-lg mb-2">No items yet.</p>
-              {isOwner && (
+              {canEdit && (
                 <button
                   onClick={() => setShowAddItem(true)}
                   className="text-deep-blue font-semibold hover:underline"
@@ -533,7 +616,7 @@ export default function ListDetail() {
                   </div>
 
                   {/* Owner actions */}
-                  {isOwner && (
+                  {canEdit && (
                     <div className="flex items-center ml-3 gap-1 flex-shrink-0">
                       <button
                         onClick={() => setEditingItem(item)}
@@ -561,66 +644,174 @@ export default function ListDetail() {
           )}
         </div>
 
+        {/* Item-Level Attachments */}
+        <div className="mt-10 border-t pt-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Item attachments</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            For each item, add a text note, a link, or a file — only fill what you need (optional label).
+          </p>
+          {items.length === 0 ? (
+            <p className="text-gray-400">Add items first, then you can attach notes, links, or files to them.</p>
+          ) : (
+            <div className="space-y-4">
+              {items.map((item) => {
+                const itemAttachments = item.attachments || [];
+                const input = getItemAttachmentInput(item.id);
+
+                return (
+                  <div key={`item-attachments-${item.id}`} className="border border-gray-200 rounded-xl p-4 bg-white">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <p className="font-semibold text-gray-800">{item.name}</p>
+                      <span className="text-xs text-gray-500">
+                        {itemAttachments.length} attachment{itemAttachments.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+
+                    {canEdit && (
+                      <form
+                        onSubmit={(e) => handleSubmitItemAttachment(e, item.id)}
+                        className="space-y-3 mb-4 border border-dashed border-gray-200 rounded-lg p-3 bg-gray-50/50"
+                      >
+                        <p className="text-xs font-medium text-gray-600">Add attachment</p>
+                        <textarea
+                          placeholder="Text note (optional)"
+                          rows={2}
+                          value={input.note}
+                          onChange={(e) => updateItemAttachmentInput(item.id, { note: e.target.value })}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal focus:border-teal"
+                        />
+                        <input
+                          type="url"
+                          placeholder="https://… (optional link)"
+                          value={input.linkUrl}
+                          onChange={(e) => updateItemAttachmentInput(item.id, { linkUrl: e.target.value })}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal focus:border-teal"
+                        />
+                        <input
+                          type="file"
+                          onChange={(e) => updateItemAttachmentInput(item.id, { file: e.target.files?.[0] || null })}
+                          className="w-full text-sm text-gray-700"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Optional label (shown above note/link/file)"
+                          value={input.label}
+                          onChange={(e) => updateItemAttachmentInput(item.id, { label: e.target.value })}
+                          maxLength={120}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal focus:border-teal"
+                        />
+                        <button
+                          type="submit"
+                          disabled={itemAttachmentSubmitting[item.id]}
+                          className="px-3 py-2 bg-deep-blue text-white text-xs font-semibold rounded-lg hover:bg-deep-blue-800 disabled:opacity-60"
+                        >
+                          {itemAttachmentSubmitting[item.id] ? 'Adding…' : 'Add attachment'}
+                        </button>
+                        <p className="text-xs text-gray-500">
+                          If you choose a file, it is saved first. Otherwise a link, otherwise a note. Max file 5MB.
+                        </p>
+                      </form>
+                    )}
+
+                    {itemAttachments.length === 0 ? (
+                      <p className="text-sm text-gray-400">No item attachments yet.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {itemAttachments.map((attachment) => (
+                          <div key={attachment.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                            {attachment.title && (
+                              <p className="text-sm font-semibold text-gray-800 mb-1">{attachment.title}</p>
+                            )}
+                            {resolveAttachmentType(attachment) === 'note' && (
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{attachment.body || ''}</p>
+                            )}
+                            {resolveAttachmentType(attachment) === 'image' && (
+                              <img
+                                src={attachment.url}
+                                alt={attachment.title || 'Attachment'}
+                                className="w-full max-w-sm max-h-44 object-cover rounded-lg border border-gray-200"
+                              />
+                            )}
+                            {resolveAttachmentType(attachment) === 'audio' && (
+                              <audio controls src={attachment.url} className="w-full max-w-sm" />
+                            )}
+                            {resolveAttachmentType(attachment) === 'link' && (
+                              <a href={attachment.url} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline break-all">
+                                {attachment.url}
+                              </a>
+                            )}
+                            {resolveAttachmentType(attachment) === 'file' && (
+                              <a href={attachment.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                                <span>📎</span>
+                                <span>Open file</span>
+                              </a>
+                            )}
+                            {canEdit && (
+                              <button
+                                onClick={() => handleDeleteAttachment(attachment.id, item.id)}
+                                className="mt-2 text-xs text-red-600 hover:text-red-700 font-medium"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         {/* Attachments */}
         <div className="mt-10 border-t pt-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Attachments</h2>
 
-          {isOwner && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-              <form onSubmit={handleAddLinkAttachment} className="border border-gray-200 rounded-xl p-4 space-y-3">
-                <p className="text-sm font-semibold text-gray-700">Add Link</p>
-                <input
-                  type="text"
-                  placeholder="Attachment title"
-                  value={linkAttachmentTitle}
-                  onChange={(e) => setLinkAttachmentTitle(e.target.value)}
-                  maxLength={120}
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
-                />
-                <input
-                  type="url"
-                  placeholder="https://example.com/resource"
-                  value={attachmentUrl}
-                  onChange={(e) => setAttachmentUrl(e.target.value)}
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
-                />
-                <button
-                  type="submit"
-                  disabled={submittingAttachment}
-                  className="px-4 py-2 bg-deep-blue text-white text-sm font-semibold rounded-lg hover:bg-deep-blue-800 disabled:opacity-60"
-                >
-                  Add Link
-                </button>
-                <p className="text-xs text-gray-500">Allowed links: must start with https://</p>
-              </form>
-
-              <form onSubmit={handleUploadAttachment} className="border border-gray-200 rounded-xl p-4 space-y-3">
-                <p className="text-sm font-semibold text-gray-700">Upload File/Image</p>
-                <input
-                  type="text"
-                  placeholder="Attachment title"
-                  value={fileAttachmentTitle}
-                  onChange={(e) => setFileAttachmentTitle(e.target.value)}
-                  maxLength={120}
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
-                />
-                <input
-                  type="file"
-                  onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
-                  className="w-full text-sm text-gray-700"
-                />
-                <button
-                  type="submit"
-                  disabled={submittingAttachment}
-                  className="px-4 py-2 bg-teal text-white text-sm font-semibold rounded-lg hover:opacity-90 disabled:opacity-60"
-                >
-                  Upload File
-                </button>
-                <p className="text-xs text-gray-500">
-                  Allowed files: JPG, PNG, WEBP, PDF, TXT, ZIP (max 5MB)
-                </p>
-              </form>
-            </div>
+          {canEdit && (
+            <form
+              onSubmit={handleSubmitListAttachment}
+              className="border border-gray-200 rounded-xl p-4 space-y-3 mb-6 bg-gray-50/50"
+            >
+              <p className="text-sm font-semibold text-gray-700">Add list attachment</p>
+              <p className="text-xs text-gray-500">Add a text note, an https link, or a file — only fill what you need.</p>
+              <textarea
+                placeholder="Text note (optional)"
+                rows={2}
+                value={listAttachmentDraft.note}
+                onChange={(e) => setListAttachmentDraft((d) => ({ ...d, note: e.target.value }))}
+                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
+              />
+              <input
+                type="url"
+                placeholder="https://… (optional link)"
+                value={listAttachmentDraft.linkUrl}
+                onChange={(e) => setListAttachmentDraft((d) => ({ ...d, linkUrl: e.target.value }))}
+                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
+              />
+              <input
+                type="file"
+                onChange={(e) => setListAttachmentDraft((d) => ({ ...d, file: e.target.files?.[0] || null }))}
+                className="w-full text-sm text-gray-700"
+              />
+              <input
+                type="text"
+                placeholder="Optional label"
+                value={listAttachmentDraft.label}
+                onChange={(e) => setListAttachmentDraft((d) => ({ ...d, label: e.target.value }))}
+                maxLength={120}
+                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-teal"
+              />
+              <button
+                type="submit"
+                disabled={submittingAttachment}
+                className="px-4 py-2 bg-deep-blue text-white text-sm font-semibold rounded-lg hover:bg-deep-blue-800 disabled:opacity-60"
+              >
+                {submittingAttachment ? 'Adding…' : 'Add attachment'}
+              </button>
+              <p className="text-xs text-gray-500">Links must use https://. Files: JPG, PNG, WEBP, PDF, TXT, ZIP (max 5MB).</p>
+            </form>
           )}
 
           {!isOwner && (
@@ -634,11 +825,16 @@ export default function ListDetail() {
               {attachments.map((attachment) => (
                 <div key={attachment.id} className="border border-gray-200 rounded-xl p-4 flex items-start justify-between gap-3 bg-gray-50">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-gray-800 truncate mb-2">{attachment.title}</p>
+                    {attachment.title && (
+                      <p className="font-semibold text-gray-800 truncate mb-2">{attachment.title}</p>
+                    )}
+                    {resolveAttachmentType(attachment) === 'note' && (
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{attachment.body || ''}</p>
+                    )}
                     {resolveAttachmentType(attachment) === 'image' && (
                       <img
                         src={attachment.url}
-                        alt={attachment.title}
+                        alt={attachment.title || 'Attachment'}
                         className="w-full max-w-sm max-h-48 object-cover rounded-lg border border-gray-200"
                       />
                     )}
@@ -668,7 +864,7 @@ export default function ListDetail() {
                     )}
                     <p className="text-xs text-gray-400 mt-2">{resolveAttachmentType(attachment).toUpperCase()}</p>
                   </div>
-                  {isOwner && (
+                  {canEdit && (
                     <button
                       onClick={() => handleDeleteAttachment(attachment.id)}
                       className="text-xs text-red-600 hover:text-red-700 font-medium"
@@ -722,7 +918,8 @@ export default function ListDetail() {
             <div className="space-y-3">
               {comments.map((comment) => {
                 const canDeleteComment =
-                  isAuthenticated && (comment.user_id === user?.id || list.user_id === user?.id);
+                  isAuthenticated &&
+                  (comment.user_id === user?.id || (list.user_id === user?.id && canEdit));
 
                 return (
                   <div key={comment.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
@@ -783,6 +980,8 @@ export default function ListDetail() {
           danger
         />
       )}
+
+      {attachmentUploadBusy && <AttachmentUploadingModal />}
     </div>
   );
 }

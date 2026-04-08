@@ -1,8 +1,10 @@
 # CatalogIt Frontend Setup Guide
 
-**Last Updated**: March 2, 2026  
-**Branch**: `feature/mar-2-search-analytics`  
-**Status**: 100% -- Feedback Features + Attachments + Automated Tests Enabled
+**Last updated:** April 3, 2026  
+**Branch:** `deployment` (or the branch your team uses for releases)  
+**Status:** 100% — Comments, likes, unified attachments (note/link/file), tests
+
+**Production:** Build, S3 sync, and CloudFront invalidation are part of the **[full release checklist in DEPLOY.md §0](../DEPLOY.md#0-full-production-release-do-all-of-this-for-a-complete-deploy)**.
 
 ---
 
@@ -133,7 +135,8 @@ frontend/
 - Share button generates short URL (`/s/:code`) for non-private lists
 - Comments on public/shared lists
 - "Thumbs up / I like it" reactions for lists and items
-- List-level attachments (links + file/image uploads, including ZIP up to 5MB)
+- List-level attachments: one form with optional **text note**, **https link**, or **file** (plus optional label)
+- Item-level attachments: same pattern per item (owner add/delete; previews for image/audio/link/file/note)
 - Comment moderation: comment owner or list owner can delete
 - List owners cannot like or comment on their own lists
 - 422 moderation errors are surfaced with clean, user-friendly warnings
@@ -150,7 +153,8 @@ frontend/
 ## API Service Layer
 
 ### Base Config (`services/api.js`)
-- Base URL: `/api/v1` (proxied via Vite to Rails)
+- Base URL: **`import.meta.env.VITE_API_URL`** or `/api/v1` (Vite dev proxies to Rails on `:3000`)
+- **Production:** set **`VITE_API_URL=https://<your-cloudfront-domain>/api/v1`** so the browser hits the same host as the SPA (dual-origin CloudFront → EC2)
 - Request interceptor: JWT token from localStorage
 - Response interceptor: 401 -> clear auth, redirect
 
@@ -193,7 +197,9 @@ npm run build       # Production build verification
 
 ---
 
-## Seed Accounts
+## Seed accounts (development only)
+
+> Passwords below match **`db/seeds.rb`** for local/demo. Not for production.
 
 | User | Email | Password |
 |------|-------|----------|

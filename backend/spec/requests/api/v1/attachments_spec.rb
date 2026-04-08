@@ -4,6 +4,7 @@ RSpec.describe 'Api::V1::Attachments', type: :request do
   let(:owner) { create(:user) }
   let(:other_user) { create(:user) }
   let(:list) { create(:list, :public, user: owner) }
+  let(:item) { create(:item, list: list) }
   let(:owner_token) { JsonWebToken.encode(user_id: owner.id) }
   let(:owner_headers) { { 'Authorization' => "Bearer #{owner_token}" } }
   let(:other_token) { JsonWebToken.encode(user_id: other_user.id) }
@@ -120,6 +121,29 @@ RSpec.describe 'Api::V1::Attachments', type: :request do
       end.not_to change(Attachment, :count)
 
       expect(response).to have_http_status(:forbidden)
+    end
+  end
+
+  describe 'POST /api/v1/items/:item_id/attachments' do
+    it 'creates an item-level link attachment for owner' do
+      expect do
+        post "/api/v1/items/#{item.id}/attachments",
+             params: {
+               attachment: {
+                 kind: 'link',
+                 title: 'Item Source',
+                 url: 'https://example.com/item-source'
+               }
+             },
+             headers: owner_headers,
+             as: :json
+      end.to change(Attachment, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)
+      expect(json['attachable_type']).to eq('Item')
+      expect(json['attachable_id']).to eq(item.id)
+      expect(json['title']).to eq('Item Source')
     end
   end
 end

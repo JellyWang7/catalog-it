@@ -105,7 +105,16 @@ module Api
           id: attachment.id,
           kind: attachment.kind,
           title: attachment.title,
-          url: attachment.link? ? attachment.url : (attachment.asset.attached? ? rails_blob_url(attachment.asset, host: request.base_url) : nil),
+          body: attachment.body,
+          url: if attachment.link?
+                 attachment.url
+               elsif attachment.note?
+                 nil
+               elsif attachment.asset.attached?
+                 rails_blob_url_for_attachment(attachment.asset)
+               else
+                 nil
+               end,
           mime_type: attachment.mime_type,
           size_bytes: attachment.size_bytes,
           created_at: attachment.created_at,

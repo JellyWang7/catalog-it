@@ -1,4 +1,4 @@
-import api from './api';
+import api, { postFormData } from './api';
 
 const listsService = {
   /** GET /api/v1/lists — all public lists (or user's lists when authenticated) */
@@ -35,13 +35,16 @@ const listsService = {
   createAttachment: (listId, data) => {
     const formData = new FormData();
     formData.append('attachment[kind]', data.kind);
-    formData.append('attachment[title]', data.title);
+    if (data.title != null && String(data.title).trim() !== '') {
+      formData.append('attachment[title]', data.title);
+    }
+    if (data.body != null && String(data.body).trim() !== '') {
+      formData.append('attachment[body]', data.body);
+    }
     if (data.url) formData.append('attachment[url]', data.url);
     if (data.asset) formData.append('attachment[asset]', data.asset);
 
-    return api.post(`/lists/${listId}/attachments`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return postFormData(`/lists/${listId}/attachments`, formData);
   },
 
   /** DELETE /api/v1/attachments/:id — delete attachment */

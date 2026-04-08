@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Run the full RSpec suite (prepares test DB first).
+# Usage: ./script/test   or   script/test spec/models/foo_spec.rb
+set -euo pipefail
+cd "$(dirname "$0")/.."
+export RAILS_ENV=test
+bundle exec rake db:prepare
+exec bundle exec rspec "$@"

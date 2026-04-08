@@ -2,7 +2,9 @@
 
 **Implementation Date**: February 6, 2026  
 **Branch**: `security-compliance-fixes`  
-**Status**: ✅ All Critical Security Issues Resolved
+**Status**: ✅ All Critical Security Issues Resolved  
+
+**Documentation hygiene:** Describe controls and patterns only — do not paste production secrets, JWTs, or private keys. For AWS release steps (including DB migrations), see **[DEPLOY.md](../DEPLOY.md) §0**.
 
 ---
 
@@ -474,4 +476,4 @@ All critical security controls are now implemented:
 
 *For test guide, see: `backend/TESTING.md`*  
 *For authentication guide, see: `backend/AUTHENTICATION.md`*  
-*For deployment security, see: `DEPLOY_PLAN.md`*
+*For deployment security, see: `DEPLOY.md`*

@@ -16,5 +16,11 @@ RSpec.describe Comment, type: :model do
       expect(comment).not_to be_valid
       expect(comment.errors.full_messages).to include('Content contains inappropriate language.')
     end
+
+    it 'rejects anti-Asian slur ching chong (not matched by chink alone)' do
+      comment = build(:comment, user: user, list: list, body: 'chingchong')
+      expect(comment).not_to be_valid
+      expect(comment.errors.full_messages).to include('Content contains inappropriate language.')
+    end
   end
 end

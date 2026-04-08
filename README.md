@@ -3,22 +3,28 @@
 > A web application for creating, rating, and sharing personal catalogs (movies, books, collectibles, and more).
 
 **Course**: CS 701 -- Special Projects in CS II  
-**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments v1.1)  
+**Status**: Backend Complete | Frontend Complete (Comments + Likes + Attachments v1.1) | AWS deploy documented ([DEPLOY.md](DEPLOY.md))  
 **Tests**: Full backend RSpec + Frontend UI/E2E tests passing  
 
 ---
 
-## Quick Links
+## Quick links
 
 | Document | Purpose |
 |----------|---------|
+| **[DEMO.md](DEMO.md)** | **Start app (local + AWS), demo walkthrough** |
+| **[DEPLOY.md](DEPLOY.md)** | **AWS deploy (ECR/EC2), frontend S3/CloudFront, smoke tests** |
+| [STATUS.md](STATUS.md) | **Project status, milestones summary, charter snapshot** |
 | [FRONTEND_SETUP.md](FRONTEND_SETUP.md) | Frontend architecture & component guide |
-| [WEEKLY_PLAN.md](WEEKLY_PLAN.md) | Week-by-week roadmap & progress |
-| [PROJECT_STATUS.md](PROJECT_STATUS.md) | Detailed status & compliance |
-| [DEPLOY_PLAN.md](DEPLOY_PLAN.md) | Deployment guide (AWS free-first + scale-ready) |
+| [OPERATIONS.md](OPERATIONS.md) | Cost, session handoff, deferred work |
+| [SECURITY_GIT.md](SECURITY_GIT.md) | What must never be committed; public-repo doc hygiene |
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
 | [backend/SWAGGER_SETUP.md](backend/SWAGGER_SETUP.md) | Swagger/OpenAPI setup and generation |
 | [backend/TESTING.md](backend/TESTING.md) | Testing guide (current backend suite details) |
+
+**Public repository:** Do not commit AWS account IDs, ECR URIs, API keys, production credentials, or PII in markdown. Use placeholders (`<account-id>`, `<region>`). Private operator notes belong in **`continue.md`** or **`p.md`** locally — both are **gitignored** (see [.gitignore](.gitignore)).
+
+**Production release:** For a complete AWS deploy (backend image, **migrations + Solid Queue DB**, frontend sync, smoke checks), follow **[DEPLOY.md §0 — Full production release](DEPLOY.md#0-full-production-release-do-all-of-this-for-a-complete-deploy)**.
 
 ---
 
@@ -34,6 +40,15 @@
 | `.github/workflows/frontend-tests.yml` | React frontend | `npm run test` (Vitest UI), `npm run test:e2e` (Playwright E2E) |
 
 ### Local Commands (match CI)
+
+**Full suite (one command)** — from this repo root, after `npm install` in `frontend/`, `bundle install` in `backend/`, and a working test database (see [backend/TESTING.md](backend/TESTING.md)):
+
+```bash
+chmod +x scripts/test-all.sh   # first time only
+./scripts/test-all.sh
+```
+
+This runs Vitest, installs Playwright Chromium if needed, runs Playwright E2E, then `RAILS_ENV=test bundle exec rspec`.
 
 ```bash
 # Frontend
@@ -67,7 +82,7 @@ bin/bundler-audit
 | **Backend** | Ruby on Rails 8 (API mode), JWT, TOTP MFA, RSpec | Complete |
 | **Database** | PostgreSQL 15+ (3NF), AES-256 encryption at rest | Complete |
 | **Security** | TLS, MFA, XSS, rate limiting, CORS, IDOR prevention | Complete |
-| **Deployment** | Render + Netlify (planned) | 0% |
+| **Deployment** | AWS (Terraform + EC2 + RDS + S3 + CloudFront) | See [DEPLOY.md](DEPLOY.md) |
 
 ---
 
@@ -125,6 +140,21 @@ npm run dev
 ```
 
 App: **http://localhost:5173**
+
+---
+
+## Current Deployment Track (AWS)
+
+CatalogIt uses **Terraform** (`infra/`) with **CloudFront dual origin** (S3 SPA + EC2 API). **Deploy, frontend sync, smoke URLs:** **[DEPLOY.md](DEPLOY.md)**. **Longer demo script:** [DEMO.md §2](DEMO.md#2-aws-production-start-backend-and-frontend).
+
+### Production deploy summary
+
+1. **Backend:** ECR push from laptop → **`deploy_ec2_backend.sh --pull`** on EC2 — see **[DEPLOY.md](DEPLOY.md)**.
+2. **Frontend:** `VITE_API_URL` + `npm run build` → `s3 sync` → invalidation — **[DEPLOY.md](DEPLOY.md)** §4.
+3. **Smoke:** CloudFront **`/up`**, **`/api/v1/lists`**, SPA in incognito — **[DEPLOY.md](DEPLOY.md)** §5.
+4. **Seeds:** `db:seed` **wipes** data — production only if intentional.
+
+**Handoff / cost:** [OPERATIONS.md](OPERATIONS.md).
 
 ---
 
@@ -209,7 +239,9 @@ For production, expose `/api-docs` on your API host:
 > Additional rules:
 > - private lists cannot be shared
 > - attachment links must use `https://`
+> - **note** attachments store sanitized text in `body`; **link** / **file** / **image** as before
 > - attachment uploads support JPG/PNG/WEBP/PDF/TXT/ZIP up to 5MB
+> - list/item UI: optional note **or** link **or** file (single form per list/item)
 
 ---
 
@@ -237,7 +269,7 @@ For production, expose `/api-docs` on your API host:
 |--------|---------|
 | `main` | Stable releases |
 | `feature/frontend-init` | Frontend development |
-| `deployment` | AWS deployment hardening branch |
+| `deployment` | AWS deployment hardening and execution |
 
 Never commit `docs/`, `.env`, or credentials.
 

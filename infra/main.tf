@@ -35,6 +35,8 @@ locals {
     Owner       = var.owner
     ManagedBy   = "terraform"
   }
+  # CloudFront custom origin must use a stable DNS name; default to EC2 public DNS
+  cloudfront_api_origin_domain = trimspace(var.cloudfront_api_origin_domain) != "" ? trimspace(var.cloudfront_api_origin_domain) : aws_instance.backend.public_dns
 }
 
 resource "aws_security_group" "ec2_api" {
@@ -66,12 +68,15 @@ resource "aws_security_group" "ec2_api" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description = "Custom API port"
-    from_port   = var.api_port
-    to_port     = var.api_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  dynamic "ingress" {
+    for_each = contains([80, 443], var.api_port) ? [] : [var.api_port]
+    content {
+      description = "Custom API port"
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
   }
 
   egress {
@@ -216,6 +221,113 @@ resource "aws_cloudfront_distribution" "frontend" {
     origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
   }
 
+  # Rails API on EC2 (HTTP). Viewer still uses HTTPS to CloudFront.
+  origin {
+    domain_name = local.cloudfront_api_origin_domain
+    origin_id   = "ec2-api-origin"
+
+    custom_origin_config {
+      http_port              = var.api_port
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+
+    connection_attempts = 3
+    connection_timeout  = 10
+  }
+
+  # API JSON — no caching, forward headers needed for JWT / JSON
+  ordered_cache_behavior {
+    path_pattern     = "/api/*"
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "ec2-api-origin"
+
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Authorization", "Origin", "Accept", "Accept-Language", "Content-Type"]
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  # Rails health check (load balancers / smoke tests)
+  ordered_cache_behavior {
+    path_pattern     = "/up"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "ec2-api-origin"
+
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  # Swagger UI + OpenAPI (optional)
+  ordered_cache_behavior {
+    path_pattern     = "/api-docs*"
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "ec2-api-origin"
+
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Accept", "Accept-Language", "Content-Type"]
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  # Active Storage proxy / redirects if URLs hit this host
+  ordered_cache_behavior {
+    path_pattern     = "/rails/*"
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "ec2-api-origin"
+
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    min_ttl     = 0
+    default_ttl = 0
+    max_ttl     = 0
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Authorization", "Origin", "Accept", "Content-Type"]
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
@@ -232,15 +344,10 @@ resource "aws_cloudfront_distribution" "frontend" {
     }
   }
 
+  # S3 + OAC returns 403 for missing keys — map to SPA shell for client-side routes.
+  # Do NOT map 404 globally: Rails API returns real 404 JSON under /api/* and must not be replaced by index.html.
   custom_error_response {
     error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 0
-  }
-
-  custom_error_response {
-    error_code            = 404
     response_code         = 200
     response_page_path    = "/index.html"
     error_caching_min_ttl = 0
@@ -427,6 +534,11 @@ output "cloudfront_domain_name" {
 output "cloudfront_distribution_id" {
   value       = aws_cloudfront_distribution.frontend.id
   description = "CloudFront distribution ID for cache invalidation."
+}
+
+output "cloudfront_api_origin_domain" {
+  value       = local.cloudfront_api_origin_domain
+  description = "Hostname CloudFront uses as custom origin for /api/*, /up, /api-docs*, /rails/* (EC2)."
 }
 
 output "backend_instance_id" {

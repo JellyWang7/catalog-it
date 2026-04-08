@@ -7,7 +7,7 @@ module Api
       def signup
         user = User.new(user_params)
         # Status defaults to 'active' in database
-        
+
         if user.save
           token = JsonWebToken.encode(user_id: user.id)
           render json: {

@@ -1,5 +1,10 @@
 import axios from 'axios';
 
+const defaultTransformRequest = axios.defaults.transformRequest;
+const transformRequestChain = Array.isArray(defaultTransformRequest)
+  ? [...defaultTransformRequest]
+  : [defaultTransformRequest];
+
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api/v1',
@@ -55,5 +60,26 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+/**
+ * POST multipart (attachments). The shared instance sets Content-Type: application/json;
+ * for FormData, Axios would otherwise JSON-serialize the payload. Clear Content-Type first,
+ * then run the default transform chain so the browser sets multipart boundaries.
+ */
+export function postFormData(url, formData, config = {}) {
+  return api.post(url, formData, {
+    timeout: 120000,
+    ...config,
+    transformRequest: [
+      (data, headers) => {
+        if (typeof FormData !== 'undefined' && data instanceof FormData) {
+          headers.delete('Content-Type');
+        }
+        return data;
+      },
+      ...transformRequestChain,
+    ],
+  });
+}
 
 export default api;

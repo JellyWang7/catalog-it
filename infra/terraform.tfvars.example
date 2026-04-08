@@ -22,6 +22,10 @@ db_password        = "REPLACE_ME_WITH_STRONG_PASSWORD"
 # If Nginx/Caddy proxies to Rails and listens on 80, keep 80.
 api_port           = 80
 
+# Optional: set EC2 public DNS if Terraform apply runs while instance is stopped (no public_dns).
+# Example: "ec2-52-22-20-36.compute-1.amazonaws.com"
+# cloudfront_api_origin_domain = ""
+
 # Daily runtime window (1-2 hours).
 enable_schedules   = true
 schedule_timezone  = "America/New_York"
