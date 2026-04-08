@@ -71,7 +71,7 @@ flowchart TB
 
 ---
 
-## Visualization: request flow (typical)
+## Request flow (typical)
 
 ```mermaid
 sequenceDiagram
@@ -97,7 +97,7 @@ sequenceDiagram
 
 ---
 
-## Visualization: domain model (high level)
+## Domain model (high level)
 
 ```mermaid
 erDiagram
@@ -153,7 +153,7 @@ erDiagram
 
 ---
 
-## Visualization: deployment pipeline (summary)
+## Deployment pipeline (summary)
 
 ```mermaid
 flowchart LR
@@ -170,7 +170,7 @@ flowchart LR
 
 ---
 
-## Visualization: auth + MFA (happy path)
+## Auth + MFA (happy path)
 
 ```mermaid
 stateDiagram-v2
