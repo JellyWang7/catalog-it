@@ -71,6 +71,118 @@ flowchart TB
 
 ---
 
+## Visualization: request flow (typical)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant B as Browser (SPA)
+  participant CF as CloudFront
+  participant S3 as S3 (static SPA)
+  participant API as Rails API (EC2/Docker)
+  participant DB as PostgreSQL (RDS)
+
+  B->>CF: GET /
+  CF->>S3: Fetch index.html + assets
+  S3-->>CF: 200 (static)
+  CF-->>B: 200 (SPA)
+
+  B->>CF: GET /api/v1/lists (Authorization: Bearer <JWT> optional)
+  CF->>API: Forward request (path-based origin)
+  API->>DB: Query data
+  DB-->>API: Rows
+  API-->>CF: JSON 200
+  CF-->>B: JSON 200
+```
+
+---
+
+## Visualization: domain model (high level)
+
+```mermaid
+erDiagram
+  USER ||--o{ LIST : owns
+  LIST ||--o{ ITEM : contains
+  USER ||--o{ COMMENT : writes
+  LIST ||--o{ COMMENT : has
+  USER ||--o{ LIST_LIKE : likes
+  LIST ||--o{ LIST_LIKE : receives
+  USER ||--o{ ITEM_LIKE : likes
+  ITEM ||--o{ ITEM_LIKE : receives
+  LIST ||--o{ ATTACHMENT : has
+  ITEM ||--o{ ATTACHMENT : has
+
+  USER {
+    uuid id
+    string email
+  }
+  LIST {
+    uuid id
+    uuid user_id
+    string title
+    string visibility
+  }
+  ITEM {
+    uuid id
+    uuid list_id
+    string title
+  }
+  COMMENT {
+    uuid id
+    uuid user_id
+    uuid list_id
+    text body
+  }
+  ATTACHMENT {
+    uuid id
+    string attachable_type
+    uuid attachable_id
+    string kind
+  }
+  LIST_LIKE {
+    uuid id
+    uuid user_id
+    uuid list_id
+  }
+  ITEM_LIKE {
+    uuid id
+    uuid user_id
+    uuid item_id
+  }
+```
+
+---
+
+## Visualization: deployment pipeline (summary)
+
+```mermaid
+flowchart LR
+  Dev[Developer laptop] -->|run tests| Tests[./scripts/test-all.sh]
+  Dev -->|build & push| ECR[(ECR)]
+  ECR -->|pull image| EC2[EC2\nDocker deploy]
+  EC2 -->|db:prepare + db:ensure_solid_queue| RDS[(RDS PostgreSQL)]
+
+  Dev -->|npm ci + build\nVITE_API_URL=https://<cloudfront-host>/api/v1| Build[frontend/dist]
+  Build -->|sync| S3[S3 bucket]
+  S3 --> CF[CloudFront]
+  EC2 --> CF
+```
+
+---
+
+## Visualization: auth + MFA (happy path)
+
+```mermaid
+stateDiagram-v2
+  [*] --> LoggedOut
+  LoggedOut --> LoggedIn : POST /auth/login\n(valid password)
+  LoggedOut --> MFARequired : POST /auth/login\n(mfa_required=true)
+  MFARequired --> LoggedIn : POST /auth/mfa/verify\n(valid code)
+  LoggedIn --> LoggedOut : logout / token expiry
+```
+
+---
+
 ## Project structure
 
 ```
