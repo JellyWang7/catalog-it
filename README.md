@@ -58,6 +58,19 @@ Ruby **4.0+** matches `backend/Dockerfile` (`RUBY_VERSION`). Node **18+** recomm
 
 ---
 
+## Architecture (high level)
+
+```mermaid
+flowchart TB
+  U[Browser] -->|HTTPS| CF[CloudFront]
+  CF -->|Default origin: SPA assets| S3[S3 bucket\nfrontend build]
+  CF -->|Path-based origin:\n/api/* /up /api-docs* /rails/*| EC2[EC2\nDocker: Rails API]
+  EC2 -->|TCP 5432| RDS[(RDS PostgreSQL)]
+  EC2 -->|Optional| S3Uploads[S3 bucket\nActive Storage uploads]
+```
+
+---
+
 ## Project structure
 
 ```
