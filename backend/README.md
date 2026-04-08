@@ -20,7 +20,7 @@ API: **http://localhost:3000** | Swagger: **http://localhost:3000/api-docs**
 ## Stack
 
 - **Ruby on Rails 8** (API mode)
-- **PostgreSQL 15+** (3NF schema, AES-256 encryption at rest)
+- **PostgreSQL 15+** (3NF schema; enable RDS/storage encryption in AWS for at-rest DB encryption)
 - **JWT** (authentication, 24h expiry)
 - **bcrypt** (password hashing)
 - **ROTP** (TOTP-based MFA for admin accounts)

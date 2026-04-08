@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base - CatalogIt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; }
+        .deep-blue { background-color: #0d47a1; }
+        .teal-accent { background-color: #00897b; }
+        .text-teal-accent { color: #00897b; }
+        .text-deep-blue { color: #0d47a1; }
+    </style>
+</head>
+<body class="min-h-screen flex">
+
+    <!-- Sidebar Navigation (Consistent) -->
+    <aside class="w-64 deep-blue p-6 h-screen sticky top-0 flex-shrink-0 shadow-2xl">
+        <h1 class="text-3xl font-extrabold text-white mb-10">CatalogIt</h1>
+        <nav class="space-y-2">
+            <a href="app-dashboard.html" class="flex items-center p-3 rounded-xl text-blue-200 hover:bg-blue-700 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                My Dashboard
+            </a>
+            <a href="public-explore.html" class="flex items-center p-3 rounded-xl text-blue-200 hover:bg-blue-700 transition-colors">
+                <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9 12l2 2 4-4m5.636 2.636a9 9 0 11-12.728 0 9 9 0 0112.728 0z"></path></svg>
+                Explore Public
+            </a>
+            <a href="knowledge-base.html" class="flex items-center p-3 rounded-xl text-white font-semibold bg-blue-700">
+                <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M11 5.882l-7.55 3.395A1 1 0 003 10.417V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.583a1 1 0 00-.45-1.5l-7.55-3.395z"></path></svg>
+                Help Center
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area: Knowledge Base -->
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- Hero Section with Search Bar -->
+            <header class="teal-accent text-white p-10 lg:p-16 rounded-2xl shadow-lg mb-10 text-center">
+                <h1 class="text-4xl lg:text-5xl font-extrabold mb-4">CatalogIt Knowledge Base</h1>
+                <p class="text-xl opacity-90 mb-8">Official documentation and support for all user types.</p>
+
+                <!-- Search Bar -->
+                <div class="max-w-xl mx-auto relative">
+                    <input type="text" placeholder="Search for setup guides, sharing tips, or item ratings..."
+                           class="w-full p-4 pl-12 text-gray-900 border-2 border-white rounded-xl focus:ring-4 focus:ring-teal-300 focus:border-teal-500 transition-all shadow-md">
+                    <svg class="w-6 h-6 text-gray-500 absolute left-4 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </header>
+
+            <!-- Support Topics Grid -->
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Browse by Topic</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- Category 1: Getting Started -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-teal-500 hover:shadow-lg transition-shadow cursor-pointer">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2 text-teal-accent">Account Setup</h3>
+                    <p class="text-sm text-gray-600">Guides for registration, login, and profile management (User entity).</p>
+                    <a href="#" class="mt-4 inline-block text-teal-accent text-sm font-semibold hover:underline">View 8 Articles &rarr;</a>
+                </div>
+
+                <!-- Category 2: Managing Lists (List Entity) -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-600 hover:shadow-lg transition-shadow cursor-pointer">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2 text-deep-blue">List Creation & Control</h3>
+                    <p class="text-sm text-gray-600">Creating, editing, sharing, and making lists public or private.</p>
+                    <a href="#" class="mt-4 inline-block text-deep-blue text-sm font-semibold hover:underline">View 15 Articles &rarr;</a>
+                </div>
+
+                <!-- Category 3: Items & Ratings (Item/Rating/Notes Entity) -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-green-500 hover:shadow-lg transition-shadow cursor-pointer">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2 text-green-600">Item Cataloging & Notes</h3>
+                    <p class="text-sm text-gray-600">Adding items, setting categories, using the rating system, and leaving notes.</p>
+                    <a href="#" class="mt-4 inline-block text-green-600 text-sm font-semibold hover:underline">View 11 Articles &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Need Help CTA -->
+            <div class="mt-16 text-center border-t border-gray-200 pt-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-3">Still Need Assistance?</h3>
+                <p class="text-lg text-gray-600 mb-6">Our support team is here to help you directly.</p>
+                <button class="px-8 py-3 teal-accent text-white rounded-xl font-semibold shadow-lg hover:bg-teal-700 transition-colors focus:ring-4 focus:ring-teal-300">
+                    Contact Support
+                </button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

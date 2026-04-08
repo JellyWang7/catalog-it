@@ -4,6 +4,8 @@
 
 These patterns are **gitignored** in this repo — do not force-add them, and do not paste real secrets into markdown that gets committed.
 
+**Design docs:** The `docs/` tree is **intended to be committed** (see [docs/README.md](docs/README.md)). Treat it like any other public doc: placeholders only for secrets and live AWS IDs.
+
 | Never commit | Notes |
 |--------------|--------|
 | `backend/.env.production` | Real DB passwords, `SECRET_KEY_BASE`, AWS keys, JWT secrets |

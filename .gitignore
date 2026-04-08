@@ -4,8 +4,7 @@
 /continue.md
 /p.md
 
-# Documentation (NEVER push to GitHub)
-/docs/
+# Design / course docs live under docs/ and are safe to commit (no secrets in markdown)
 /CatalogIt-UpdatedProjectCharter_etc.pdf
 *.docx
 

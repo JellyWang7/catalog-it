@@ -1,29 +1,30 @@
-# CatalogIt - Complete Setup Instructions
+# CatalogIt — first-time setup (editor + API)
 
-## IMPORTANT: Follow These Steps in Order
+Use this when you are new to the repo. For a shorter checklist, see [QUICKSTART.md](QUICKSTART.md). For the full project map, see [README.md](README.md).
 
-### Step 1: Open Cursor in the Correct Folder
+## IMPORTANT: Follow these steps in order
 
-**Close Cursor completely, then:**
+### Step 1: Open the repo root in your editor
 
-1. Open Finder
-2. Navigate to: `/Users/Jelly1/Documents/my-app/catalogIt/catalog-it`
-3. Right-click on the `catalog-it` folder
-4. Select "Open with Cursor"
+**Workspace root** should be the `catalog-it` folder (the one that contains `backend/` and `frontend/`).
 
-**OR from terminal:**
+**From terminal (VS Code / Cursor):**
 ```bash
-cd /Users/Jelly1/Documents/my-app/catalogIt/catalog-it
+cd /path/to/catalog-it
 cursor .
+# or: code .
 ```
 
-This sets your workspace root correctly. All terminals will now open in the `backend/` directory.
+Use **new terminals** from that workspace; you will `cd backend` or `cd frontend` as needed below.
 
 ---
 
 ### Step 2: Disable RVM Interference
 
-**Open a new terminal in Cursor** (it should now be in the backend directory).
+**Open a new terminal** at the repo root, then:
+```bash
+cd backend
+```
 
 Run this ONCE to disable RVM auto-switching:
 ```bash
@@ -36,7 +37,7 @@ Then close and reopen the terminal.
 
 ### Step 3: Start Rails Server
 
-In the terminal (should be in backend/ directory):
+From `backend/`:
 
 ```bash
 bundle exec rails server
@@ -76,8 +77,8 @@ If `bundle exec rails server` doesn't work:
 
 ## Verification Checklist
 
-- [ ] Cursor workspace is `catalog-it/` (check bottom left of Cursor)
-- [ ] New terminals open in `backend/` directory
+- [ ] Editor workspace root is the `catalog-it` folder (contains `backend/` and `frontend/`)
+- [ ] You can `cd backend` and run the server from there
 - [ ] `bundle exec rails server` starts successfully
 - [ ] API responds at http://localhost:3000/api/v1/lists
 - [ ] Ready to build frontend!

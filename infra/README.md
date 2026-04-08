@@ -1,6 +1,6 @@
 # CatalogIt Terraform Infrastructure
 
-**Last updated:** April 3, 2026  
+**Last updated:** April 7, 2026  
 
 This folder provisions a low-cost AWS stack for CatalogIt:
 
@@ -90,7 +90,7 @@ aws cloudfront create-invalidation --distribution-id "$(terraform output -raw cl
 
 **Backend ECR + EC2:** **[DEPLOY.md](../DEPLOY.md)** (section 2 — Backend; also [DEMO.md §2.3–2.4](../DEMO.md#23-backend-on-ec2-full-deploy)).
 
-Summary: SSH → `cd` repo → `git checkout deployment` → `cd backend` → `source .env.production` → `./scripts/deploy_ec2_backend.sh --pull`. The script runs **`db:prepare`** and **`db:ensure_solid_queue`** in the container (migrations + Solid Queue schema). Details: **[DEPLOY.md](../DEPLOY.md)** (§0 full release, §2 backend).
+Summary: SSH → `cd` repo → `git checkout main` → `cd backend` → `source .env.production` → `./scripts/deploy_ec2_backend.sh --pull`. The script runs **`db:prepare`** and **`db:ensure_solid_queue`** in the container (migrations + Solid Queue schema). Details: **[DEPLOY.md](../DEPLOY.md)** (§0 full release, §2 backend).
 
 Optional **systemd** auto-start (adjust `APP_DIR` to your clone):
 

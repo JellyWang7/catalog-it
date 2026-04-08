@@ -1,7 +1,7 @@
 # CatalogIt — project status & history
 
-**Last updated:** April 3, 2026  
-**Deploy branch:** `deployment`
+**Last updated:** April 7, 2026  
+**Default branch:** `main`
 
 Single consolidated status doc (replaces former `PROJECT_STATUS.md` and `WEEKLY_PLAN.md`).
 
@@ -11,6 +11,7 @@ Single consolidated status doc (replaces former `PROJECT_STATUS.md` and `WEEKLY_
 | **AWS deploy, frontend sync, smoke tests** | **[DEPLOY.md](DEPLOY.md)** |
 | Session handoff, cost, deferred work | **[OPERATIONS.md](OPERATIONS.md)** |
 | Terraform (provision, outputs) | **[infra/README.md](infra/README.md)** |
+| Design & submission artifacts (`docs/`) | **[docs/README.md](docs/README.md)** |
 | Git & secrets hygiene (public repo) | **[SECURITY_GIT.md](SECURITY_GIT.md)** |
 
 ---

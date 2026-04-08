@@ -1,6 +1,6 @@
 # Operations & handoff
 
-**Last updated:** April 3, 2026  
+**Last updated:** April 7, 2026  
 
 **Full production release** (recommended whenever you ship a version users should run): backend image + **`db:prepare`** + **`db:ensure_solid_queue`**, frontend build/sync + CloudFront invalidation, then smoke tests — **[DEPLOY.md §0](DEPLOY.md#0-full-production-release-do-all-of-this-for-a-complete-deploy)**.
 

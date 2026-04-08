@@ -1,7 +1,7 @@
 # CatalogIt Frontend Setup Guide
 
-**Last updated:** April 3, 2026  
-**Branch:** `deployment` (or the branch your team uses for releases)  
+**Last updated:** April 7, 2026  
+**Branch:** `main` (or whatever branch your team uses for releases — keep EC2 and CI aligned)  
 **Status:** 100% — Comments, likes, unified attachments (note/link/file), tests
 
 **Production:** Build, S3 sync, and CloudFront invalidation are part of the **[full release checklist in DEPLOY.md §0](../DEPLOY.md#0-full-production-release-do-all-of-this-for-a-complete-deploy)**.

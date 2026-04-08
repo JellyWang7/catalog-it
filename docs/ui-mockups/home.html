@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatalogIt - Organize Everything That Matters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; }
+        .deep-blue { background-color: #0d47a1; }
+        .text-deep-blue { color: #0d47a1; }
+        .teal-text { color: #00897b; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navbar (Shared across all pages) -->
+    <nav class="bg-white shadow-lg sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="text-2xl font-extrabold text-deep-blue">CatalogIt 📦</a>
+                <div class="flex items-center space-x-6">
+                    <a href="features.html" class="text-gray-600 hover:text-blue-600 font-medium">Features</a>
+                    <a href="public-explore.html" class="text-gray-600 hover:text-blue-600 font-medium">Explore</a>
+                    <a href="knowledge-base.html" class="text-gray-600 hover:text-blue-600 font-medium">Support</a>
+                    <a href="app-dashboard.html" class="px-4 py-2 deep-blue text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-md">Go to App</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="py-20 lg:py-32 bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-lg font-semibold tracking-wider uppercase mb-3 teal-text">Your World. Organized.</p>
+            <h1 class="text-5xl sm:text-7xl font-extrabold text-gray-900 leading-tight mb-8">
+                The Cataloging <span class="text-deep-blue">Productivity</span> Platform
+            </h1>
+            <p class="max-w-3xl mx-auto text-xl text-gray-600 mb-10">
+                From rare collectibles to critical business assets, CatalogIt gives you the control to list, enrich, rate, and share every item that matters.
+            </p>
+            <a href="app-dashboard.html" class="px-10 py-4 deep-blue text-white font-extrabold text-lg rounded-xl hover:bg-blue-700 transition-colors shadow-xl shadow-blue-500/50">
+                Start Cataloging Now &rarr;
+            </a>
+
+            <!-- Mockup Screenshot -->
+            <div class="mt-16">
+                <img src="https://placehold.co/1200x600/bbdefb/0d47a1?text=CatalogIt+Web+Dashboard+Mockup" alt="CatalogIt App Interface Mockup"
+                     class="mx-auto w-full max-w-6xl rounded-2xl shadow-2xl border-4 border-blue-100/50">
+            </div>
+        </div>
+    </header>
+
+    <!-- Footer (Basic) -->
+    <footer class="deep-blue py-8 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+            <p>&copy; 2024 CatalogIt, Inc. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

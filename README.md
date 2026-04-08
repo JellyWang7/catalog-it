@@ -12,11 +12,15 @@
 
 | Document | Purpose |
 |----------|---------|
+| **[START_HERE.md](START_HERE.md)** | First-time local setup (editor + Rails) |
+| **[QUICKSTART.md](QUICKSTART.md)** | Prerequisites checklist and run commands |
 | **[DEMO.md](DEMO.md)** | **Start app (local + AWS), demo walkthrough** |
 | **[DEPLOY.md](DEPLOY.md)** | **AWS deploy (ECR/EC2), frontend S3/CloudFront, smoke tests** |
 | [STATUS.md](STATUS.md) | **Project status, milestones summary, charter snapshot** |
 | [FRONTEND_SETUP.md](FRONTEND_SETUP.md) | Frontend architecture & component guide |
 | [OPERATIONS.md](OPERATIONS.md) | Cost, session handoff, deferred work |
+| [BRANCH_CLEANUP_TODO.md](BRANCH_CLEANUP_TODO.md) | Optional: delete stale remote branches when GitHub rules allow |
+| [docs/README.md](docs/README.md) | Index of design & submission docs under `docs/` |
 | [SECURITY_GIT.md](SECURITY_GIT.md) | What must never be committed; public-repo doc hygiene |
 | [backend/AUTHENTICATION.md](backend/AUTHENTICATION.md) | JWT auth + password reset guide |
 | [backend/SWAGGER_SETUP.md](backend/SWAGGER_SETUP.md) | Swagger/OpenAPI setup and generation |
@@ -36,8 +40,9 @@
 
 | Workflow | Scope | Required Gates |
 |----------|-------|----------------|
-| `backend/.github/workflows/ci.yml` | Rails backend | Brakeman scan, bundler-audit, RuboCop |
-| `.github/workflows/frontend-tests.yml` | React frontend | `npm run test` (Vitest UI), `npm run test:e2e` (Playwright E2E) |
+| `.github/workflows/frontend-tests.yml` | React frontend (paths: `frontend/**`) | `npm run test` (Vitest), `npm run test:e2e` (Playwright E2E) |
+
+**Backend (Rails):** There is no separate GitHub Actions workflow in this repo today. Before merge or release, run the backend checks locally (RSpec, RuboCop, Brakeman, bundler-audit) — see commands below and [backend/TESTING.md](backend/TESTING.md).
 
 ### Local Commands (match CI)
 
@@ -80,7 +85,7 @@ bin/bundler-audit
 |-------|-----------|--------|
 | **Frontend** | React 18, Vite 4, Tailwind CSS 3, React Router 6, Axios | 100% |
 | **Backend** | Ruby on Rails 8 (API mode), JWT, TOTP MFA, RSpec | Complete |
-| **Database** | PostgreSQL 15+ (3NF), AES-256 encryption at rest | Complete |
+| **Database** | PostgreSQL 15+ (3NF); RDS/storage encryption when enabled in AWS | Complete |
 | **Security** | TLS, MFA, XSS, rate limiting, CORS, IDOR prevention | Complete |
 | **Deployment** | AWS (Terraform + EC2 + RDS + S3 + CloudFront) | See [DEPLOY.md](DEPLOY.md) |
 
@@ -106,7 +111,7 @@ catalog-it/
 │   │   ├── hooks/        # Custom hooks
 │   │   └── utils/        # Helpers
 │   └── vite.config.js
-├── docs/                 # Design documents (from CS 700)
+├── docs/                 # Design & course submission (see docs/README.md)
 └── *.md                  # Project documentation
 ```
 
@@ -116,9 +121,10 @@ catalog-it/
 
 ### Prerequisites
 
-- Ruby 3.x+ / Rails 8+
-- Node.js 18+ recommended (Node 16 works with current pinned test tooling)
-- PostgreSQL 15+
+- Ruby **4.0+** (see `backend/Dockerfile` `RUBY_VERSION`; matches production image)
+- Rails **8.1+**
+- Node.js **18+** recommended (Node 16 may work with current pinned test tooling)
+- PostgreSQL **15+**
 
 ### Backend
 
@@ -259,19 +265,19 @@ For production, expose `/api-docs` on your API host:
 - **Owner-based authorization** (IDOR prevention)
 - **CORS** (environment-based origins)
 - **Error boundary** (React crash recovery)
-- **Network defense** (AWS WAF + CloudFront planned for production)
+- **Edge hardening** (optional: WAF in front of CloudFront — not defined in this repo by default)
 
 ---
 
-## Git Workflow
+## Git workflow
 
 | Branch | Purpose |
 |--------|---------|
-| `main` | Stable releases |
-| `feature/frontend-init` | Frontend development |
-| `deployment` | AWS deployment hardening and execution |
+| `main` | Default branch; current integration and releases |
 
-Never commit `docs/`, `.env`, or credentials.
+Historical topic branches (`deployment`, `feature/*`, etc.) may still exist on the remote until removed; see [BRANCH_CLEANUP_TODO.md](BRANCH_CLEANUP_TODO.md).
+
+**Never commit** `.env` files (except `*.example`), credentials, `database.yml`, `master.key`, or production secrets. Course and design markdown under `docs/` **is** versioned — still avoid pasting real keys or IDs there; use placeholders ([SECURITY_GIT.md](SECURITY_GIT.md)).
 
 ---
 

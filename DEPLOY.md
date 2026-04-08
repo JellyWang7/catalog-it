@@ -1,7 +1,7 @@
 # CatalogIt — AWS deployment & smoke tests
 
-**Last updated:** April 3, 2026  
-**Deploy branch:** `deployment` (use the branch your GitHub rules allow; align local and EC2 checkouts.)
+**Last updated:** April 7, 2026  
+**Default branch:** `main` — use `main` on laptops and EC2 unless your team pins another branch. Align EC2 `git` checkout with the branch you build and deploy from.
 
 Single reference for **production**: Terraform, **backend (ECR + EC2 + DB)**, **frontend (S3 + CloudFront)**, and **verification**. Use placeholders only (`<account-id>`, `<region>`, `<cloudfront-domain>`); never paste secrets, tokens, or private keys into committed docs — see [SECURITY_GIT.md](SECURITY_GIT.md).
 
@@ -105,8 +105,8 @@ Typical clone: **`/opt/catalogit/catalog-it`**.
 ```bash
 cd /opt/catalogit/catalog-it
 git fetch origin
-git checkout deployment
-git pull origin deployment
+git checkout main
+git pull origin main
 ```
 
 You need this so **`scripts/deploy_ec2_backend.sh`** matches Git (e.g. **`docker run`** passes **`AWS_*`**, **`ACTIVE_STORAGE_SERVICE`**, etc., from your sourced env).

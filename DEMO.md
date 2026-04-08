@@ -1,7 +1,7 @@
 # CatalogIt — Demo guide
 
-**Last updated:** April 3, 2026  
-**Deploy branch:** `deployment`
+**Last updated:** April 7, 2026  
+**Default branch:** `main` (use the same branch on EC2 as on your laptop)
 
 This file is the **single place** for **how to run** the app for a demo: **local** (two terminals) and **AWS** (EC2 backend + S3/CloudFront frontend). For **deploy commands, smoke tests, and troubleshooting**, see **[DEPLOY.md](DEPLOY.md)**. For secrets and what not to commit, see [SECURITY_GIT.md](SECURITY_GIT.md).
 
@@ -103,8 +103,8 @@ This builds a `linux/amd64` image and pushes it to ECR. Takes ~2 minutes on a mo
 ```bash
 cd /opt/catalogit/catalog-it
 git fetch origin
-git checkout deployment
-git reset --hard origin/deployment
+git checkout main
+git reset --hard origin/main
 
 cd backend
 set -a && source .env.production && set +a
@@ -130,8 +130,8 @@ SSH into EC2, then:
 ```bash
 cd /opt/catalogit/catalog-it
 git fetch origin
-git checkout deployment
-git reset --hard origin/deployment
+git checkout main
+git reset --hard origin/main
 
 cd backend
 set -a && source .env.production && set +a
@@ -166,7 +166,7 @@ Expect **200** and container status **Up**.
 
 ```bash
 cd /opt/catalogit/catalog-it
-git fetch origin && git checkout deployment && git reset --hard origin/deployment
+git fetch origin && git checkout main && git reset --hard origin/main
 ```
 
 ### 2.4 Backend only after EC2 restart (no code change)

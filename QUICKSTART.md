@@ -1,5 +1,7 @@
 # CatalogIt Quick Start Guide
 
+Overview: [README.md](README.md) · First-time setup: [START_HERE.md](START_HERE.md) · Demo script: [DEMO.md](DEMO.md)
+
 ## Prerequisites Checklist
 
 Before starting frontend development, ensure all of these are complete:
@@ -8,19 +10,19 @@ Before starting frontend development, ensure all of these are complete:
 - [x] Ruby 4.0+ installed
 - [x] Rails 8+ installed  
 - [x] PostgreSQL 15+ installed and running
-- [x] Node.js 16+ and npm installed
+- [x] Node.js 18+ and npm installed (16 may work with current pins)
 
 ### ✅ Database
 - [x] PostgreSQL service running (`brew services list`)
 - [x] Database `catalogit_development` created
-- [x] Migrations run (3 tables: users, lists, items)
-- [x] Seed data loaded (6 public lists, 24 items)
+- [x] Migrations run (full schema — comments, reactions, attachments, etc.)
+- [x] Seed data loaded when you need demo data (`rails db:seed`)
 
 ### ✅ Backend Configuration
 - [x] `backend/config/database.yml` exists (copied from `.example`)
 - [x] `backend/config/initializers/cors.rb` configured for localhost:5173
 - [x] Gemfile dependencies installed (`bundle install`)
-- [x] Tests passing (76 RSpec specs)
+- [x] Tests passing (`bundle exec rspec` — see [backend/TESTING.md](backend/TESTING.md))
 
 ### ✅ Security
 - [x] `.gitignore` protecting sensitive files
@@ -69,19 +71,9 @@ npm run dev
 
 Frontend will run on **http://localhost:5173**
 
-## Available API Endpoints
+## API surface
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/lists` | Get all public lists |
-| GET | `/api/v1/lists/:id` | Get specific list with items |
-| POST | `/api/v1/lists` | Create new list |
-| PATCH | `/api/v1/lists/:id` | Update list |
-| DELETE | `/api/v1/lists/:id` | Delete list |
-| GET | `/api/v1/lists/:list_id/items` | Get items in list |
-| POST | `/api/v1/lists/:list_id/items` | Add item to list |
-| PATCH | `/api/v1/items/:id` | Update item |
-| DELETE | `/api/v1/items/:id` | Delete item |
+Lists, items, auth, comments, likes, attachments, and more — see the full table in [README.md](README.md) or Swagger at `http://localhost:3000/api-docs`.
 
 ## Troubleshooting
 

@@ -1,6 +1,6 @@
 # CatalogIt Authentication System
 
-*Last reviewed April 3, 2026 — JWT/MFA behavior stable. Production deploy flow: [DEPLOY.md](../DEPLOY.md) §0.*
+*Last reviewed April 7, 2026 — JWT/MFA behavior stable. Production deploy flow: [DEPLOY.md](../DEPLOY.md) §0.*
 
 ## Overview
 
