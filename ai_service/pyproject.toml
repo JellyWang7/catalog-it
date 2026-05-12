@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["integration: requires Ollama running locally (ollama serve)"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
